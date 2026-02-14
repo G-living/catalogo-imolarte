@@ -1,0 +1,675 @@
+// checkout.js - Gestión del checkout, validaciones, Wompi y WhatsApp
+// COMPLETO - Sin simplificaciones
+
+// ===== CONSTANTES =====
+const WOMPI_PUBLIC_KEY = 'pub_test_tXB8qjDFJayJhSoG8M0RGjdQj9O2GwuZ'; // Key de prueba
+const WHATSAPP_NUMBER = '573004257367';
+
+// ===== VARIABLES GLOBALES =====
+let checkoutData = {
+    firstName: '',
+    lastName: '',
+    email: '',
+    phone: '',
+    delivery: 'pickup',
+    address: '',
+    neighborhood: '',
+    city: 'Bogotá',
+    notes: ''
+};
+
+// ===== FUNCIONES PRINCIPALES =====
+
+/**
+ * Abre el modal de checkout
+ */
+function openCheckoutModal() {
+    if (cart.length === 0) {
+        alert('Tu carrito está vacío');
+        return;
+    }
+
+    // Actualizar resumen
+    updateCheckoutSummary();
+
+    // Mostrar modal
+    const modal = document.getElementById('checkoutModal');
+    modal.classList.add('active');
+    document.body.style.overflow = 'hidden';
+
+    // Inicializar Google Places después de un breve delay
+    setTimeout(() => {
+        if (typeof initGooglePlaces === 'function') {
+            initGooglePlaces();
+        }
+    }, 300);
+
+    console.log('✅ Modal de checkout abierto');
+}
+
+/**
+ * Cierra el modal de checkout
+ */
+function closeCheckoutModal() {
+    const modal = document.getElementById('checkoutModal');
+    modal.classList.remove('active');
+    document.body.style.overflow = '';
+    resetCheckoutForm();
+}
+
+/**
+ * Actualiza el resumen del checkout
+ */
+function updateCheckoutSummary() {
+    const subtotal = getCartTotal();
+    
+    document.getElementById('summarySubtotal').textContent = formatPrice(subtotal);
+    document.getElementById('summaryTotal').textContent = formatPrice(subtotal);
+    
+    // El envío se calcula según el método seleccionado
+    const deliveryMethod = document.querySelector('input[name="delivery"]:checked');
+    if (deliveryMethod && deliveryMethod.value === 'home') {
+        document.getElementById('summaryShipping').textContent = 'A calcular';
+    } else {
+        document.getElementById('summaryShipping').textContent = '$0';
+    }
+}
+
+/**
+ * Resetea el formulario de checkout
+ */
+function resetCheckoutForm() {
+    const form = document.getElementById('checkoutForm');
+    if (form) {
+        form.reset();
+    }
+    
+    checkoutData = {
+        firstName: '',
+        lastName: '',
+        email: '',
+        phone: '',
+        delivery: 'pickup',
+        address: '',
+        neighborhood: '',
+        city: 'Bogotá',
+        notes: ''
+    };
+
+    // Ocultar campos de dirección
+    const addressFields = document.getElementById('addressFields');
+    if (addressFields) {
+        addressFields.classList.remove('active');
+    }
+
+    // Limpiar errores
+    document.querySelectorAll('.form-input.error').forEach(input => {
+        input.classList.remove('error');
+    });
+}
+
+// ===== VALIDACIONES =====
+
+/**
+ * Valida el formulario completo
+ */
+function validateCheckoutForm() {
+    let isValid = true;
+    const errors = [];
+
+    // Limpiar errores previos
+    document.querySelectorAll('.form-input').forEach(input => {
+        input.classList.remove('error');
+    });
+
+    // Validar nombre
+    const firstName = document.getElementById('firstName');
+    if (!firstName.value.trim() || !/^[A-Za-zÁÉÍÓÚáéíóúÑñ\s]+$/.test(firstName.value)) {
+        firstName.classList.add('error');
+        errors.push('Nombre inválido');
+        isValid = false;
+    }
+
+    // Validar apellido
+    const lastName = document.getElementById('lastName');
+    if (!lastName.value.trim() || !/^[A-Za-zÁÉÍÓÚáéíóúÑñ\s]+$/.test(lastName.value)) {
+        lastName.classList.add('error');
+        errors.push('Apellido inválido');
+        isValid = false;
+    }
+
+    // Validar email
+    const email = document.getElementById('email');
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email.value)) {
+        email.classList.add('error');
+        errors.push('Email inválido');
+        isValid = false;
+    }
+
+    // Validar teléfono
+    const phone = document.getElementById('phone');
+    if (!/^[0-9]{10}$/.test(phone.value)) {
+        phone.classList.add('error');
+        errors.push('Teléfono debe tener 10 dígitos');
+        isValid = false;
+    }
+
+    // Validar método de entrega
+    const deliveryMethod = document.querySelector('input[name="delivery"]:checked');
+    if (!deliveryMethod) {
+        errors.push('Selecciona un método de entrega');
+        isValid = false;
+    }
+
+    // Si es entrega a domicilio, validar dirección
+    if (deliveryMethod && deliveryMethod.value === 'home') {
+        const address = document.getElementById('address');
+        const neighborhood = document.getElementById('neighborhood');
+        const city = document.getElementById('city');
+
+        if (!address.value.trim()) {
+            address.classList.add('error');
+            errors.push('Dirección requerida');
+            isValid = false;
+        }
+
+        if (!neighborhood.value.trim()) {
+            neighborhood.classList.add('error');
+            errors.push('Barrio requerido');
+            isValid = false;
+        }
+
+        if (!city.value.trim()) {
+            city.classList.add('error');
+            errors.push('Ciudad requerida');
+            isValid = false;
+        }
+    }
+
+    // Validar términos y condiciones
+    const termsAccept = document.getElementById('termsAccept');
+    if (!termsAccept.checked) {
+        errors.push('Debes aceptar los Términos y Condiciones');
+        isValid = false;
+    }
+
+    if (!isValid) {
+        alert('Por favor completa todos los campos correctamente:\n\n' + errors.join('\n'));
+    }
+
+    return isValid;
+}
+
+/**
+ * Recopila los datos del formulario
+ */
+function collectFormData() {
+    const countryCode = document.getElementById('countryCode').value;
+    const phone = document.getElementById('phone').value;
+    const deliveryMethod = document.querySelector('input[name="delivery"]:checked').value;
+
+    return {
+        firstName: document.getElementById('firstName').value.trim(),
+        lastName: document.getElementById('lastName').value.trim(),
+        email: document.getElementById('email').value.trim(),
+        phone: countryCode + phone,
+        delivery: deliveryMethod,
+        address: document.getElementById('address').value.trim(),
+        neighborhood: document.getElementById('neighborhood').value.trim(),
+        city: document.getElementById('city').value.trim(),
+        notes: document.getElementById('notes').value.trim()
+    };
+}
+
+// ===== WHATSAPP =====
+
+/**
+ * Envía el pedido por WhatsApp
+ */
+function sendToWhatsApp() {
+    if (!validateCheckoutForm()) {
+        return;
+    }
+
+    const formData = collectFormData();
+    const subtotal = getCartTotal();
+
+    let message = '🛒 *PEDIDO IMOLARTE*\n';
+    message += '━━━━━━━━━━━━━━━━━━━\n\n';
+
+    // Datos del cliente
+    message += '👤 *CLIENTE*\n';
+    message += `${formData.firstName} ${formData.lastName}\n`;
+    message += `📧 ${formData.email}\n`;
+    message += `📱 ${formData.phone}\n\n`;
+
+    // Método de entrega
+    if (formData.delivery === 'home') {
+        message += '🚚 *ENTREGA A DOMICILIO*\n';
+        message += `📍 ${formData.address}\n`;
+        message += `🏘️ ${formData.neighborhood}, ${formData.city}\n`;
+        if (formData.notes) {
+            message += `📝 ${formData.notes}\n`;
+        }
+    } else {
+        message += '🏪 *RETIRO EN ALMACÉN*\n';
+    }
+    message += '\n━━━━━━━━━━━━━━━━━━━\n\n';
+
+    // Productos
+    message += '📦 *PRODUCTOS*\n\n';
+    cart.forEach((item, index) => {
+        message += `${index + 1}. *${item.productName}*\n`;
+        message += `   ${item.collection} - ${item.code}\n`;
+        message += `   Cant: ${item.quantity} × ${formatPrice(item.price)}\n`;
+        message += `   💰 ${formatPrice(item.price * item.quantity)}\n\n`;
+    });
+
+    message += '━━━━━━━━━━━━━━━━━━━\n';
+    message += `💵 *TOTAL: ${formatPrice(subtotal)}*\n\n`;
+    message += '✅ Términos aceptados\n';
+    message += '👋 ¡Gracias por tu pedido!';
+
+    // Codificar y abrir WhatsApp
+    const encodedMessage = encodeURIComponent(message);
+    const whatsappURL = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodedMessage}`;
+
+    window.open(whatsappURL, '_blank');
+
+    // Limpiar carrito y cerrar después de enviar
+    setTimeout(() => {
+        cart = [];
+        saveCart();
+        updateCartBadge();
+        closeCheckoutModal();
+        closeCartPage();
+        alert('¡Pedido enviado! Te contactaremos pronto por WhatsApp.');
+    }, 1000);
+}
+
+// ===== WOMPI =====
+
+/**
+ * Procesa el pago con Wompi
+ */
+function processPayment() {
+    if (!validateCheckoutForm()) {
+        return;
+    }
+
+    const formData = collectFormData();
+    const subtotal = getCartTotal();
+    const amountInCents = Math.round(subtotal * 100);
+
+    // Configurar checkout de Wompi
+    const checkout = new WidgetCheckout({
+        currency: 'COP',
+        amountInCents: amountInCents,
+        reference: 'IMOLARTE-' + Date.now(),
+        publicKey: WOMPI_PUBLIC_KEY,
+        redirectUrl: window.location.href,
+        taxInCents: {
+            vat: 0,
+            consumption: 0
+        },
+        customerData: {
+            email: formData.email,
+            fullName: `${formData.firstName} ${formData.lastName}`,
+            phoneNumber: formData.phone,
+            phoneNumberPrefix: formData.phone.substring(0, 3),
+            legalId: '',
+            legalIdType: 'CC'
+        },
+        shippingAddress: formData.delivery === 'home' ? {
+            addressLine1: formData.address,
+            city: formData.city,
+            phoneNumber: formData.phone,
+            region: formData.neighborhood,
+            country: 'CO'
+        } : undefined
+    });
+
+    // Abrir widget de Wompi
+    checkout.open(function(result) {
+        const transaction = result.transaction;
+
+        if (transaction.status === 'APPROVED') {
+            // Pago exitoso - enviar confirmación por WhatsApp
+            sendPaymentConfirmationToWhatsApp(formData, transaction);
+
+            // Limpiar carrito
+            cart = [];
+            saveCart();
+            updateCartBadge();
+
+            // Cerrar modales
+            closeCheckoutModal();
+            closeCartPage();
+
+            // Mostrar mensaje de éxito
+            alert('¡Pago exitoso! Tu pedido ha sido procesado. Recibirás una confirmación por WhatsApp.');
+        } else if (transaction.status === 'DECLINED') {
+            alert('El pago fue rechazado. Por favor intenta con otro método de pago.');
+        } else if (transaction.status === 'ERROR') {
+            alert('Hubo un error procesando el pago. Por favor intenta nuevamente.');
+        } else {
+            console.log('Estado de transacción:', transaction.status);
+        }
+    });
+}
+
+/**
+ * Envía confirmación de pago por WhatsApp
+ */
+function sendPaymentConfirmationToWhatsApp(formData, transaction) {
+    const subtotal = getCartTotal();
+
+    let message = '✅ *PAGO CONFIRMADO - IMOLARTE*\n';
+    message += '━━━━━━━━━━━━━━━━━━━\n\n';
+
+    // Datos de la transacción
+    message += '💳 *PAGO*\n';
+    message += `ID: ${transaction.id}\n`;
+    message += `Estado: ${transaction.status}\n`;
+    message += `Método: ${transaction.payment_method_type || 'N/A'}\n\n`;
+
+    // Datos del cliente
+    message += '👤 *CLIENTE*\n';
+    message += `${formData.firstName} ${formData.lastName}\n`;
+    message += `📧 ${formData.email}\n`;
+    message += `📱 ${formData.phone}\n\n`;
+
+    // Entrega
+    if (formData.delivery === 'home') {
+        message += '🚚 *ENTREGA A DOMICILIO*\n';
+        message += `📍 ${formData.address}\n`;
+        message += `🏘️ ${formData.neighborhood}, ${formData.city}\n`;
+        if (formData.notes) {
+            message += `📝 ${formData.notes}\n`;
+        }
+    } else {
+        message += '🏪 *RETIRO EN ALMACÉN*\n';
+    }
+    message += '\n━━━━━━━━━━━━━━━━━━━\n\n';
+
+    // Productos
+    message += '📦 *PRODUCTOS*\n\n';
+    cart.forEach((item, index) => {
+        message += `${index + 1}. ${item.productName}\n`;
+        message += `   ${item.collection} - ${item.code}\n`;
+        message += `   Cant: ${item.quantity} × ${formatPrice(item.price)}\n`;
+        message += `   💰 ${formatPrice(item.price * item.quantity)}\n\n`;
+    });
+
+    message += '━━━━━━━━━━━━━━━━━━━\n';
+    message += `💵 *TOTAL PAGADO: ${formatPrice(subtotal)}*\n\n`;
+    message += '🎉 ¡Pedido confirmado y pagado!';
+
+    const encodedMessage = encodeURIComponent(message);
+    const whatsappURL = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodedMessage}`;
+    window.open(whatsappURL, '_blank');
+}
+
+// ===== TÉRMINOS Y CONDICIONES =====
+
+/**
+ * Muestra los términos y condiciones
+ */
+function showTermsAndConditions() {
+    const termsWindow = window.open('', 'Términos y Condiciones', 'width=600,height=700');
+    
+    termsWindow.document.write(`
+        <!DOCTYPE html>
+        <html lang="es">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Términos y Condiciones - IMOLARTE</title>
+            <style>
+                body {
+                    font-family: 'Lato', Arial, sans-serif;
+                    line-height: 1.6;
+                    padding: 2rem;
+                    color: #2c3e50;
+                    max-width: 800px;
+                    margin: 0 auto;
+                }
+                h1 {
+                    color: #2c3e50;
+                    font-family: 'Playfair Display', serif;
+                    border-bottom: 3px solid #c9a961;
+                    padding-bottom: 1rem;
+                }
+                h2 {
+                    color: #c9a961;
+                    margin-top: 2rem;
+                    font-size: 1.4rem;
+                }
+                p {
+                    margin-bottom: 1rem;
+                }
+                .footer {
+                    margin-top: 3rem;
+                    padding-top: 1rem;
+                    border-top: 1px solid #ddd;
+                    font-size: 0.9rem;
+                    color: #7f8c8d;
+                }
+            </style>
+        </head>
+        <body>
+            <h1>Términos y Condiciones</h1>
+            
+            <h2>1. Aceptación de Términos</h2>
+            <p>
+                Al realizar un pedido en IMOLARTE by Helena Caballero, el cliente acepta 
+                estos términos y condiciones en su totalidad. Si no está de acuerdo con 
+                alguna parte de estos términos, por favor no realice su pedido.
+            </p>
+            
+            <h2>2. Productos</h2>
+            <p>
+                Todos los productos ofrecidos son cerámicas artesanales importadas de Italia. 
+                Cada pieza es única y puede presentar pequeñas variaciones en color, textura 
+                y acabado respecto a las fotografías mostradas en el catálogo.
+            </p>
+            <p>
+                Los colores de los productos pueden variar ligeramente de las fotografías 
+                debido a las configuraciones de pantalla de cada dispositivo.
+            </p>
+            
+            <h2>3. Precios</h2>
+            <p>
+                Todos los precios están expresados en pesos colombianos (COP) e incluyen 
+                el IVA correspondiente. Los precios están sujetos a cambios sin previo aviso.
+            </p>
+            <p>
+                Los costos de envío a domicilio se calculan según la ubicación del cliente 
+                y se informan antes de confirmar la compra.
+            </p>
+            
+            <h2>4. Formas de Pago</h2>
+            <p>
+                Aceptamos los siguientes métodos de pago:
+            </p>
+            <ul>
+                <li>Tarjetas de crédito y débito (a través de Wompi)</li>
+                <li>PSE (Pagos Seguros en Línea)</li>
+                <li>Nequi</li>
+                <li>Transferencia bancaria (previa coordinación)</li>
+            </ul>
+            
+            <h2>5. Entregas</h2>
+            <p>
+                Ofrecemos dos modalidades de entrega:
+            </p>
+            <ul>
+                <li><strong>Retiro en almacén:</strong> Sin costo adicional. Disponible 
+                de lunes a sábado en horario acordado.</li>
+                <li><strong>Entrega a domicilio:</strong> Realizamos entregas en Bogotá 
+                y municipios cercanos. El tiempo estimado de entrega es de 3 a 5 días hábiles 
+                desde la confirmación del pago.</li>
+            </ul>
+            
+            <h2>6. Política de Devoluciones</h2>
+            <p>
+                Aceptamos devoluciones dentro de los 15 días calendario posteriores a la 
+                recepción del producto, siempre y cuando:
+            </p>
+            <ul>
+                <li>El producto presente defectos de fabricación</li>
+                <li>El producto esté en su empaque original</li>
+                <li>No presente señales de uso</li>
+            </ul>
+            <p>
+                No se aceptan devoluciones por cambio de opinión una vez retirado o 
+                recibido el producto.
+            </p>
+            
+            <h2>7. Garantía</h2>
+            <p>
+                Todos nuestros productos cuentan con garantía contra defectos de fabricación. 
+                La garantía no cubre daños causados por:
+            </p>
+            <ul>
+                <li>Uso inadecuado del producto</li>
+                <li>Caídas o golpes</li>
+                <li>Exposición a temperaturas extremas no recomendadas</li>
+            </ul>
+            
+            <h2>8. Cuidado de los Productos</h2>
+            <p>
+                Las cerámicas artesanales requieren cuidados especiales:
+            </p>
+            <ul>
+                <li>Lavar a mano con agua tibia y jabón suave</li>
+                <li>Evitar cambios bruscos de temperatura</li>
+                <li>No usar en microondas a menos que se especifique lo contrario</li>
+                <li>Secar completamente después del lavado</li>
+            </ul>
+            
+            <h2>9. Privacidad y Protección de Datos</h2>
+            <p>
+                La información personal proporcionada durante el proceso de compra será 
+                utilizada únicamente para:
+            </p>
+            <ul>
+                <li>Procesar y entregar su pedido</li>
+                <li>Enviar confirmaciones y actualizaciones</li>
+                <li>Mejorar nuestro servicio</li>
+            </ul>
+            <p>
+                No compartimos información personal con terceros, excepto cuando sea 
+                necesario para completar la transacción (procesadores de pago, empresas 
+                de mensajería).
+            </p>
+            
+            <h2>10. Contacto</h2>
+            <p>
+                Para consultas, reclamos o sugerencias, puede contactarnos a través de:
+            </p>
+            <ul>
+                <li>WhatsApp: +57 300 425 7367</li>
+                <li>Email: (disponible próximamente)</li>
+            </ul>
+            
+            <div class="footer">
+                <p><strong>Última actualización:</strong> Febrero 2026</p>
+                <p><strong>IMOLARTE by Helena Caballero</strong></p>
+                <p>Cerámicas Artesanales Importadas de Italia</p>
+            </div>
+        </body>
+        </html>
+    `);
+}
+
+// ===== EVENT LISTENERS =====
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Botón cerrar checkout
+    const closeCheckoutBtn = document.getElementById('closeCheckout');
+    if (closeCheckoutBtn) {
+        closeCheckoutBtn.addEventListener('click', closeCheckoutModal);
+    }
+
+    // Formulario de checkout
+    const checkoutForm = document.getElementById('checkoutForm');
+    if (checkoutForm) {
+        checkoutForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            sendToWhatsApp();
+        });
+    }
+
+    // Botón de pago
+    const payButton = document.getElementById('payButton');
+    if (payButton) {
+        payButton.addEventListener('click', processPayment);
+    }
+
+    // Opciones de entrega
+    const deliveryOptions = document.querySelectorAll('.delivery-option');
+    deliveryOptions.forEach(option => {
+        option.addEventListener('click', function() {
+            const deliveryType = this.dataset.delivery;
+            const radio = this.querySelector('input[type="radio"]');
+            
+            if (radio) {
+                radio.checked = true;
+                
+                // Actualizar estilos
+                deliveryOptions.forEach(opt => opt.classList.remove('selected'));
+                this.classList.add('selected');
+                
+                // Mostrar/ocultar campos de dirección
+                const addressFields = document.getElementById('addressFields');
+                if (deliveryType === 'home') {
+                    addressFields.classList.add('active');
+                    addressFields.querySelectorAll('input, textarea').forEach(field => {
+                        if (field.id !== 'notes') {
+                            field.required = true;
+                        }
+                    });
+                    document.getElementById('summaryShipping').textContent = 'A calcular';
+                } else {
+                    addressFields.classList.remove('active');
+                    addressFields.querySelectorAll('input, textarea').forEach(field => {
+                        field.required = false;
+                    });
+                    document.getElementById('summaryShipping').textContent = '$0';
+                }
+                
+                updateCheckoutSummary();
+            }
+        });
+    });
+
+    // Link de términos y condiciones
+    const showTermsLink = document.getElementById('showTerms');
+    if (showTermsLink) {
+        showTermsLink.addEventListener('click', function(e) {
+            e.preventDefault();
+            showTermsAndConditions();
+        });
+    }
+
+    // Remover clase de error al escribir
+    document.querySelectorAll('.form-input').forEach(input => {
+        input.addEventListener('input', function() {
+            this.classList.remove('error');
+        });
+    });
+
+    // Cerrar checkout con ESC
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            const checkoutModal = document.getElementById('checkoutModal');
+            if (checkoutModal && checkoutModal.classList.contains('active')) {
+                closeCheckoutModal();
+            }
+        }
+    });
+
+    console.log('✅ checkout.js inicializado');
+});
