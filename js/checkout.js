@@ -21,39 +21,10 @@ let currentPaymentMethod = 'online'; // 'online' o 'whatsapp'
 const CHECKOUT_MODAL_HTML = `
 <div id="checkoutModal" class="modal">
   <div class="modal-content checkout-modal-content">
-    <button class="modal-close" onclick="closeCheckoutModal()">×</button>
+    <button class="modal-close" id="closeCheckoutBtn">×</button>
     
     <div class="checkout-container">
       <h2>Finalizar Pedido</h2>
-      
-      <!-- PASO 1: ELEGIR MÉTODO DE PAGO -->
-      <div class="payment-method-selector">
-        <h3>¿Cómo deseas proceder?</h3>
-        
-        <div class="payment-options-grid">
-          <label class="payment-option-card">
-            <input type="radio" name="paymentMethod" value="online" checked>
-            <div class="option-content">
-              <div class="option-icon">💳</div>
-              <div class="option-text">
-                <strong>Pagar en línea</strong>
-                <small>Con tarjeta débito/crédito, PSE o Nequi</small>
-              </div>
-            </div>
-          </label>
-          
-          <label class="payment-option-card">
-            <input type="radio" name="paymentMethod" value="whatsapp">
-            <div class="option-content">
-              <div class="option-icon">💬</div>
-              <div class="option-text">
-                <strong>Coordinar por WhatsApp</strong>
-                <small>Confirma disponibilidad y forma de pago</small>
-              </div>
-            </div>
-          </label>
-        </div>
-      </div>
       
       <!-- FORMULARIO DE DATOS -->
       <form id="checkoutForm" class="checkout-form">
@@ -134,7 +105,7 @@ const CHECKOUT_MODAL_HTML = `
           </div>
         </div>
         
-        <!-- Método de entrega -->
+        <!-- Método de entrega (SIEMPRE VISIBLE) -->
         <div class="form-section">
           <h3>Método de Entrega</h3>
           
@@ -209,9 +180,38 @@ const CHECKOUT_MODAL_HTML = `
         </div>
       </div>
       
-      <!-- OPCIONES DE PAGO EN LÍNEA -->
+      <!-- ELEGIR FORMA DE PAGO/CONFIRMACIÓN -->
+      <div class="payment-method-selector">
+        <h3>¿Cómo deseas confirmar tu pedido?</h3>
+        
+        <div class="payment-options-grid">
+          <label class="payment-option-card">
+            <input type="radio" name="paymentMethod" value="online" checked>
+            <div class="option-content">
+              <div class="option-icon">💳</div>
+              <div class="option-text">
+                <strong>Pagar en línea</strong>
+                <small>Con tarjeta, PSE o Nequi (Wompi)</small>
+              </div>
+            </div>
+          </label>
+          
+          <label class="payment-option-card">
+            <input type="radio" name="paymentMethod" value="whatsapp">
+            <div class="option-content">
+              <div class="option-icon">💬</div>
+              <div class="option-text">
+                <strong>Coordinar por WhatsApp</strong>
+                <small>Confirma disponibilidad y forma de pago</small>
+              </div>
+            </div>
+          </label>
+        </div>
+      </div>
+      
+      <!-- OPCIONES DE PAGO EN LÍNEA (mostrar si elige "online") -->
       <div id="onlinePaymentOptions" class="payment-options-section">
-        <h3>Opciones de Pago</h3>
+        <h3>Elige tu opción de pago</h3>
         
         <div class="payment-choice">
           <div class="payment-card">
@@ -249,7 +249,7 @@ const CHECKOUT_MODAL_HTML = `
         </div>
       </div>
       
-      <!-- BOTÓN WHATSAPP -->
+      <!-- BOTÓN WHATSAPP (mostrar si elige "whatsapp") -->
       <div id="whatsappOption" class="whatsapp-section" style="display: none;">
         <div class="whatsapp-card">
           <div class="whatsapp-icon">📱</div>
@@ -312,6 +312,12 @@ function closeCheckoutModal() {
  * Inicializa todos los event listeners del checkout
  */
 function initCheckoutListeners() {
+  // Botón cerrar (X)
+  const closeBtn = document.getElementById('closeCheckoutBtn');
+  if (closeBtn) {
+    closeBtn.addEventListener('click', closeCheckoutModal);
+  }
+  
   // Cambio de método de pago
   document.querySelectorAll('input[name="paymentMethod"]').forEach(radio => {
     radio.addEventListener('change', handlePaymentMethodChange);
