@@ -414,174 +414,297 @@ function sendPaymentConfirmationToWhatsApp(formData, transaction) {
 // ===== TÉRMINOS Y CONDICIONES =====
 
 /**
- * Muestra los términos y condiciones
+ * Muestra los términos y condiciones en un popup modal
  */
 function showTermsAndConditions() {
-    const termsWindow = window.open('', 'Términos y Condiciones', 'width=600,height=700');
-    
-    termsWindow.document.write(`
-        <!DOCTYPE html>
-        <html lang="es">
-        <head>
-            <meta charset="UTF-8">
-            <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            <title>Términos y Condiciones - IMOLARTE</title>
-            <style>
-                body {
-                    font-family: 'Lato', Arial, sans-serif;
-                    line-height: 1.6;
-                    padding: 2rem;
-                    color: #2c3e50;
-                    max-width: 800px;
-                    margin: 0 auto;
-                }
-                h1 {
-                    color: #2c3e50;
-                    font-family: 'Playfair Display', serif;
-                    border-bottom: 3px solid #c9a961;
-                    padding-bottom: 1rem;
-                }
-                h2 {
-                    color: #c9a961;
-                    margin-top: 2rem;
-                    font-size: 1.4rem;
-                }
-                p {
-                    margin-bottom: 1rem;
-                }
-                .footer {
-                    margin-top: 3rem;
-                    padding-top: 1rem;
-                    border-top: 1px solid #ddd;
-                    font-size: 0.9rem;
-                    color: #7f8c8d;
-                }
-            </style>
-        </head>
-        <body>
-            <h1>Términos y Condiciones</h1>
-            
-            <h2>1. Aceptación de Términos</h2>
-            <p>
-                Al realizar un pedido en IMOLARTE by Helena Caballero, el cliente acepta 
-                estos términos y condiciones en su totalidad. Si no está de acuerdo con 
-                alguna parte de estos términos, por favor no realice su pedido.
-            </p>
-            
-            <h2>2. Productos</h2>
-            <p>
-                Todos los productos ofrecidos son cerámicas artesanales importadas de Italia. 
-                Cada pieza es única y puede presentar pequeñas variaciones en color, textura 
-                y acabado respecto a las fotografías mostradas en el catálogo.
-            </p>
-            <p>
-                Los colores de los productos pueden variar ligeramente de las fotografías 
-                debido a las configuraciones de pantalla de cada dispositivo.
-            </p>
-            
-            <h2>3. Precios</h2>
-            <p>
-                Todos los precios están expresados en pesos colombianos (COP) e incluyen 
-                el IVA correspondiente. Los precios están sujetos a cambios sin previo aviso.
-            </p>
-            <p>
-                Los costos de envío a domicilio se calculan según la ubicación del cliente 
-                y se informan antes de confirmar la compra.
-            </p>
-            
-            <h2>4. Formas de Pago</h2>
-            <p>
-                Aceptamos los siguientes métodos de pago:
-            </p>
-            <ul>
-                <li>Tarjetas de crédito y débito (a través de Wompi)</li>
-                <li>PSE (Pagos Seguros en Línea)</li>
-                <li>Nequi</li>
-                <li>Transferencia bancaria (previa coordinación)</li>
-            </ul>
-            
-            <h2>5. Entregas</h2>
-            <p>
-                Ofrecemos dos modalidades de entrega:
-            </p>
-            <ul>
-                <li><strong>Retiro en almacén:</strong> Sin costo adicional. Disponible 
-                de lunes a sábado en horario acordado.</li>
-                <li><strong>Entrega a domicilio:</strong> Realizamos entregas en Bogotá 
-                y municipios cercanos. El tiempo estimado de entrega es de 3 a 5 días hábiles 
-                desde la confirmación del pago.</li>
-            </ul>
-            
-            <h2>6. Política de Devoluciones</h2>
-            <p>
-                Aceptamos devoluciones dentro de los 15 días calendario posteriores a la 
-                recepción del producto, siempre y cuando:
-            </p>
-            <ul>
-                <li>El producto presente defectos de fabricación</li>
-                <li>El producto esté en su empaque original</li>
-                <li>No presente señales de uso</li>
-            </ul>
-            <p>
-                No se aceptan devoluciones por cambio de opinión una vez retirado o 
-                recibido el producto.
-            </p>
-            
-            <h2>7. Garantía</h2>
-            <p>
-                Todos nuestros productos cuentan con garantía contra defectos de fabricación. 
-                La garantía no cubre daños causados por:
-            </p>
-            <ul>
-                <li>Uso inadecuado del producto</li>
-                <li>Caídas o golpes</li>
-                <li>Exposición a temperaturas extremas no recomendadas</li>
-            </ul>
-            
-            <h2>8. Cuidado de los Productos</h2>
-            <p>
-                Las cerámicas artesanales requieren cuidados especiales:
-            </p>
-            <ul>
-                <li>Lavar a mano con agua tibia y jabón suave</li>
-                <li>Evitar cambios bruscos de temperatura</li>
-                <li>No usar en microondas a menos que se especifique lo contrario</li>
-                <li>Secar completamente después del lavado</li>
-            </ul>
-            
-            <h2>9. Privacidad y Protección de Datos</h2>
-            <p>
-                La información personal proporcionada durante el proceso de compra será 
-                utilizada únicamente para:
-            </p>
-            <ul>
-                <li>Procesar y entregar su pedido</li>
-                <li>Enviar confirmaciones y actualizaciones</li>
-                <li>Mejorar nuestro servicio</li>
-            </ul>
-            <p>
-                No compartimos información personal con terceros, excepto cuando sea 
-                necesario para completar la transacción (procesadores de pago, empresas 
-                de mensajería).
-            </p>
-            
-            <h2>10. Contacto</h2>
-            <p>
-                Para consultas, reclamos o sugerencias, puede contactarnos a través de:
-            </p>
-            <ul>
-                <li>WhatsApp: +57 300 425 7367</li>
-                <li>Email: (disponible próximamente)</li>
-            </ul>
-            
-            <div class="footer">
-                <p><strong>Última actualización:</strong> Febrero 2026</p>
-                <p><strong>IMOLARTE by Helena Caballero</strong></p>
-                <p>Cerámicas Artesanales Importadas de Italia</p>
+    // Crear modal
+    const modal = document.createElement('div');
+    modal.className = 'terms-modal';
+    modal.innerHTML = `
+        <div class="terms-content">
+            <button class="terms-close" onclick="closeTermsModal()">×</button>
+            <div class="terms-body">
+                <h1>Términos y Condiciones</h1>
+                
+                <h2>1. Aceptación de Términos</h2>
+                <p>
+                    Al realizar un pedido en IMOLARTE by Helena Caballero, el cliente acepta 
+                    estos términos y condiciones en su totalidad. Si no está de acuerdo con 
+                    alguna parte de estos términos, por favor no realice su pedido.
+                </p>
+                
+                <h2>2. Productos</h2>
+                <p>
+                    Todos los productos ofrecidos son cerámicas artesanales importadas de Italia. 
+                    Cada pieza es única y puede presentar pequeñas variaciones en color, textura 
+                    y acabado respecto a las fotografías mostradas en el catálogo.
+                </p>
+                <p>
+                    Los colores de los productos pueden variar ligeramente de las fotografías 
+                    debido a las configuraciones de pantalla de cada dispositivo.
+                </p>
+                
+                <h2>3. Precios</h2>
+                <p>
+                    Todos los precios están expresados en pesos colombianos (COP) e incluyen 
+                    el IVA correspondiente. Los precios están sujetos a cambios sin previo aviso.
+                </p>
+                <p>
+                    Los costos de envío a domicilio se calculan según la ubicación del cliente 
+                    y se informan antes de confirmar la compra.
+                </p>
+                
+                <h2>4. Formas de Pago</h2>
+                <p>
+                    Aceptamos los siguientes métodos de pago:
+                </p>
+                <ul>
+                    <li>Tarjetas de crédito y débito (a través de Wompi)</li>
+                    <li>PSE (Pagos Seguros en Línea)</li>
+                    <li>Nequi</li>
+                    <li>Transferencia bancaria (previa coordinación)</li>
+                </ul>
+                <p>
+                    <strong>Anticipo del 60%:</strong> Al momento de realizar el pedido, se cobrará 
+                    el 60% del valor total del mismo. Tratándose de mercancía producida por Imolarte 
+                    en Italia y sobre pedido, no será posible desistir del mismo y será obligatorio 
+                    terminar de cancelar el 40% faltante tan pronto el pedido se encuentre disponible 
+                    en el almacén.
+                </p>
+                
+                <h2>5. Entregas</h2>
+                <p>
+                    Ofrecemos dos modalidades de entrega:
+                </p>
+                <ul>
+                    <li><strong>Retiro en almacén:</strong> Sin costo adicional. Disponible 
+                    de lunes a sábado en horario acordado.</li>
+                    <li><strong>Entrega a domicilio:</strong> Realizamos entregas en Bogotá 
+                    y municipios cercanos.</li>
+                </ul>
+                <p>
+                    <strong>Tiempos de producción e importación:</strong> Los productos tienen un 
+                    proceso de fabricación en Italia de entre 100 y 120 días. Posteriormente, el 
+                    proceso de importación toma alrededor de 30 días adicionales. Por lo tanto, el 
+                    tiempo de entrega promedio es de aproximadamente 150 días calendario desde la 
+                    confirmación del pedido. Haremos todo lo objetivamente posible para reducir 
+                    estos tiempos cuando las condiciones lo permitan.
+                </p>
+                
+                <h2>6. Política de Devoluciones</h2>
+                <p>
+                    Aceptamos devoluciones dentro de los 15 días calendario posteriores a la 
+                    recepción del producto, siempre y cuando:
+                </p>
+                <ul>
+                    <li>El producto presente defectos de fabricación</li>
+                    <li>El producto esté en su empaque original</li>
+                    <li>No presente señales de uso</li>
+                </ul>
+                <p>
+                    No se aceptan devoluciones por cambio de opinión una vez retirado o 
+                    recibido el producto.
+                </p>
+                <p>
+                    <strong>Las devoluciones se hacen y reciben únicamente de forma presencial 
+                    en nuestro almacén.</strong>
+                </p>
+                
+                <h2>7. Garantía</h2>
+                <p>
+                    Todos nuestros productos cuentan con <strong>garantía de 1 año</strong> contra 
+                    defectos de fabricación. La garantía no cubre daños causados por:
+                </p>
+                <ul>
+                    <li>Uso inadecuado del producto</li>
+                    <li>Caídas o golpes</li>
+                    <li>Exposición a temperaturas extremas no recomendadas</li>
+                </ul>
+                
+                <h2>8. Cuidado de los Productos</h2>
+                <p>
+                    Las cerámicas artesanales requieren cuidados especiales:
+                </p>
+                <ul>
+                    <li>Lavar a mano con agua tibia y jabón suave</li>
+                    <li>Evitar cambios bruscos de temperatura</li>
+                    <li>No usar en microondas a menos que se especifique lo contrario</li>
+                    <li>Secar completamente después del lavado</li>
+                </ul>
+                
+                <h2>9. Privacidad y Protección de Datos</h2>
+                <p>
+                    El tratamiento de datos personales se realizará conforme a la normatividad 
+                    colombiana vigente: Ley Estatutaria 1581 de 2012, Decreto 1377 de 2013, 
+                    Decreto 1074 de 2015 y las circulares de la Superintendencia de Industria 
+                    y Comercio (SIC) correspondientes.
+                </p>
+                <p>
+                    La información personal proporcionada durante el proceso de compra será 
+                    utilizada únicamente para:
+                </p>
+                <ul>
+                    <li>Procesar y entregar su pedido</li>
+                    <li>Enviar confirmaciones y actualizaciones</li>
+                    <li>Mejorar nuestro servicio</li>
+                </ul>
+                <p>
+                    No compartimos información personal con terceros, excepto cuando sea 
+                    necesario para completar la transacción (procesadores de pago, empresas 
+                    de mensajería).
+                </p>
+                
+                <h2>10. Veracidad de Datos</h2>
+                <p>
+                    El Cliente declara y garantiza que toda la información proporcionada durante 
+                    el proceso de registro, compra o cualquier interacción con el sitio web o la 
+                    plataforma es veraz, completa, exacta, actualizada y corresponde a su realidad. 
+                    El CLIENTE asume plena responsabilidad por la veracidad, calidad y exactitud de 
+                    los datos suministrados, incluyendo pero no limitado a datos personales, de 
+                    contacto, de pago y de entrega. Helena Caballero SAS presume de buena fe la 
+                    veracidad de dicha información y no está obligada a verificarla de manera 
+                    independiente, sin perjuicio de las acciones que pueda tomar en caso de 
+                    detección de inconsistencias o falsedad. Cualquier consecuencia derivada de 
+                    la inexactitud, falsedad o incompletitud de los datos proporcionados por el 
+                    Cliente será de su exclusiva responsabilidad, incluyendo la imposibilidad de 
+                    entrega, devoluciones no procedentes, rechazos de pago o cualquier perjuicio 
+                    económico o legal. El Cliente se compromete a actualizar inmediatamente sus 
+                    datos en caso de cambios, y autoriza a Helena Caballero SAS a utilizarlos 
+                    conforme a la Política de Tratamiento de Datos Personales publicada en el sitio.
+                </p>
+                
+                <h2>11. Contacto</h2>
+                <p>
+                    Para consultas, reclamos o sugerencias, puede contactarnos a través de:
+                </p>
+                <ul>
+                    <li>WhatsApp: +57 300 425 7367</li>
+                    <li>Email: administracion@helenacaballero.com</li>
+                </ul>
+                
+                <div class="terms-footer">
+                    <p><strong>Última actualización:</strong> Febrero 2026</p>
+                    <p><strong>IMOLARTE by Helena Caballero SAS</strong></p>
+                    <p>Cerámicas Artesanales Importadas de Italia</p>
+                </div>
             </div>
-        </body>
-        </html>
-    `);
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+    document.body.style.overflow = 'hidden';
+}
+
+/**
+ * Cierra el modal de términos y condiciones
+ */
+function closeTermsModal() {
+    const modal = document.querySelector('.terms-modal');
+    if (modal) {
+        document.body.removeChild(modal);
+        document.body.style.overflow = '';
+    }
+}
+
+// ===== CESIÓN DE CARTERA =====
+
+/**
+ * Muestra la autorización de cesión de cartera en un popup modal
+ */
+function showCesionModal() {
+    // Crear modal
+    const modal = document.createElement('div');
+    modal.className = 'cesion-modal';
+    modal.innerHTML = `
+        <div class="cesion-content">
+            <button class="cesion-close" onclick="closeCesionModal()">×</button>
+            <div class="cesion-body">
+                <h1>Autorización de Cesión de Cartera</h1>
+                
+                <p>
+                    El Cliente autoriza expresamente a Helena Caballero SAS a ceder, endosar, transferir 
+                    o negociar la totalidad o parte de la obligación derivada de la presente compra 
+                    (incluyendo el saldo pendiente, intereses, costos de cobranza y demás accesorios) 
+                    a terceros (entidades de cobranza, abogados, fondos de inversión en cartera, empresas 
+                    especializadas en recaudo o cualquier otro cesionario), en caso de mora, incumplimiento 
+                    o cuando así lo considere necesario para la recuperación de la deuda.
+                </p>
+                
+                <p>
+                    Asimismo, autoriza expresamente el tratamiento, consulta, reporte y circulación de 
+                    sus datos personales (incluyendo identificación, información financiera, hábitos de 
+                    pago, monto adeudado y situación de mora) por parte de Helena Caballero SAS y de los 
+                    terceros cesionarios o encargados de cobranza, exclusivamente para fines de gestión 
+                    de cobro, reporte a centrales de riesgo (si aplica Ley 1266/2008) y ejecución de la 
+                    obligación.
+                </p>
+                
+                <p>
+                    Esta autorización se otorga de manera libre, previa, expresa e informada, conforme 
+                    a la Ley 1581 de 2012 y sus decretos reglamentarios, y podrá ser revocada por el 
+                    Cliente mediante comunicación escrita a administracion@helenacaballero.com, sin 
+                    perjuicio de las obligaciones ya vencidas ni de los efectos de la cesión ya realizada.
+                </p>
+                
+                <p>
+                    <strong>El CLIENTE declara conocer que la cesión no lo libera de la obligación de 
+                    pago, la cual podrá ser exigida directamente por el cesionario.</strong>
+                </p>
+                
+                <div class="cesion-footer">
+                    <p><strong>Última actualización:</strong> Febrero 2026</p>
+                    <p><strong>IMOLARTE by Helena Caballero SAS</strong></p>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+    document.body.style.overflow = 'hidden';
+}
+
+/**
+ * Cierra el modal de cesión de cartera
+ */
+function closeCesionModal() {
+    const modal = document.querySelector('.cesion-modal');
+    if (modal) {
+        document.body.removeChild(modal);
+        document.body.style.overflow = '';
+    }
+}
+
+// ===== CUMPLEAÑOS =====
+
+/**
+ * Inicializa los selectores de día y mes de cumpleaños
+ */
+function initBirthdaySelectors() {
+    const daySelect = document.getElementById('birthdayDay');
+    const monthSelect = document.getElementById('birthdayMonth');
+    
+    if (!daySelect || !monthSelect) return;
+    
+    // Llenar días (1-31)
+    for (let i = 1; i <= 31; i++) {
+        const option = document.createElement('option');
+        option.value = i;
+        option.textContent = i;
+        daySelect.appendChild(option);
+    }
+    
+    // Llenar meses
+    const months = [
+        'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
+        'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
+    ];
+    
+    months.forEach((month, index) => {
+        const option = document.createElement('option');
+        option.value = index + 1;
+        option.textContent = month;
+        monthSelect.appendChild(option);
+    });
 }
 
 // ===== EVENT LISTENERS =====
@@ -653,6 +776,18 @@ document.addEventListener('DOMContentLoaded', function() {
             showTermsAndConditions();
         });
     }
+
+    // Link de cesión de cartera
+    const showCesionLink = document.getElementById('showCesion');
+    if (showCesionLink) {
+        showCesionLink.addEventListener('click', function(e) {
+            e.preventDefault();
+            showCesionModal();
+        });
+    }
+
+    // Inicializar selectores de cumpleaños
+    initBirthdaySelectors();
 
     // Remover clase de error al escribir
     document.querySelectorAll('.form-input').forEach(input => {

@@ -60,12 +60,12 @@ const CATALOG_DATA = {
         {
           "collection": "ROSSO E ORO",
           "code": "RO110",
-          "price": 608554.0
+          "price": 873639.8
         },
         {
           "collection": "AVORIO E ORO",
           "code": "AO110",
-          "price": 608554.0
+          "price": 873639.8
         }
       ]
     },
@@ -115,12 +115,12 @@ const CATALOG_DATA = {
         {
           "collection": "ROSSO E ORO",
           "code": "RO002",
-          "price": 500560.0
+          "price": 579161.0
         },
         {
           "collection": "AVORIO E ORO",
           "code": "AO002",
-          "price": 500560.0
+          "price": 579161.0
         }
       ]
     },
@@ -170,12 +170,12 @@ const CATALOG_DATA = {
         {
           "collection": "ROSSO E ORO",
           "code": "RO003",
-          "price": 873640.0
+          "price": 952131.4
         },
         {
           "collection": "AVORIO E ORO",
           "code": "AO003",
-          "price": 873640.0
+          "price": 952131.4
         }
       ]
     },
@@ -225,12 +225,12 @@ const CATALOG_DATA = {
         {
           "collection": "ROSSO E ORO",
           "code": "RO004",
-          "price": 1020825.0
+          "price": 1079721.5
         },
         {
           "collection": "AVORIO E ORO",
           "code": "AO004",
-          "price": 1020825.0
+          "price": 1079721.5
         }
       ]
     },
@@ -280,12 +280,12 @@ const CATALOG_DATA = {
         {
           "collection": "ROSSO E ORO",
           "code": "RO005",
-          "price": 314075.0
+          "price": 402473.5
         },
         {
           "collection": "AVORIO E ORO",
           "code": "AO005",
-          "price": 314075.0
+          "price": 402473.5
         }
       ]
     },
@@ -335,12 +335,12 @@ const CATALOG_DATA = {
         {
           "collection": "ROSSO E ORO",
           "code": "RO006",
-          "price": 952132.0
+          "price": 1050327.3
         },
         {
           "collection": "AVORIO E ORO",
           "code": "AO006",
-          "price": 952132.0
+          "price": 1050327.3
         }
       ]
     },
@@ -390,12 +390,12 @@ const CATALOG_DATA = {
         {
           "collection": "ROSSO E ORO",
           "code": "RO007",
-          "price": 363173.0
+          "price": 461368.6
         },
         {
           "collection": "AVORIO E ORO",
           "code": "AO007",
-          "price": 363173.0
+          "price": 461368.6
         }
       ]
     },
@@ -445,12 +445,12 @@ const CATALOG_DATA = {
         {
           "collection": "ROSSO E ORO",
           "code": "RO008",
-          "price": 412271.0
+          "price": 520264.8
         },
         {
           "collection": "AVORIO E ORO",
           "code": "AO008",
-          "price": 412271.0
+          "price": 520264.8
         }
       ]
     },
@@ -500,12 +500,12 @@ const CATALOG_DATA = {
         {
           "collection": "ROSSO E ORO",
           "code": "RO009",
-          "price": 480965.0
+          "price": 598756.4
         },
         {
           "collection": "AVORIO E ORO",
           "code": "AO009",
-          "price": 480965.0
+          "price": 598756.4
         }
       ]
     },
@@ -555,12 +555,12 @@ const CATALOG_DATA = {
         {
           "collection": "ROSSO E ORO",
           "code": "RO010",
-          "price": 520265.0
+          "price": 647854.9
         },
         {
           "collection": "AVORIO E ORO",
           "code": "AO010",
-          "price": 520265.0
+          "price": 647854.9
         }
       ]
     },
@@ -610,12 +610,12 @@ const CATALOG_DATA = {
         {
           "collection": "ROSSO E ORO",
           "code": "RO011",
-          "price": 579161.0
+          "price": 687045.7
         },
         {
           "collection": "AVORIO E ORO",
           "code": "AO011",
-          "price": 579161.0
+          "price": 687045.7
         }
       ]
     },
@@ -665,12 +665,12 @@ const CATALOG_DATA = {
         {
           "collection": "ROSSO E ORO",
           "code": "RO016",
-          "price": 804837.0
+          "price": 863733.2
         },
         {
           "collection": "AVORIO E ORO",
           "code": "AO016",
-          "price": 804837.0
+          "price": 863733.2
         }
       ]
     },
@@ -720,12 +720,12 @@ const CATALOG_DATA = {
         {
           "collection": "ROSSO E ORO",
           "code": "RO017",
-          "price": 971727.0
+          "price": 1089519.2
         },
         {
           "collection": "AVORIO E ORO",
           "code": "AO017",
-          "price": 971727.0
+          "price": 1089519.2
         }
       ]
     },
@@ -775,12 +775,12 @@ const CATALOG_DATA = {
         {
           "collection": "ROSSO E ORO",
           "code": "RO018",
-          "price": 500560.0
+          "price": 530062.5
         },
         {
           "collection": "AVORIO E ORO",
           "code": "AO018",
-          "price": 500560.0
+          "price": 530062.5
         }
       ]
     },
@@ -830,12 +830,12 @@ const CATALOG_DATA = {
         {
           "collection": "ROSSO E ORO",
           "code": "RO019",
-          "price": 471167.0
+          "price": 500560.5
         },
         {
           "collection": "AVORIO E ORO",
           "code": "AO019",
-          "price": 471167.0
+          "price": 500560.5
         }
       ]
     },
@@ -885,12 +885,12 @@ const CATALOG_DATA = {
         {
           "collection": "ROSSO E ORO",
           "code": "RO020",
-          "price": 206081.0
+          "price": 323873.0
         },
         {
           "collection": "AVORIO E ORO",
           "code": "AO020",
-          "price": 206081.0
+          "price": 323873.0
         }
       ]
     },
@@ -940,12 +940,12 @@ const CATALOG_DATA = {
         {
           "collection": "ROSSO E ORO",
           "code": "RO021",
-          "price": 235583.0
+          "price": 363172.7
         },
         {
           "collection": "AVORIO E ORO",
           "code": "AO021",
-          "price": 235583.0
+          "price": 363172.7
         }
       ]
     },
@@ -995,12 +995,12 @@ const CATALOG_DATA = {
         {
           "collection": "ROSSO E ORO",
           "code": "RO022",
-          "price": 294479.0
+          "price": 353375.0
         },
         {
           "collection": "AVORIO E ORO",
           "code": "AO022",
-          "price": 294479.0
+          "price": 353375.0
         }
       ]
     },
@@ -1050,12 +1050,12 @@ const CATALOG_DATA = {
         {
           "collection": "ROSSO E ORO",
           "code": "RO023",
-          "price": 225786.0
+          "price": 333779.6
         },
         {
           "collection": "AVORIO E ORO",
           "code": "AO023",
-          "price": 225786.0
+          "price": 333779.6
         }
       ]
     },
@@ -1105,12 +1105,12 @@ const CATALOG_DATA = {
         {
           "collection": "ROSSO E ORO",
           "code": "RO024",
-          "price": 206081.0
+          "price": 422068.9
         },
         {
           "collection": "AVORIO E ORO",
           "code": "AO024",
-          "price": 206081.0
+          "price": 422068.9
         }
       ]
     },
@@ -1160,12 +1160,12 @@ const CATALOG_DATA = {
         {
           "collection": "ROSSO E ORO",
           "code": "RO025",
-          "price": 235583.0
+          "price": 363172.7
         },
         {
           "collection": "AVORIO E ORO",
           "code": "AO025",
-          "price": 235583.0
+          "price": 363172.7
         }
       ]
     },
@@ -1215,12 +1215,12 @@ const CATALOG_DATA = {
         {
           "collection": "ROSSO E ORO",
           "code": "RO026",
-          "price": 323873.0
+          "price": 549657.9
         },
         {
           "collection": "AVORIO E ORO",
           "code": "AO026",
-          "price": 323873.0
+          "price": 549657.9
         }
       ]
     },
@@ -1270,12 +1270,12 @@ const CATALOG_DATA = {
         {
           "collection": "ROSSO E ORO",
           "code": "RO027",
-          "price": 402473.0
+          "price": 657652.6
         },
         {
           "collection": "AVORIO E ORO",
           "code": "AO027",
-          "price": 402473.0
+          "price": 657652.6
         }
       ]
     },
@@ -1325,12 +1325,12 @@ const CATALOG_DATA = {
         {
           "collection": "ROSSO E ORO",
           "code": "RO028",
-          "price": 215988.0
+          "price": 314075.3
         },
         {
           "collection": "AVORIO E ORO",
           "code": "AO028",
-          "price": 215988.0
+          "price": 314075.3
         }
       ]
     },
@@ -1380,12 +1380,12 @@ const CATALOG_DATA = {
         {
           "collection": "ROSSO E ORO",
           "code": "RO029",
-          "price": 294479.0
+          "price": 363172.7
         },
         {
           "collection": "AVORIO E ORO",
           "code": "AO029",
-          "price": 294479.0
+          "price": 363172.7
         }
       ]
     },
@@ -1435,12 +1435,12 @@ const CATALOG_DATA = {
         {
           "collection": "ROSSO E ORO",
           "code": "RO030",
-          "price": 323873.0
+          "price": 431866.6
         },
         {
           "collection": "AVORIO E ORO",
           "code": "AO030",
-          "price": 323873.0
+          "price": 431866.6
         }
       ]
     },
@@ -1490,12 +1490,12 @@ const CATALOG_DATA = {
         {
           "collection": "ROSSO E ORO",
           "code": "RO031",
-          "price": 382769.0
+          "price": 520264.8
         },
         {
           "collection": "AVORIO E ORO",
           "code": "AO031",
-          "price": 382769.0
+          "price": 520264.8
         }
       ]
     },
@@ -1545,12 +1545,12 @@ const CATALOG_DATA = {
         {
           "collection": "ROSSO E ORO",
           "code": "RO032",
-          "price": 294479.0
+          "price": 353375.0
         },
         {
           "collection": "AVORIO E ORO",
           "code": "AO032",
-          "price": 294479.0
+          "price": 353375.0
         }
       ]
     },
@@ -1600,12 +1600,12 @@ const CATALOG_DATA = {
         {
           "collection": "ROSSO E ORO",
           "code": "RO033",
-          "price": 314075.0
+          "price": 422068.9
         },
         {
           "collection": "AVORIO E ORO",
           "code": "AO033",
-          "price": 314075.0
+          "price": 422068.9
         }
       ]
     },
@@ -1655,12 +1655,12 @@ const CATALOG_DATA = {
         {
           "collection": "ROSSO E ORO",
           "code": "RO034",
-          "price": 392675.0
+          "price": 510467.1
         },
         {
           "collection": "AVORIO E ORO",
           "code": "AO034",
-          "price": 392675.0
+          "price": 510467.1
         }
       ]
     },
@@ -1710,12 +1710,12 @@ const CATALOG_DATA = {
         {
           "collection": "ROSSO E ORO",
           "code": "RO035",
-          "price": 323873.0
+          "price": 530062.5
         },
         {
           "collection": "AVORIO E ORO",
           "code": "AO035",
-          "price": 323873.0
+          "price": 530062.5
         }
       ]
     },
@@ -1765,12 +1765,12 @@ const CATALOG_DATA = {
         {
           "collection": "ROSSO E ORO",
           "code": "RO036",
-          "price": 618352.0
+          "price": 863733.2
         },
         {
           "collection": "AVORIO E ORO",
           "code": "AO036",
-          "price": 618352.0
+          "price": 863733.2
         }
       ]
     },
@@ -1820,12 +1820,12 @@ const CATALOG_DATA = {
         {
           "collection": "ROSSO E ORO",
           "code": "RO037",
-          "price": 225786.0
+          "price": 235583.7
         },
         {
           "collection": "AVORIO E ORO",
           "code": "AO037",
-          "price": 225786.0
+          "price": 235583.7
         }
       ]
     },
@@ -1875,12 +1875,12 @@ const CATALOG_DATA = {
         {
           "collection": "ROSSO E ORO",
           "code": "RO038",
-          "price": 186485.0
+          "price": 333779.6
         },
         {
           "collection": "AVORIO E ORO",
           "code": "AO038",
-          "price": 186485.0
+          "price": 333779.6
         }
       ]
     },
@@ -1930,12 +1930,12 @@ const CATALOG_DATA = {
         {
           "collection": "ROSSO E ORO",
           "code": "RO039",
-          "price": 422069.0
+          "price": 706750.0
         },
         {
           "collection": "AVORIO E ORO",
           "code": "AO039",
-          "price": 422069.0
+          "price": 706750.0
         }
       ]
     },
@@ -1985,12 +1985,12 @@ const CATALOG_DATA = {
         {
           "collection": "ROSSO E ORO",
           "code": "RO040",
-          "price": 677248.0
+          "price": 775443.9
         },
         {
           "collection": "AVORIO E ORO",
           "code": "AO040",
-          "price": 677248.0
+          "price": 775443.9
         }
       ]
     },
@@ -2040,12 +2040,12 @@ const CATALOG_DATA = {
         {
           "collection": "ROSSO E ORO",
           "code": "RO041",
-          "price": 490763.0
+          "price": 608554.1
         },
         {
           "collection": "AVORIO E ORO",
           "code": "AO041",
-          "price": 490763.0
+          "price": 608554.1
         }
       ]
     },
@@ -2095,12 +2095,12 @@ const CATALOG_DATA = {
         {
           "collection": "ROSSO E ORO",
           "code": "RO042",
-          "price": 412271.0
+          "price": 628149.5
         },
         {
           "collection": "AVORIO E ORO",
           "code": "AO042",
-          "price": 412271.0
+          "price": 628149.5
         }
       ]
     },
@@ -2150,12 +2150,12 @@ const CATALOG_DATA = {
         {
           "collection": "ROSSO E ORO",
           "code": "RO109",
-          "price": 598756.0
+          "price": 844137.8
         },
         {
           "collection": "AVORIO E ORO",
           "code": "AO109",
-          "price": 598756.0
+          "price": 844137.8
         }
       ]
     },
@@ -2205,12 +2205,12 @@ const CATALOG_DATA = {
         {
           "collection": "ROSSO E ORO",
           "code": "RO044",
-          "price": 569363.0
+          "price": 814744.7
         },
         {
           "collection": "AVORIO E ORO",
           "code": "AO044",
-          "price": 569363.0
+          "price": 814744.7
         }
       ]
     },
@@ -2260,12 +2260,12 @@ const CATALOG_DATA = {
         {
           "collection": "ROSSO E ORO",
           "code": "RO045",
-          "price": 745942.0
+          "price": 1011027.6
         },
         {
           "collection": "AVORIO E ORO",
           "code": "AO045",
-          "price": 745942.0
+          "price": 1011027.6
         }
       ]
     },
@@ -2315,12 +2315,12 @@ const CATALOG_DATA = {
         {
           "collection": "ROSSO E ORO",
           "code": "RO046",
-          "price": 814744.0
+          "price": 1060125.0
         },
         {
           "collection": "AVORIO E ORO",
           "code": "AO046",
-          "price": 814744.0
+          "price": 1060125.0
         }
       ]
     },
@@ -2370,12 +2370,12 @@ const CATALOG_DATA = {
         {
           "collection": "ROSSO E ORO",
           "code": "RO047",
-          "price": 353375.0
+          "price": 569363.3
         },
         {
           "collection": "AVORIO E ORO",
           "code": "AO047",
-          "price": 353375.0
+          "price": 569363.3
         }
       ]
     },
@@ -2425,12 +2425,12 @@ const CATALOG_DATA = {
         {
           "collection": "ROSSO E ORO",
           "code": "RO048",
-          "price": 353375.0
+          "price": 431866.6
         },
         {
           "collection": "AVORIO E ORO",
           "code": "AO048",
-          "price": 353375.0
+          "price": 431866.6
         }
       ]
     },
@@ -2480,12 +2480,12 @@ const CATALOG_DATA = {
         {
           "collection": "ROSSO E ORO",
           "code": "RO049",
-          "price": 402473.0
+          "price": 490762.8
         },
         {
           "collection": "AVORIO E ORO",
           "code": "AO049",
-          "price": 402473.0
+          "price": 490762.8
         }
       ]
     },
@@ -2535,12 +2535,12 @@ const CATALOG_DATA = {
         {
           "collection": "ROSSO E ORO",
           "code": "RO050",
-          "price": 500560.0
+          "price": 579161.0
         },
         {
           "collection": "AVORIO E ORO",
           "code": "AO050",
-          "price": 500560.0
+          "price": 579161.0
         }
       ]
     },
@@ -2590,12 +2590,12 @@ const CATALOG_DATA = {
         {
           "collection": "ROSSO E ORO",
           "code": "RO051",
-          "price": 579161.0
+          "price": 696952.3
         },
         {
           "collection": "AVORIO E ORO",
           "code": "AO051",
-          "price": 579161.0
+          "price": 696952.3
         }
       ]
     },
@@ -2645,12 +2645,12 @@ const CATALOG_DATA = {
         {
           "collection": "ROSSO E ORO",
           "code": "RO052",
-          "price": 186485.0
+          "price": 422068.9
         },
         {
           "collection": "AVORIO E ORO",
           "code": "AO052",
-          "price": 186485.0
+          "price": 422068.9
         }
       ]
     },
@@ -2700,12 +2700,12 @@ const CATALOG_DATA = {
         {
           "collection": "ROSSO E ORO",
           "code": "RO053",
-          "price": 255179.0
+          "price": 431866.6
         },
         {
           "collection": "AVORIO E ORO",
           "code": "AO053",
-          "price": 255179.0
+          "price": 431866.6
         }
       ]
     },
@@ -2755,12 +2755,12 @@ const CATALOG_DATA = {
         {
           "collection": "ROSSO E ORO",
           "code": "RO054",
-          "price": 304277.0
+          "price": 530062.5
         },
         {
           "collection": "AVORIO E ORO",
           "code": "AO054",
-          "price": 304277.0
+          "price": 530062.5
         }
       ]
     },
@@ -2810,12 +2810,12 @@ const CATALOG_DATA = {
         {
           "collection": "ROSSO E ORO",
           "code": "RO055",
-          "price": 333779.0
+          "price": 559456.7
         },
         {
           "collection": "AVORIO E ORO",
           "code": "AO055",
-          "price": 333779.0
+          "price": 559456.7
         }
       ]
     },
@@ -2865,12 +2865,12 @@ const CATALOG_DATA = {
         {
           "collection": "ROSSO E ORO",
           "code": "RO056",
-          "price": 372971.0
+          "price": 628149.5
         },
         {
           "collection": "AVORIO E ORO",
           "code": "AO056",
-          "price": 372971.0
+          "price": 628149.5
         }
       ]
     },
@@ -2920,12 +2920,12 @@ const CATALOG_DATA = {
         {
           "collection": "ROSSO E ORO",
           "code": "RO057",
-          "price": 471167.0
+          "price": 716547.7
         },
         {
           "collection": "AVORIO E ORO",
           "code": "AO057",
-          "price": 471167.0
+          "price": 716547.7
         }
       ]
     },
@@ -2975,12 +2975,12 @@ const CATALOG_DATA = {
         {
           "collection": "ROSSO E ORO",
           "code": "RO058",
-          "price": 333779.0
+          "price": 549657.9
         },
         {
           "collection": "AVORIO E ORO",
           "code": "AO058",
-          "price": 333779.0
+          "price": 549657.9
         }
       ]
     },
@@ -3030,12 +3030,12 @@ const CATALOG_DATA = {
         {
           "collection": "ROSSO E ORO",
           "code": "RO059",
-          "price": 853935.0
+          "price": 1266206.7
         },
         {
           "collection": "AVORIO E ORO",
           "code": "AO059",
-          "price": 853935.0
+          "price": 1266206.7
         }
       ]
     },
@@ -3085,12 +3085,12 @@ const CATALOG_DATA = {
         {
           "collection": "ROSSO E ORO",
           "code": "RO060",
-          "price": 157092.0
+          "price": 284681.1
         },
         {
           "collection": "AVORIO E ORO",
           "code": "AO060",
-          "price": 157092.0
+          "price": 284681.1
         }
       ]
     },
@@ -3140,12 +3140,12 @@ const CATALOG_DATA = {
         {
           "collection": "ROSSO E ORO",
           "code": "RO061",
-          "price": 176688.0
+          "price": 304277.6
         },
         {
           "collection": "AVORIO E ORO",
           "code": "AO061",
-          "price": 176688.0
+          "price": 304277.6
         }
       ]
     },
@@ -3195,12 +3195,12 @@ const CATALOG_DATA = {
         {
           "collection": "ROSSO E ORO",
           "code": "RO062",
-          "price": 186485.0
+          "price": 323873.0
         },
         {
           "collection": "AVORIO E ORO",
           "code": "AO062",
-          "price": 186485.0
+          "price": 323873.0
         }
       ]
     },
@@ -3250,12 +3250,12 @@ const CATALOG_DATA = {
         {
           "collection": "ROSSO E ORO",
           "code": "RO063",
-          "price": 186485.0
+          "price": 323873.0
         },
         {
           "collection": "AVORIO E ORO",
           "code": "AO063",
-          "price": 186485.0
+          "price": 323873.0
         }
       ]
     },
@@ -3305,12 +3305,12 @@ const CATALOG_DATA = {
         {
           "collection": "ROSSO E ORO",
           "code": "RO064",
-          "price": 215988.0
+          "price": 372970.4
         },
         {
           "collection": "AVORIO E ORO",
           "code": "AO064",
-          "price": 215988.0
+          "price": 372970.4
         }
       ]
     },
@@ -3360,12 +3360,12 @@ const CATALOG_DATA = {
         {
           "collection": "ROSSO E ORO",
           "code": "RO065",
-          "price": 304277.0
+          "price": 490762.8
         },
         {
           "collection": "AVORIO E ORO",
           "code": "AO065",
-          "price": 304277.0
+          "price": 490762.8
         }
       ],
       "reuse_image_code": "049"
@@ -3416,12 +3416,12 @@ const CATALOG_DATA = {
         {
           "collection": "ROSSO E ORO",
           "code": "RO066",
-          "price": 186485.0
+          "price": 382768.1
         },
         {
           "collection": "AVORIO E ORO",
           "code": "AO066",
-          "price": 186485.0
+          "price": 382768.1
         }
       ]
     },
@@ -3471,12 +3471,12 @@ const CATALOG_DATA = {
         {
           "collection": "ROSSO E ORO",
           "code": "RO067",
-          "price": 215988.0
+          "price": 392675.8
         },
         {
           "collection": "AVORIO E ORO",
           "code": "AO067",
-          "price": 215988.0
+          "price": 392675.8
         }
       ]
     },
@@ -3526,12 +3526,12 @@ const CATALOG_DATA = {
         {
           "collection": "ROSSO E ORO",
           "code": "RO068",
-          "price": 264977.0
+          "price": 422068.9
         },
         {
           "collection": "AVORIO E ORO",
           "code": "AO068",
-          "price": 264977.0
+          "price": 422068.9
         }
       ]
     },
@@ -3581,12 +3581,12 @@ const CATALOG_DATA = {
         {
           "collection": "ROSSO E ORO",
           "code": "RO069",
-          "price": 274884.0
+          "price": 490762.8
         },
         {
           "collection": "AVORIO E ORO",
           "code": "AO069",
-          "price": 274884.0
+          "price": 490762.8
         }
       ]
     },
@@ -3636,12 +3636,12 @@ const CATALOG_DATA = {
         {
           "collection": "ROSSO E ORO",
           "code": "RO070",
-          "price": 294479.0
+          "price": 530062.5
         },
         {
           "collection": "AVORIO E ORO",
           "code": "AO070",
-          "price": 294479.0
+          "price": 530062.5
         }
       ]
     },
@@ -3691,12 +3691,12 @@ const CATALOG_DATA = {
         {
           "collection": "ROSSO E ORO",
           "code": "RO071",
-          "price": 392675.0
+          "price": 608554.1
         },
         {
           "collection": "AVORIO E ORO",
           "code": "AO071",
-          "price": 392675.0
+          "price": 608554.1
         }
       ]
     },
@@ -3746,12 +3746,12 @@ const CATALOG_DATA = {
         {
           "collection": "ROSSO E ORO",
           "code": "RO072",
-          "price": 314075.0
+          "price": 314075.3
         },
         {
           "collection": "AVORIO E ORO",
           "code": "AO072",
-          "price": 314075.0
+          "price": 314075.3
         }
       ]
     },
@@ -3801,12 +3801,12 @@ const CATALOG_DATA = {
         {
           "collection": "ROSSO E ORO",
           "code": "RO073",
-          "price": 2022055.0
+          "price": 2493221.5
         },
         {
           "collection": "AVORIO E ORO",
           "code": "AO073",
-          "price": 2022055.0
+          "price": 2493221.5
         }
       ]
     },
@@ -3856,12 +3856,12 @@ const CATALOG_DATA = {
         {
           "collection": "ROSSO E ORO",
           "code": "RO074",
-          "price": 1796269.0
+          "price": 1923858.2
         },
         {
           "collection": "AVORIO E ORO",
           "code": "AO074",
-          "price": 1796269.0
+          "price": 1923858.2
         }
       ]
     },
@@ -3911,12 +3911,12 @@ const CATALOG_DATA = {
         {
           "collection": "ROSSO E ORO",
           "code": "RO075",
-          "price": 353375.0
+          "price": 431866.6
         },
         {
           "collection": "AVORIO E ORO",
           "code": "AO075",
-          "price": 353375.0
+          "price": 431866.6
         }
       ]
     },
@@ -3966,12 +3966,12 @@ const CATALOG_DATA = {
         {
           "collection": "ROSSO E ORO",
           "code": "RO076",
-          "price": 392675.0
+          "price": 480965.1
         },
         {
           "collection": "AVORIO E ORO",
           "code": "AO076",
-          "price": 392675.0
+          "price": 480965.1
         }
       ]
     },
@@ -4021,12 +4021,12 @@ const CATALOG_DATA = {
         {
           "collection": "ROSSO E ORO",
           "code": "RO077",
-          "price": 412271.0
+          "price": 628149.5
         },
         {
           "collection": "AVORIO E ORO",
           "code": "AO077",
-          "price": 412271.0
+          "price": 628149.5
         }
       ]
     },
@@ -4076,12 +4076,12 @@ const CATALOG_DATA = {
         {
           "collection": "ROSSO E ORO",
           "code": "RO078",
-          "price": 372971.0
+          "price": 490762.8
         },
         {
           "collection": "AVORIO E ORO",
           "code": "AO078",
-          "price": 372971.0
+          "price": 490762.8
         }
       ]
     },
@@ -4131,12 +4131,12 @@ const CATALOG_DATA = {
         {
           "collection": "ROSSO E ORO",
           "code": "RO079",
-          "price": 294479.0
+          "price": 382768.1
         },
         {
           "collection": "AVORIO E ORO",
           "code": "AO079",
-          "price": 294479.0
+          "price": 382768.1
         }
       ]
     },
@@ -4186,12 +4186,12 @@ const CATALOG_DATA = {
         {
           "collection": "ROSSO E ORO",
           "code": "RO108",
-          "price": 294479.0
+          "price": 323873.0
         },
         {
           "collection": "AVORIO E ORO",
           "code": "AO108",
-          "price": 294479.0
+          "price": 323873.0
         }
       ]
     },
@@ -4241,12 +4241,12 @@ const CATALOG_DATA = {
         {
           "collection": "ROSSO E ORO",
           "code": "RO080",
-          "price": 215988.0
+          "price": 274883.4
         },
         {
           "collection": "AVORIO E ORO",
           "code": "AO080",
-          "price": 215988.0
+          "price": 274883.4
         }
       ]
     },
@@ -4296,12 +4296,12 @@ const CATALOG_DATA = {
         {
           "collection": "ROSSO E ORO",
           "code": "RO081",
-          "price": 333779.0
+          "price": 461368.6
         },
         {
           "collection": "AVORIO E ORO",
           "code": "AO081",
-          "price": 333779.0
+          "price": 461368.6
         }
       ]
     },
@@ -4351,12 +4351,12 @@ const CATALOG_DATA = {
         {
           "collection": "ROSSO E ORO",
           "code": "RO082",
-          "price": 490763.0
+          "price": 647854.9
         },
         {
           "collection": "AVORIO E ORO",
           "code": "AO082",
-          "price": 490763.0
+          "price": 647854.9
         }
       ]
     },
@@ -4406,12 +4406,12 @@ const CATALOG_DATA = {
         {
           "collection": "ROSSO E ORO",
           "code": "RO083",
-          "price": 530063.0
+          "price": 657652.6
         },
         {
           "collection": "AVORIO E ORO",
           "code": "AO083",
-          "price": 530063.0
+          "price": 657652.6
         }
       ]
     },
@@ -4461,12 +4461,12 @@ const CATALOG_DATA = {
         {
           "collection": "ROSSO E ORO",
           "code": "RO111",
-          "price": 264977.0
+          "price": 264976.8
         },
         {
           "collection": "AVORIO E ORO",
           "code": "AO111",
-          "price": 264977.0
+          "price": 264976.8
         }
       ]
     },
@@ -4516,12 +4516,12 @@ const CATALOG_DATA = {
         {
           "collection": "ROSSO E ORO",
           "code": "RO084",
-          "price": 284681.0
+          "price": 382768.1
         },
         {
           "collection": "AVORIO E ORO",
           "code": "AO084",
-          "price": 284681.0
+          "price": 382768.1
         }
       ]
     },
@@ -4571,12 +4571,12 @@ const CATALOG_DATA = {
         {
           "collection": "ROSSO E ORO",
           "code": "RO085",
-          "price": 363173.0
+          "price": 451570.9
         },
         {
           "collection": "AVORIO E ORO",
           "code": "AO085",
-          "price": 363173.0
+          "price": 451570.9
         }
       ]
     },
@@ -4626,12 +4626,12 @@ const CATALOG_DATA = {
         {
           "collection": "ROSSO E ORO",
           "code": "RO086",
-          "price": 382769.0
+          "price": 480965.1
         },
         {
           "collection": "AVORIO E ORO",
           "code": "AO086",
-          "price": 382769.0
+          "price": 480965.1
         }
       ]
     },
@@ -4681,12 +4681,12 @@ const CATALOG_DATA = {
         {
           "collection": "ROSSO E ORO",
           "code": "RO087",
-          "price": 372971.0
+          "price": 461368.6
         },
         {
           "collection": "AVORIO E ORO",
           "code": "AO087",
-          "price": 372971.0
+          "price": 461368.6
         }
       ]
     },
@@ -4736,12 +4736,12 @@ const CATALOG_DATA = {
         {
           "collection": "ROSSO E ORO",
           "code": "RO088",
-          "price": 363173.0
+          "price": 451570.9
         },
         {
           "collection": "AVORIO E ORO",
           "code": "AO088",
-          "price": 363173.0
+          "price": 451570.9
         }
       ]
     },
@@ -4791,12 +4791,12 @@ const CATALOG_DATA = {
         {
           "collection": "ROSSO E ORO",
           "code": "RO089",
-          "price": 353375.0
+          "price": 422068.9
         },
         {
           "collection": "AVORIO E ORO",
           "code": "AO089",
-          "price": 353375.0
+          "price": 422068.9
         }
       ]
     },
@@ -4846,12 +4846,12 @@ const CATALOG_DATA = {
         {
           "collection": "ROSSO E ORO",
           "code": "RO090",
-          "price": 677248.0
+          "price": 775443.9
         },
         {
           "collection": "AVORIO E ORO",
           "code": "AO090",
-          "price": 677248.0
+          "price": 775443.9
         }
       ]
     },
@@ -4901,12 +4901,12 @@ const CATALOG_DATA = {
         {
           "collection": "ROSSO E ORO",
           "code": "RO091",
-          "price": 795040.0
+          "price": 912831.7
         },
         {
           "collection": "AVORIO E ORO",
           "code": "AO091",
-          "price": 795040.0
+          "price": 912831.7
         }
       ]
     },
@@ -4956,12 +4956,12 @@ const CATALOG_DATA = {
         {
           "collection": "ROSSO E ORO",
           "code": "RO092",
-          "price": 795040.0
+          "price": 981524.5
         },
         {
           "collection": "AVORIO E ORO",
           "code": "AO092",
-          "price": 795040.0
+          "price": 981524.5
         }
       ]
     },
@@ -5011,12 +5011,12 @@ const CATALOG_DATA = {
         {
           "collection": "ROSSO E ORO",
           "code": "RO093",
-          "price": 942334.0
+          "price": 1089519.2
         },
         {
           "collection": "AVORIO E ORO",
           "code": "AO093",
-          "price": 942334.0
+          "price": 1089519.2
         }
       ]
     },
@@ -5066,12 +5066,12 @@ const CATALOG_DATA = {
         {
           "collection": "ROSSO E ORO",
           "code": "RO094",
-          "price": 402473.0
+          "price": 559456.7
         },
         {
           "collection": "AVORIO E ORO",
           "code": "AO094",
-          "price": 402473.0
+          "price": 559456.7
         }
       ]
     },
@@ -5121,12 +5121,12 @@ const CATALOG_DATA = {
         {
           "collection": "ROSSO E ORO",
           "code": "RO095",
-          "price": 471167.0
+          "price": 687045.7
         },
         {
           "collection": "AVORIO E ORO",
           "code": "AO095",
-          "price": 471167.0
+          "price": 687045.7
         }
       ]
     },
@@ -5176,12 +5176,12 @@ const CATALOG_DATA = {
         {
           "collection": "ROSSO E ORO",
           "code": "RO096",
-          "price": 785242.0
+          "price": 971726.8
         },
         {
           "collection": "AVORIO E ORO",
           "code": "AO096",
-          "price": 785242.0
+          "price": 971726.8
         }
       ]
     },
@@ -5231,12 +5231,12 @@ const CATALOG_DATA = {
         {
           "collection": "ROSSO E ORO",
           "code": "RO097",
-          "price": 314075.0
+          "price": 461368.6
         },
         {
           "collection": "AVORIO E ORO",
           "code": "AO097",
-          "price": 314075.0
+          "price": 461368.6
         }
       ]
     },
@@ -5286,12 +5286,12 @@ const CATALOG_DATA = {
         {
           "collection": "ROSSO E ORO",
           "code": "RO098",
-          "price": 451571.0
+          "price": 569363.3
         },
         {
           "collection": "AVORIO E ORO",
           "code": "AO098",
-          "price": 451571.0
+          "price": 569363.3
         }
       ]
     },
@@ -5341,12 +5341,12 @@ const CATALOG_DATA = {
         {
           "collection": "ROSSO E ORO",
           "code": "RO099",
-          "price": 225786.0
+          "price": 323873.0
         },
         {
           "collection": "AVORIO E ORO",
           "code": "AO099",
-          "price": 225786.0
+          "price": 323873.0
         }
       ]
     },
@@ -5396,12 +5396,12 @@ const CATALOG_DATA = {
         {
           "collection": "ROSSO E ORO",
           "code": "RO107",
-          "price": 1668680.0
+          "price": 2159441.9
         },
         {
           "collection": "AVORIO E ORO",
           "code": "AO107",
-          "price": 1668680.0
+          "price": 2159441.9
         }
       ]
     },
@@ -5451,12 +5451,12 @@ const CATALOG_DATA = {
         {
           "collection": "ROSSO E ORO",
           "code": "RO101",
-          "price": 569363.0
+          "price": 755848.5
         },
         {
           "collection": "AVORIO E ORO",
           "code": "AO101",
-          "price": 569363.0
+          "price": 755848.5
         }
       ]
     },
@@ -5506,12 +5506,12 @@ const CATALOG_DATA = {
         {
           "collection": "ROSSO E ORO",
           "code": "RO102",
-          "price": 618352.0
+          "price": 814744.7
         },
         {
           "collection": "AVORIO E ORO",
           "code": "AO102",
-          "price": 618352.0
+          "price": 814744.7
         }
       ]
     },
@@ -5561,12 +5561,12 @@ const CATALOG_DATA = {
         {
           "collection": "ROSSO E ORO",
           "code": "RO103",
-          "price": 716548.0
+          "price": 912831.7
         },
         {
           "collection": "AVORIO E ORO",
           "code": "AO103",
-          "price": 716548.0
+          "price": 912831.7
         }
       ]
     },
@@ -5616,12 +5616,12 @@ const CATALOG_DATA = {
         {
           "collection": "ROSSO E ORO",
           "code": "RO104",
-          "price": 1796269.0
+          "price": 2159441.9
         },
         {
           "collection": "AVORIO E ORO",
           "code": "AO104",
-          "price": 1796269.0
+          "price": 2159441.9
         }
       ]
     },
@@ -5671,12 +5671,12 @@ const CATALOG_DATA = {
         {
           "collection": "ROSSO E ORO",
           "code": "RO105",
-          "price": 2247840.0
+          "price": 2669909.0
         },
         {
           "collection": "AVORIO E ORO",
           "code": "AO105",
-          "price": 2247840.0
+          "price": 2669909.0
         }
       ]
     },
@@ -5726,12 +5726,12 @@ const CATALOG_DATA = {
         {
           "collection": "ROSSO E ORO",
           "code": "RO106",
-          "price": 2689505.0
+          "price": 3052678.2
         },
         {
           "collection": "AVORIO E ORO",
           "code": "AO106",
-          "price": 2689505.0
+          "price": 3052678.2
         }
       ]
     }
