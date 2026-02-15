@@ -1,7 +1,7 @@
 /**
  * IMOLARTE - Integración Google Sheets
  * Módulo para enviar pedidos a Google Sheets
- * Versión: 1.0
+ * Versión: 1.1 - CORS Habilitado
  */
 
 // ===== CONFIGURACIÓN =====
@@ -15,7 +15,7 @@ const DESCUENTO_PAGO_COMPLETO = 3; // 3%
 
 /**
  * Genera un ID temporal de pedido en formato IMO-YYYYMMDD-HHmmss
- * Nota: El ID real se genera en Google Sheets, este es solo para referencia
+ * Nota: El ID real se genera en Google Sheets, este es solo para fallback
  */
 function generarIdPedidoTemporal() {
     const ahora = new Date();
@@ -308,7 +308,7 @@ function enviarWhatsAppOriginal(datosPedido, pedidoId) {
     }
     
     const encodedMessage = encodeURIComponent(mensaje);
-    const whatsappURL = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodedMessage}`;
+    const whatsappURL = `https://wa.me/573004257367?text=${encodedMessage}`;
     window.open(whatsappURL, '_blank');
 }
 
