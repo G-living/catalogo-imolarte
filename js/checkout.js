@@ -479,16 +479,17 @@ function showTermsAndConditions() {
                 <ul>
                     <li><strong>Retiro en almacén:</strong> Sin costo adicional. Disponible 
                     de lunes a sábado en horario acordado.</li>
-                    <li><strong>Entrega a domicilio:</strong> Realizamos entregas en Bogotá 
-                    y municipios cercanos.</li>
+                    <li><strong>Entrega a domicilio:</strong> Realizamos entregas a domicilio 
+                    a todo el país.</li>
                 </ul>
                 <p>
                     <strong>Tiempos de producción e importación:</strong> Los productos tienen un 
                     proceso de fabricación en Italia de entre 100 y 120 días. Posteriormente, el 
                     proceso de importación toma alrededor de 30 días adicionales. Por lo tanto, el 
                     tiempo de entrega promedio es de aproximadamente 150 días calendario desde la 
-                    confirmación del pedido. Haremos todo lo objetivamente posible para reducir 
-                    estos tiempos cuando las condiciones lo permitan.
+                    confirmación del pedido y el cobro efectivo del anticipo del 60%. Haremos todo 
+                    lo objetivamente posible para reducir estos tiempos cuando las condiciones lo 
+                    permitan.
                 </p>
                 
                 <h2>6. Política de Devoluciones</h2>

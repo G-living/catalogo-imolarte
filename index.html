@@ -72,12 +72,21 @@
                                 <input type="text" class="form-input" id="lastName" required pattern="[A-Za-zÁÉÍÓÚáéíóúÑñ\s]+">
                                 <span class="error-message">Ingresa un apellido válido</span>
                             </div>
-                            <div class="form-group full-width">
-                                <label class="form-label required">Email</label>
-                                <input type="email" class="form-input" id="email" required>
-                                <span class="error-message">Ingresa un email válido</span>
+                            <div class="form-group">
+                                <label class="form-label required">Tipo de Documento</label>
+                                <select class="form-input" id="docType" required>
+                                    <option value="">Selecciona</option>
+                                    <option value="CC">CC - Cédula de Ciudadanía</option>
+                                    <option value="CE">CE - Cédula de Extranjería</option>
+                                </select>
+                                <span class="error-message">Selecciona un tipo</span>
                             </div>
-                            <div class="form-group full-width">
+                            <div class="form-group">
+                                <label class="form-label required">Número de Identificación</label>
+                                <input type="text" class="form-input" id="docNumber" required pattern="[0-9]+">
+                                <span class="error-message">Solo números</span>
+                            </div>
+                            <div class="form-group">
                                 <label class="form-label required">Fecha de Cumpleaños</label>
                                 <div class="birthday-group">
                                     <select class="form-input" id="birthdayDay" required>
@@ -88,6 +97,11 @@
                                     </select>
                                 </div>
                                 <span class="error-message">Selecciona día y mes</span>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label required">Email</label>
+                                <input type="email" class="form-input" id="email" required>
+                                <span class="error-message">Ingresa un email válido</span>
                             </div>
                             <div class="form-group full-width">
                                 <label class="form-label required">Celular / WhatsApp</label>
