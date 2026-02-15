@@ -385,10 +385,10 @@ function renderCartItems() {
                 <span>${formatPrice(total)}</span>
             </div>
             <div class="cart-summary-actions">
-                <button type="button" class="btn btn-whatsapp" onclick="openCheckoutModal()">
+                <button type="button" class="btn btn-whatsapp" onclick="openCheckoutModal('whatsapp')">
                     <span>📱</span> Enviar Pedido
                 </button>
-                <button type="button" class="btn btn-primary" onclick="openCheckoutModal()">
+                <button type="button" class="btn btn-primary" onclick="openCheckoutModal('wompi')">
                     <span>💳</span> Pagar Ahora
                 </button>
             </div>

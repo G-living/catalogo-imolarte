@@ -22,8 +22,9 @@ let checkoutData = {
 
 /**
  * Abre el modal de checkout
+ * @param {string} tipo - 'whatsapp' o 'wompi' para ocultar opciones
  */
-function openCheckoutModal() {
+function openCheckoutModal(tipo = null) {
     if (cart.length === 0) {
         alert('Tu carrito está vacío');
         return;
@@ -42,9 +43,18 @@ function openCheckoutModal() {
         if (typeof initGooglePlaces === 'function') {
             initGooglePlaces();
         }
+        
+        // Ocultar opciones según el botón clickeado
+        if (tipo === 'whatsapp') {
+            ocultarOpcionesWompi();
+        } else if (tipo === 'wompi') {
+            ocultarOpcionWhatsApp();
+        } else {
+            mostrarTodasLasOpciones();
+        }
     }, 300);
 
-    console.log('✅ Modal de checkout abierto');
+    console.log('✅ Modal de checkout abierto - tipo:', tipo);
 }
 
 /**
@@ -1005,41 +1015,23 @@ function mostrarTodasLasOpciones() {
 document.addEventListener('DOMContentLoaded', function() {
     // Actualizar montos cuando se abre el checkout
     const originalOpenCheckoutModal = openCheckoutModal;
-    window.openCheckoutModal = function() {
-        originalOpenCheckoutModal();
+    window.openCheckoutModal = function(tipo) {
+        originalOpenCheckoutModal(tipo);
         setTimeout(() => {
             actualizarMontosPago();
-            // Mostrar todas las opciones al abrir
-            mostrarTodasLasOpciones();
         }, 100);
     };
     
     // Botón Pagar Anticipo
     const btnAnticipo = document.getElementById('btnAnticipo');
     if (btnAnticipo) {
-        btnAnticipo.addEventListener('click', () => {
-            ocultarOpcionWhatsApp();
-            handlePagarAnticipo();
-        });
+        btnAnticipo.addEventListener('click', handlePagarAnticipo);
     }
     
     // Botón Pagar Completo
     const btnPagoCompleto = document.getElementById('btnPagoCompleto');
     if (btnPagoCompleto) {
-        btnPagoCompleto.addEventListener('click', () => {
-            ocultarOpcionWhatsApp();
-            handlePagarCompleto();
-        });
-    }
-    
-    // Botón WhatsApp - interceptar el submit del formulario
-    const form = document.getElementById('checkoutForm');
-    if (form) {
-        form.addEventListener('submit', (e) => {
-            e.preventDefault();
-            ocultarOpcionesWompi();
-            // El sendToWhatsApp se ejecuta por el submit
-        });
+        btnPagoCompleto.addEventListener('click', handlePagarCompleto);
     }
     
     console.log('✅ Nuevos botones de pago configurados');
