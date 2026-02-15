@@ -1,972 +1,802 @@
-// checkout.js - Gestión del checkout, validaciones, Wompi y WhatsApp
-// COMPLETO - Sin simplificaciones
-
-// ===== CONSTANTES =====
-const WOMPI_PUBLIC_KEY = 'pub_test_tXB8qjDFJayJhSoG8M0RGjdQj9O2GwuZ'; // Key de prueba
-const WHATSAPP_NUMBER = '573004257367';
+/**
+ * ================================================================
+ * IMOLARTE - CHECKOUT DEFINITIVO
+ * ================================================================
+ * Sistema completo de checkout con:
+ * - Flujos separados (Pago en línea vs WhatsApp)
+ * - Integración con Google Sheets
+ * - Gestión de timer de carrito
+ * - Validación completa
+ * Versión: 3.0 DEFINITIVA
+ * ================================================================
+ */
 
 // ===== VARIABLES GLOBALES =====
-let checkoutData = {
-    firstName: '',
-    lastName: '',
-    email: '',
-    phone: '',
-    delivery: 'pickup',
-    address: '',
-    neighborhood: '',
-    city: 'Bogotá',
-    notes: ''
-};
 
-// ===== FUNCIONES PRINCIPALES =====
+let checkoutModal = null;
+let currentPaymentMethod = 'online'; // 'online' o 'whatsapp'
+
+// ===== HTML DEL MODAL DE CHECKOUT =====
+
+const CHECKOUT_MODAL_HTML = `
+<div id="checkoutModal" class="modal">
+  <div class="modal-content checkout-modal-content">
+    <button class="modal-close" onclick="closeCheckoutModal()">×</button>
+    
+    <div class="checkout-container">
+      <h2>Finalizar Pedido</h2>
+      
+      <!-- PASO 1: ELEGIR MÉTODO DE PAGO -->
+      <div class="payment-method-selector">
+        <h3>¿Cómo deseas proceder?</h3>
+        
+        <div class="payment-options-grid">
+          <label class="payment-option-card">
+            <input type="radio" name="paymentMethod" value="online" checked>
+            <div class="option-content">
+              <div class="option-icon">💳</div>
+              <div class="option-text">
+                <strong>Pagar en línea</strong>
+                <small>Con tarjeta débito/crédito, PSE o Nequi</small>
+              </div>
+            </div>
+          </label>
+          
+          <label class="payment-option-card">
+            <input type="radio" name="paymentMethod" value="whatsapp">
+            <div class="option-content">
+              <div class="option-icon">💬</div>
+              <div class="option-text">
+                <strong>Coordinar por WhatsApp</strong>
+                <small>Confirma disponibilidad y forma de pago</small>
+              </div>
+            </div>
+          </label>
+        </div>
+      </div>
+      
+      <!-- FORMULARIO DE DATOS -->
+      <form id="checkoutForm" class="checkout-form">
+        <!-- Datos personales -->
+        <div class="form-section">
+          <h3>Datos Personales</h3>
+          
+          <div class="form-row">
+            <div class="form-group">
+              <label for="docType">Tipo de Documento *</label>
+              <select id="docType" required>
+                <option value="CC">Cédula de Ciudadanía</option>
+                <option value="CE">Cédula de Extranjería</option>
+                <option value="NIT">NIT</option>
+                <option value="PP">Pasaporte</option>
+              </select>
+            </div>
+            
+            <div class="form-group">
+              <label for="docNumber">Número de Documento *</label>
+              <input type="text" id="docNumber" required pattern="[0-9]+">
+            </div>
+          </div>
+          
+          <div class="form-row">
+            <div class="form-group">
+              <label for="firstName">Nombre *</label>
+              <input type="text" id="firstName" required>
+            </div>
+            
+            <div class="form-group">
+              <label for="lastName">Apellido *</label>
+              <input type="text" id="lastName" required>
+            </div>
+          </div>
+          
+          <div class="form-row">
+            <div class="form-group">
+              <label for="email">Email *</label>
+              <input type="email" id="email" required>
+            </div>
+            
+            <div class="form-group">
+              <label for="phone">Teléfono *</label>
+              <div class="phone-input">
+                <select id="countryCode">
+                  <option value="+57">🇨🇴 +57</option>
+                  <option value="+1">🇺🇸 +1</option>
+                  <option value="+34">🇪🇸 +34</option>
+                </select>
+                <input type="tel" id="phone" required pattern="[0-9]{10}">
+              </div>
+            </div>
+          </div>
+          
+          <div class="form-row">
+            <div class="form-group">
+              <label>Fecha de Cumpleaños *</label>
+              <div class="birthday-input">
+                <input type="number" id="birthdayDay" min="1" max="31" placeholder="Día" required>
+                <select id="birthdayMonth" required>
+                  <option value="">Mes</option>
+                  <option value="Enero">Enero</option>
+                  <option value="Febrero">Febrero</option>
+                  <option value="Marzo">Marzo</option>
+                  <option value="Abril">Abril</option>
+                  <option value="Mayo">Mayo</option>
+                  <option value="Junio">Junio</option>
+                  <option value="Julio">Julio</option>
+                  <option value="Agosto">Agosto</option>
+                  <option value="Septiembre">Septiembre</option>
+                  <option value="Octubre">Octubre</option>
+                  <option value="Noviembre">Noviembre</option>
+                  <option value="Diciembre">Diciembre</option>
+                </select>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Método de entrega -->
+        <div class="form-section">
+          <h3>Método de Entrega</h3>
+          
+          <div class="delivery-options">
+            <label class="delivery-option">
+              <input type="radio" name="delivery" value="home" checked>
+              <span>🏠 Entrega a domicilio</span>
+            </label>
+            
+            <label class="delivery-option">
+              <input type="radio" name="delivery" value="pickup">
+              <span>🏪 Retiro en almacén</span>
+            </label>
+          </div>
+          
+          <div id="deliveryFields" class="delivery-fields">
+            <div class="form-group">
+              <label for="address">Dirección *</label>
+              <input type="text" id="address" required>
+            </div>
+            
+            <div class="form-row">
+              <div class="form-group">
+                <label for="neighborhood">Barrio *</label>
+                <input type="text" id="neighborhood" required>
+              </div>
+              
+              <div class="form-group">
+                <label for="city">Ciudad *</label>
+                <input type="text" id="city" required>
+              </div>
+            </div>
+            
+            <div class="form-group">
+              <label for="notes">Notas de entrega (opcional)</label>
+              <textarea id="notes" rows="3"></textarea>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Términos y condiciones -->
+        <div class="form-section">
+          <label class="checkbox-label">
+            <input type="checkbox" id="termsAccepted" required>
+            <span>Acepto el tratamiento de datos personales (<a href="#" target="_blank">Ley 1581 de 2012</a>) *</span>
+          </label>
+          
+          <label class="checkbox-label">
+            <input type="checkbox" id="tcAccepted" required>
+            <span>Acepto los <a href="#" target="_blank">Términos y Condiciones</a> *</span>
+          </label>
+        </div>
+      </form>
+      
+      <!-- RESUMEN DEL PEDIDO -->
+      <div class="order-summary">
+        <h3>Resumen del Pedido</h3>
+        <div id="orderSummaryItems" class="summary-items"></div>
+        <div class="summary-totals">
+          <div class="summary-line">
+            <span>Subtotal:</span>
+            <span id="summarySubtotal">$0</span>
+          </div>
+          <div class="summary-line discount" id="summaryDiscountLine" style="display: none;">
+            <span>Descuento (3%):</span>
+            <span id="summaryDiscount">-$0</span>
+          </div>
+          <div class="summary-line total">
+            <span>Total:</span>
+            <span id="summaryTotal">$0</span>
+          </div>
+        </div>
+      </div>
+      
+      <!-- OPCIONES DE PAGO EN LÍNEA -->
+      <div id="onlinePaymentOptions" class="payment-options-section">
+        <h3>Opciones de Pago</h3>
+        
+        <div class="payment-choice">
+          <div class="payment-card">
+            <div class="payment-header">
+              <span class="payment-icon">💰</span>
+              <div>
+                <strong>Pagar Anticipo (60%)</strong>
+                <small>Paga el 60% ahora, el resto al recibir</small>
+              </div>
+            </div>
+            <div class="payment-amount" id="anticipoAmount">$0</div>
+            <button type="button" class="btn-payment btn-anticipo" onclick="handlePagarAnticipo()">
+              💳 Pagar Anticipo
+            </button>
+          </div>
+          
+          <div class="payment-card highlight">
+            <div class="badge-discount">Ahorra 3%</div>
+            <div class="payment-header">
+              <span class="payment-icon">✨</span>
+              <div>
+                <strong>Pago Completo Anticipado</strong>
+                <small>Paga todo ahora y obtén 3% de descuento</small>
+              </div>
+            </div>
+            <div class="payment-savings">
+              <span>Ahorras:</span>
+              <span id="savingsAmount">$0</span>
+            </div>
+            <div class="payment-amount" id="fullAmount">$0</div>
+            <button type="button" class="btn-payment btn-full" onclick="handlePagarCompleto()">
+              💎 Pagar 100% Ahora
+            </button>
+          </div>
+        </div>
+      </div>
+      
+      <!-- BOTÓN WHATSAPP -->
+      <div id="whatsappOption" class="whatsapp-section" style="display: none;">
+        <div class="whatsapp-card">
+          <div class="whatsapp-icon">📱</div>
+          <div class="whatsapp-text">
+            <h4>Enviar pedido por WhatsApp</h4>
+            <p>Te enviaremos el detalle completo de tu pedido para que confirmes disponibilidad y coordines la forma de pago.</p>
+          </div>
+          <button type="button" class="btn-whatsapp" onclick="handleEnviarWhatsApp()">
+            💬 Enviar Pedido
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+`;
+
+// ===== ABRIR/CERRAR MODAL =====
 
 /**
  * Abre el modal de checkout
  */
 function openCheckoutModal() {
-    if (cart.length === 0) {
-        alert('Tu carrito está vacío');
-        return;
-    }
-
-    // Actualizar resumen
-    updateCheckoutSummary();
-
-    // Mostrar modal
-    const modal = document.getElementById('checkoutModal');
-    modal.classList.add('active');
-    document.body.style.overflow = 'hidden';
-
-    // Inicializar Google Places después de un breve delay
-    setTimeout(() => {
-        if (typeof initGooglePlaces === 'function') {
-            initGooglePlaces();
-        }
-    }, 300);
-
-    console.log('✅ Modal de checkout abierto');
+  if (cart.length === 0) {
+    alert('El carrito está vacío');
+    return;
+  }
+  
+  // Crear modal si no existe
+  if (!document.getElementById('checkoutModal')) {
+    const modalContainer = document.createElement('div');
+    modalContainer.innerHTML = CHECKOUT_MODAL_HTML;
+    document.body.appendChild(modalContainer.firstElementChild);
+  }
+  
+  checkoutModal = document.getElementById('checkoutModal');
+  checkoutModal.style.display = 'block';
+  document.body.style.overflow = 'hidden';
+  
+  // Inicializar
+  initCheckoutListeners();
+  actualizarResumenPedido();
+  
+  console.log('✅ Modal de checkout abierto');
 }
 
 /**
  * Cierra el modal de checkout
  */
 function closeCheckoutModal() {
-    const modal = document.getElementById('checkoutModal');
-    modal.classList.remove('active');
-    document.body.style.overflow = '';
-    resetCheckoutForm();
+  if (checkoutModal) {
+    checkoutModal.style.display = 'none';
+    document.body.style.overflow = 'auto';
+  }
+}
+
+// ===== INICIALIZACIÓN DE LISTENERS =====
+
+/**
+ * Inicializa todos los event listeners del checkout
+ */
+function initCheckoutListeners() {
+  // Cambio de método de pago
+  document.querySelectorAll('input[name="paymentMethod"]').forEach(radio => {
+    radio.addEventListener('change', handlePaymentMethodChange);
+  });
+  
+  // Cambio de método de entrega
+  document.querySelectorAll('input[name="delivery"]').forEach(radio => {
+    radio.addEventListener('change', handleDeliveryMethodChange);
+  });
+  
+  // Trigger inicial
+  handlePaymentMethodChange({ target: { value: 'online' } });
+  handleDeliveryMethodChange({ target: { value: 'home' } });
 }
 
 /**
- * Actualiza el resumen del checkout
+ * Maneja cambio de método de pago
  */
-function updateCheckoutSummary() {
-    const subtotal = getCartTotal();
-    
-    document.getElementById('summarySubtotal').textContent = formatPrice(subtotal);
-    document.getElementById('summaryTotal').textContent = formatPrice(subtotal);
-    
-    // El envío se calcula según el método seleccionado
-    const deliveryMethod = document.querySelector('input[name="delivery"]:checked');
-    if (deliveryMethod && deliveryMethod.value === 'home') {
-        document.getElementById('summaryShipping').textContent = 'A calcular';
+function handlePaymentMethodChange(e) {
+  currentPaymentMethod = e.target.value;
+  
+  const onlineOptions = document.getElementById('onlinePaymentOptions');
+  const whatsappOption = document.getElementById('whatsappOption');
+  
+  if (currentPaymentMethod === 'online') {
+    onlineOptions.style.display = 'block';
+    whatsappOption.style.display = 'none';
+    actualizarResumenPedido(true); // Con descuento
+  } else {
+    onlineOptions.style.display = 'none';
+    whatsappOption.style.display = 'block';
+    actualizarResumenPedido(false); // Sin descuento
+  }
+}
+
+/**
+ * Maneja cambio de método de entrega
+ */
+function handleDeliveryMethodChange(e) {
+  const esDomicilio = e.target.value === 'home';
+  const deliveryFields = document.getElementById('deliveryFields');
+  
+  if (esDomicilio) {
+    deliveryFields.style.display = 'block';
+    document.getElementById('address').required = true;
+    document.getElementById('neighborhood').required = true;
+    document.getElementById('city').required = true;
+  } else {
+    deliveryFields.style.display = 'none';
+    document.getElementById('address').required = false;
+    document.getElementById('neighborhood').required = false;
+    document.getElementById('city').required = false;
+  }
+}
+
+// ===== ACTUALIZAR RESUMEN =====
+
+/**
+ * Actualiza el resumen del pedido
+ */
+function actualizarResumenPedido(mostrarDescuento = false) {
+  const subtotal = getCartTotal();
+  const descuento = mostrarDescuento ? Math.round(subtotal * 0.03) : 0;
+  const total = subtotal - descuento;
+  const anticipo = Math.round(total * 0.60);
+  
+  // Items
+  const itemsContainer = document.getElementById('orderSummaryItems');
+  if (itemsContainer) {
+    itemsContainer.innerHTML = cart.map(item => `
+      <div class="summary-item">
+        <span>${item.quantity}× ${item.description} (${item.collection})</span>
+        <span>${formatPrice(item.price * item.quantity)}</span>
+      </div>
+    `).join('');
+  }
+  
+  // Totales
+  const subtotalEl = document.getElementById('summarySubtotal');
+  const totalEl = document.getElementById('summaryTotal');
+  const discountLine = document.getElementById('summaryDiscountLine');
+  const discountEl = document.getElementById('summaryDiscount');
+  
+  if (subtotalEl) subtotalEl.textContent = formatPrice(subtotal);
+  if (totalEl) totalEl.textContent = formatPrice(total);
+  
+  if (discountLine && discountEl) {
+    if (mostrarDescuento && descuento > 0) {
+      discountEl.textContent = '-' + formatPrice(descuento);
+      discountLine.style.display = 'flex';
     } else {
-        document.getElementById('summaryShipping').textContent = '$0';
+      discountLine.style.display = 'none';
     }
+  }
+  
+  // Montos de pago
+  const anticipoEl = document.getElementById('anticipoAmount');
+  const fullEl = document.getElementById('fullAmount');
+  const savingsEl = document.getElementById('savingsAmount');
+  
+  if (anticipoEl) anticipoEl.textContent = formatPrice(anticipo);
+  if (fullEl) fullEl.textContent = formatPrice(total);
+  if (savingsEl) savingsEl.textContent = formatPrice(descuento);
+}
+
+// ===== VALIDACIÓN DE FORMULARIO =====
+
+/**
+ * Valida el formulario de checkout
+ */
+function validarFormulario() {
+  const form = document.getElementById('checkoutForm');
+  
+  if (!form.checkValidity()) {
+    form.reportValidity();
+    return false;
+  }
+  
+  // Validaciones adicionales
+  const termsAccepted = document.getElementById('termsAccepted').checked;
+  const tcAccepted = document.getElementById('tcAccepted').checked;
+  
+  if (!termsAccepted || !tcAccepted) {
+    alert('Debes aceptar los términos y condiciones');
+    return false;
+  }
+  
+  return true;
+}
+
+// ===== HANDLERS DE BOTONES =====
+
+/**
+ * Handler: Pagar anticipo 60%
+ */
+function handlePagarAnticipo() {
+  if (!validarFormulario()) return;
+  
+  console.log('💳 Pagar anticipo 60%');
+  
+  // TODO: Integrar Wompi
+  enviarPedidoConSheets('ANTICIPO_60');
 }
 
 /**
- * Resetea el formulario de checkout
+ * Handler: Pagar completo con descuento
  */
-function resetCheckoutForm() {
-    const form = document.getElementById('checkoutForm');
-    if (form) {
-        form.reset();
-    }
+function handlePagarCompleto() {
+  if (!validarFormulario()) return;
+  
+  console.log('💎 Pagar completo 100%');
+  
+  // TODO: Integrar Wompi
+  enviarPedidoConSheets('PAGO_100');
+}
+
+/**
+ * Handler: Enviar por WhatsApp
+ */
+function handleEnviarWhatsApp() {
+  if (!validarFormulario()) return;
+  
+  console.log('💬 Enviar por WhatsApp');
+  
+  enviarPedidoConSheets('WHATSAPP_ONLY');
+}
+
+// ===== INTEGRACIÓN CON GOOGLE SHEETS =====
+
+/**
+ * Envía pedido a Google Sheets y abre WhatsApp
+ */
+async function enviarPedidoConSheets(tipoPago) {
+  // Recopilar datos
+  const datosPedido = recopilarDatosPedido(tipoPago);
+  
+  // Mostrar loading
+  mostrarLoading('Registrando pedido...');
+  
+  try {
+    // Enviar a Sheets (función de google-sheets-integration.js)
+    const resultado = await enviarPedidoASheets(datosPedido);
     
-    checkoutData = {
-        firstName: '',
-        lastName: '',
-        email: '',
-        phone: '',
-        delivery: 'pickup',
-        address: '',
-        neighborhood: '',
-        city: 'Bogotá',
-        notes: ''
-    };
-
-    // Ocultar campos de dirección
-    const addressFields = document.getElementById('addressFields');
-    if (addressFields) {
-        addressFields.classList.remove('active');
-    }
-
-    // Limpiar errores
-    document.querySelectorAll('.form-input.error').forEach(input => {
-        input.classList.remove('error');
-    });
-}
-
-// ===== VALIDACIONES =====
-
-/**
- * Valida el formulario completo
- */
-function validateCheckoutForm() {
-    let isValid = true;
-    const errors = [];
-
-    // Limpiar errores previos
-    document.querySelectorAll('.form-input').forEach(input => {
-        input.classList.remove('error');
-    });
-
-    // Validar nombre
-    const firstName = document.getElementById('firstName');
-    if (!firstName.value.trim() || !/^[A-Za-zÁÉÍÓÚáéíóúÑñ\s]+$/.test(firstName.value)) {
-        firstName.classList.add('error');
-        errors.push('Nombre inválido');
-        isValid = false;
-    }
-
-    // Validar apellido
-    const lastName = document.getElementById('lastName');
-    if (!lastName.value.trim() || !/^[A-Za-zÁÉÍÓÚáéíóúÑñ\s]+$/.test(lastName.value)) {
-        lastName.classList.add('error');
-        errors.push('Apellido inválido');
-        isValid = false;
-    }
-
-    // Validar email
-    const email = document.getElementById('email');
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email.value)) {
-        email.classList.add('error');
-        errors.push('Email inválido');
-        isValid = false;
-    }
-
-    // Validar teléfono
-    const phone = document.getElementById('phone');
-    if (!/^[0-9]{10}$/.test(phone.value)) {
-        phone.classList.add('error');
-        errors.push('Teléfono debe tener 10 dígitos');
-        isValid = false;
-    }
-
-    // Validar método de entrega
-    const deliveryMethod = document.querySelector('input[name="delivery"]:checked');
-    if (!deliveryMethod) {
-        errors.push('Selecciona un método de entrega');
-        isValid = false;
-    }
-
-    // Si es entrega a domicilio, validar dirección
-    if (deliveryMethod && deliveryMethod.value === 'home') {
-        const address = document.getElementById('address');
-        const neighborhood = document.getElementById('neighborhood');
-        const city = document.getElementById('city');
-
-        if (!address.value.trim()) {
-            address.classList.add('error');
-            errors.push('Dirección requerida');
-            isValid = false;
-        }
-
-        if (!neighborhood.value.trim()) {
-            neighborhood.classList.add('error');
-            errors.push('Barrio requerido');
-            isValid = false;
-        }
-
-        if (!city.value.trim()) {
-            city.classList.add('error');
-            errors.push('Ciudad requerida');
-            isValid = false;
-        }
-    }
-
-    // Validar términos y condiciones
-    const termsAccept = document.getElementById('termsAccept');
-    if (!termsAccept.checked) {
-        errors.push('Debes aceptar los Términos y Condiciones');
-        isValid = false;
-    }
-
-    if (!isValid) {
-        alert('Por favor completa todos los campos correctamente:\n\n' + errors.join('\n'));
-    }
-
-    return isValid;
-}
-
-/**
- * Recopila los datos del formulario
- */
-function collectFormData() {
-    const countryCode = document.getElementById('countryCode').value;
-    const phone = document.getElementById('phone').value;
-    const deliveryMethod = document.querySelector('input[name="delivery"]:checked').value;
-
-    return {
-        firstName: document.getElementById('firstName').value.trim(),
-        lastName: document.getElementById('lastName').value.trim(),
-        email: document.getElementById('email').value.trim(),
-        phone: countryCode + phone,
-        delivery: deliveryMethod,
-        address: document.getElementById('address').value.trim(),
-        neighborhood: document.getElementById('neighborhood').value.trim(),
-        city: document.getElementById('city').value.trim(),
-        notes: document.getElementById('notes').value.trim()
-    };
-}
-
-// ===== WHATSAPP =====
-
-/**
- * Envía el pedido por WhatsApp
- */
-function sendToWhatsApp() {
-    if (!validateCheckoutForm()) {
-        return;
-    }
-
-    const formData = collectFormData();
-    const subtotal = getCartTotal();
-
-    let message = '🛒 *PEDIDO IMOLARTE*\n';
-    message += '━━━━━━━━━━━━━━━━━━━\n\n';
-
-    // Datos del cliente
-    message += '👤 *CLIENTE*\n';
-    message += `${formData.firstName} ${formData.lastName}\n`;
-    message += `📧 ${formData.email}\n`;
-    message += `📱 ${formData.phone}\n\n`;
-
-    // Método de entrega
-    if (formData.delivery === 'home') {
-        message += '🚚 *ENTREGA A DOMICILIO*\n';
-        message += `📍 ${formData.address}\n`;
-        message += `🏘️ ${formData.neighborhood}, ${formData.city}\n`;
-        if (formData.notes) {
-            message += `📝 ${formData.notes}\n`;
-        }
-    } else {
-        message += '🏪 *RETIRO EN ALMACÉN*\n';
-    }
-    message += '\n━━━━━━━━━━━━━━━━━━━\n\n';
-
-    // Productos
-    message += '📦 *PRODUCTOS*\n\n';
-    cart.forEach((item, index) => {
-        message += `${index + 1}. *${item.productName}*\n`;
-        message += `   ${item.collection} - ${item.code}\n`;
-        message += `   Cant: ${item.quantity} × ${formatPrice(item.price)}\n`;
-        message += `   💰 ${formatPrice(item.price * item.quantity)}\n\n`;
-    });
-
-    message += '━━━━━━━━━━━━━━━━━━━\n';
-    message += `💵 *TOTAL: ${formatPrice(subtotal)}*\n\n`;
-    message += '✅ Términos aceptados\n';
-    message += '👋 ¡Gracias por tu pedido!';
-
-    // Codificar y abrir WhatsApp
-    const encodedMessage = encodeURIComponent(message);
-    const whatsappURL = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodedMessage}`;
-
-    window.open(whatsappURL, '_blank');
-
-    // Limpiar carrito y cerrar después de enviar
-    setTimeout(() => {
-        cart = [];
-        saveCart();
-        updateCartBadge();
-        closeCheckoutModal();
-        closeCartPage();
-        alert('¡Pedido enviado! Te contactaremos pronto por WhatsApp.');
-    }, 1000);
-}
-
-// ===== WOMPI =====
-
-/**
- * Procesa el pago con Wompi
- */
-function processPayment() {
-    if (!validateCheckoutForm()) {
-        return;
-    }
-
-    const formData = collectFormData();
-    const subtotal = getCartTotal();
-    const amountInCents = Math.round(subtotal * 100);
-
-    // Configurar checkout de Wompi
-    const checkout = new WidgetCheckout({
-        currency: 'COP',
-        amountInCents: amountInCents,
-        reference: 'IMOLARTE-' + Date.now(),
-        publicKey: WOMPI_PUBLIC_KEY,
-        redirectUrl: window.location.href,
-        taxInCents: {
-            vat: 0,
-            consumption: 0
-        },
-        customerData: {
-            email: formData.email,
-            fullName: `${formData.firstName} ${formData.lastName}`,
-            phoneNumber: formData.phone,
-            phoneNumberPrefix: formData.phone.substring(0, 3),
-            legalId: '',
-            legalIdType: 'CC'
-        },
-        shippingAddress: formData.delivery === 'home' ? {
-            addressLine1: formData.address,
-            city: formData.city,
-            phoneNumber: formData.phone,
-            region: formData.neighborhood,
-            country: 'CO'
-        } : undefined
-    });
-
-    // Abrir widget de Wompi
-    checkout.open(function(result) {
-        const transaction = result.transaction;
-
-        if (transaction.status === 'APPROVED') {
-            // Pago exitoso - enviar confirmación por WhatsApp
-            sendPaymentConfirmationToWhatsApp(formData, transaction);
-
-            // Limpiar carrito
-            cart = [];
-            saveCart();
-            updateCartBadge();
-
-            // Cerrar modales
-            closeCheckoutModal();
-            closeCartPage();
-
-            // Mostrar mensaje de éxito
-            alert('¡Pago exitoso! Tu pedido ha sido procesado. Recibirás una confirmación por WhatsApp.');
-        } else if (transaction.status === 'DECLINED') {
-            alert('El pago fue rechazado. Por favor intenta con otro método de pago.');
-        } else if (transaction.status === 'ERROR') {
-            alert('Hubo un error procesando el pago. Por favor intenta nuevamente.');
+    if (resultado.success && resultado.pedidoId) {
+      console.log('✅ Pedido registrado:', resultado.pedidoId);
+      
+      // Enviar WhatsApp
+      enviarWhatsApp(datosPedido, resultado.pedidoId);
+      
+      // Notificación
+      mostrarNotificacion(`✅ Pedido ${resultado.pedidoId} registrado`);
+      
+      // Limpiar carrito y cerrar modal
+      setTimeout(() => {
+        if (typeof limpiarCarritoCompletamente === 'function') {
+          limpiarCarritoCompletamente();
         } else {
-            console.log('Estado de transacción:', transaction.status);
+          cart = [];
+          updateCartUI();
         }
-    });
-}
-
-/**
- * Envía confirmación de pago por WhatsApp
- */
-function sendPaymentConfirmationToWhatsApp(formData, transaction) {
-    const subtotal = getCartTotal();
-
-    let message = '✅ *PAGO CONFIRMADO - IMOLARTE*\n';
-    message += '━━━━━━━━━━━━━━━━━━━\n\n';
-
-    // Datos de la transacción
-    message += '💳 *PAGO*\n';
-    message += `ID: ${transaction.id}\n`;
-    message += `Estado: ${transaction.status}\n`;
-    message += `Método: ${transaction.payment_method_type || 'N/A'}\n\n`;
-
-    // Datos del cliente
-    message += '👤 *CLIENTE*\n';
-    message += `${formData.firstName} ${formData.lastName}\n`;
-    message += `📧 ${formData.email}\n`;
-    message += `📱 ${formData.phone}\n\n`;
-
-    // Entrega
-    if (formData.delivery === 'home') {
-        message += '🚚 *ENTREGA A DOMICILIO*\n';
-        message += `📍 ${formData.address}\n`;
-        message += `🏘️ ${formData.neighborhood}, ${formData.city}\n`;
-        if (formData.notes) {
-            message += `📝 ${formData.notes}\n`;
-        }
+        closeCheckoutModal();
+      }, 1500);
+      
     } else {
-        message += '🏪 *RETIRO EN ALMACÉN*\n';
+      // Fallback: ID temporal
+      console.warn('⚠️ Sin ID de Sheets, usando temporal');
+      const idTemporal = generarIdTemporal();
+      enviarWhatsApp(datosPedido, idTemporal);
+      mostrarNotificacion('⚠️ Pedido enviado - verificar Sheets');
+      
+      setTimeout(() => {
+        closeCheckoutModal();
+      }, 1500);
     }
-    message += '\n━━━━━━━━━━━━━━━━━━━\n\n';
-
-    // Productos
-    message += '📦 *PRODUCTOS*\n\n';
-    cart.forEach((item, index) => {
-        message += `${index + 1}. ${item.productName}\n`;
-        message += `   ${item.collection} - ${item.code}\n`;
-        message += `   Cant: ${item.quantity} × ${formatPrice(item.price)}\n`;
-        message += `   💰 ${formatPrice(item.price * item.quantity)}\n\n`;
-    });
-
-    message += '━━━━━━━━━━━━━━━━━━━\n';
-    message += `💵 *TOTAL PAGADO: ${formatPrice(subtotal)}*\n\n`;
-    message += '🎉 ¡Pedido confirmado y pagado!';
-
-    const encodedMessage = encodeURIComponent(message);
-    const whatsappURL = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodedMessage}`;
-    window.open(whatsappURL, '_blank');
-}
-
-// ===== TÉRMINOS Y CONDICIONES =====
-
-/**
- * Muestra los términos y condiciones en un popup modal
- */
-function showTermsAndConditions() {
-    // Crear modal
-    const modal = document.createElement('div');
-    modal.className = 'terms-modal';
-    modal.innerHTML = `
-        <div class="terms-content">
-            <button class="terms-close" onclick="closeTermsModal()">×</button>
-            <div class="terms-body">
-                <h1>Términos y Condiciones</h1>
-                
-                <h2>1. Aceptación de Términos</h2>
-                <p>
-                    Al realizar un pedido en IMOLARTE by Helena Caballero, el cliente acepta 
-                    estos términos y condiciones en su totalidad. Si no está de acuerdo con 
-                    alguna parte de estos términos, por favor no realice su pedido.
-                </p>
-                
-                <h2>2. Productos</h2>
-                <p>
-                    Todos los productos ofrecidos son cerámicas artesanales importadas de Italia. 
-                    Cada pieza es única y puede presentar pequeñas variaciones en color, textura 
-                    y acabado respecto a las fotografías mostradas en el catálogo.
-                </p>
-                <p>
-                    Los colores de los productos pueden variar ligeramente de las fotografías 
-                    debido a las configuraciones de pantalla de cada dispositivo.
-                </p>
-                
-                <h2>3. Precios</h2>
-                <p>
-                    Todos los precios están expresados en pesos colombianos (COP) e incluyen 
-                    el IVA correspondiente. Los precios están sujetos a cambios sin previo aviso.
-                </p>
-                <p>
-                    Los costos de envío a domicilio se calculan según la ubicación del cliente 
-                    y se informan antes de confirmar la compra.
-                </p>
-                
-                <h2>4. Entregas</h2>
-                <p>
-                    Ofrecemos dos modalidades de entrega:
-                </p>
-                <ul>
-                    <li><strong>Retiro en almacén:</strong> Sin costo adicional. Disponible 
-                    de lunes a sábado en horario acordado.</li>
-                    <li><strong>Entrega a domicilio:</strong> Realizamos entregas a domicilio 
-                    a todo el país.</li>
-                </ul>
-                <p>
-                    <strong>Tiempos de producción e importación:</strong> Los productos tienen un 
-                    proceso de fabricación en Italia de entre 100 y 120 días. Posteriormente, el 
-                    proceso de importación toma alrededor de 30 días adicionales. Por lo tanto, el 
-                    tiempo de entrega promedio es de aproximadamente 150 días calendario desde la 
-                    confirmación del pedido y el cobro efectivo del anticipo del 60%. Haremos todo 
-                    lo objetivamente posible para reducir estos tiempos cuando las condiciones lo 
-                    permitan.
-                </p>
-                
-                <h2>5. Forma de Pago</h2>
-                <p>
-                    Aceptamos las siguientes formas de pago:
-                </p>
-                <ul>
-                    <li><strong>Pago anticipado del 60%:</strong> Como anticipo para confirmar el pedido</li>
-                    <li><strong>Pago anticipado del 100%:</strong> Con descuento del 3% sobre el valor total</li>
-                    <li><strong>Pago coordinado:</strong> Envía tu solicitud por WhatsApp y coordinamos 
-                    la forma de pago que mejor se ajuste a tus necesidades</li>
-                </ul>
-                <p>
-                    <strong>Costos de transporte:</strong> Los costos de transporte hasta el domicilio de 
-                    entrega acordado se cobran por adelantado e incluyen seguro de la mercancía. Nos apoyamos 
-                    en empresas especializadas en el manejo de objetos de valor. Una vez confirmado el pago 
-                    efectivo del transporte, se informarán los tiempos estimados de entrega y la guía de 
-                    seguimiento del envío.
-                </p>
-                
-                <h2>6. Política de Devoluciones</h2>
-                <p>
-                    Aceptamos devoluciones dentro de los 15 días calendario posteriores a la 
-                    recepción del producto, siempre y cuando:
-                </p>
-                <ul>
-                    <li>El producto presente defectos de fabricación</li>
-                    <li>El producto esté en su empaque original</li>
-                    <li>No presente señales de uso</li>
-                </ul>
-                <p>
-                    No se aceptan devoluciones por cambio de opinión una vez retirado o 
-                    recibido el producto.
-                </p>
-                <p>
-                    <strong>Las devoluciones se hacen y reciben únicamente de forma presencial 
-                    en nuestro almacén.</strong>
-                </p>
-                
-                <h2>7. Garantía</h2>
-                <p>
-                    Todos nuestros productos cuentan con <strong>garantía de 1 año</strong> contra 
-                    defectos de fabricación. La garantía no cubre daños causados por:
-                </p>
-                <ul>
-                    <li>Uso inadecuado del producto</li>
-                    <li>Caídas o golpes</li>
-                    <li>Exposición a temperaturas extremas no recomendadas</li>
-                </ul>
-                
-                <h2>7. Cuidado de los Productos</h2>
-                <p>
-                    Las cerámicas artesanales requieren cuidados especiales:
-                </p>
-                <ul>
-                    <li>Lavar a mano con agua tibia y jabón suave</li>
-                    <li>Evitar cambios bruscos de temperatura</li>
-                    <li>No usar en microondas a menos que se especifique lo contrario</li>
-                    <li>Secar completamente después del lavado</li>
-                </ul>
-                
-                <h2>8. Privacidad y Protección de Datos</h2>
-                <p>
-                    El tratamiento de datos personales se realizará conforme a la normatividad 
-                    colombiana vigente: Ley Estatutaria 1581 de 2012, Decreto 1377 de 2013, 
-                    Decreto 1074 de 2015 y las circulares de la Superintendencia de Industria 
-                    y Comercio (SIC) correspondientes.
-                </p>
-                <p>
-                    La información personal proporcionada durante el proceso de compra será 
-                    utilizada únicamente para:
-                </p>
-                <ul>
-                    <li>Procesar y entregar su pedido</li>
-                    <li>Enviar confirmaciones y actualizaciones</li>
-                    <li>Mejorar nuestro servicio</li>
-                </ul>
-                <p>
-                    No compartimos información personal con terceros, excepto cuando sea 
-                    necesario para completar la transacción (procesadores de pago, empresas 
-                    de mensajería).
-                </p>
-                
-                <h2>9. Veracidad de Datos</h2>
-                <p>
-                    El Cliente declara y garantiza que toda la información proporcionada durante 
-                    el proceso de registro, compra o cualquier interacción con el sitio web o la 
-                    plataforma es veraz, completa, exacta, actualizada y corresponde a su realidad. 
-                    El CLIENTE asume plena responsabilidad por la veracidad, calidad y exactitud de 
-                    los datos suministrados, incluyendo pero no limitado a datos personales, de 
-                    contacto, de pago y de entrega. Helena Caballero SAS presume de buena fe la 
-                    veracidad de dicha información y no está obligada a verificarla de manera 
-                    independiente, sin perjuicio de las acciones que pueda tomar en caso de 
-                    detección de inconsistencias o falsedad. Cualquier consecuencia derivada de 
-                    la inexactitud, falsedad o incompletitud de los datos proporcionados por el 
-                    Cliente será de su exclusiva responsabilidad, incluyendo la imposibilidad de 
-                    entrega, devoluciones no procedentes, rechazos de pago o cualquier perjuicio 
-                    económico o legal. El Cliente se compromete a actualizar inmediatamente sus 
-                    datos en caso de cambios, y autoriza a Helena Caballero SAS a utilizarlos 
-                    conforme a la Política de Tratamiento de Datos Personales publicada en el sitio.
-                </p>
-                
-                <h2>10. Contacto</h2>
-                <p>
-                    Para consultas, reclamos o sugerencias, puede contactarnos a través de:
-                </p>
-                <ul>
-                    <li>WhatsApp: +57 300 425 7367</li>
-                    <li>Email: administracion@helenacaballero.com</li>
-                </ul>
-                
-                <div class="terms-footer">
-                    <p><strong>Última actualización:</strong> Febrero 2026</p>
-                    <p><strong>IMOLARTE by Helena Caballero SAS</strong></p>
-                    <p>Cerámicas Artesanales Importadas de Italia</p>
-                </div>
-            </div>
-        </div>
-    `;
     
-    document.body.appendChild(modal);
-    document.body.style.overflow = 'hidden';
+  } catch (error) {
+    console.error('❌ Error:', error);
+    
+    const idTemporal = generarIdTemporal();
+    enviarWhatsApp(datosPedido, idTemporal);
+    mostrarNotificacion('⚠️ Error - pedido enviado por WhatsApp');
+    
+    setTimeout(() => {
+      closeCheckoutModal();
+    }, 1500);
+  } finally {
+    ocultarLoading();
+  }
 }
 
 /**
- * Cierra el modal de términos y condiciones
+ * Recopila datos del formulario
  */
-function closeTermsModal() {
-    const modal = document.querySelector('.terms-modal');
-    if (modal) {
-        document.body.removeChild(modal);
-        document.body.style.overflow = '';
-    }
-}
-
-// ===== CESIÓN DE CARTERA =====
-
-/**
- * Muestra la autorización de cesión de cartera en un popup modal
- */
-function showCesionModal() {
-    // Crear modal
-    const modal = document.createElement('div');
-    modal.className = 'cesion-modal';
-    modal.innerHTML = `
-        <div class="cesion-content">
-            <button class="cesion-close" onclick="closeCesionModal()">×</button>
-            <div class="cesion-body">
-                <h1>Autorización de Cesión de Cartera</h1>
-                
-                <p>
-                    El Cliente autoriza expresamente a Helena Caballero SAS a ceder, endosar, transferir 
-                    o negociar la totalidad o parte de la obligación derivada de la presente compra 
-                    (incluyendo el saldo pendiente, intereses, costos de cobranza y demás accesorios) 
-                    a terceros (entidades de cobranza, abogados, fondos de inversión en cartera, empresas 
-                    especializadas en recaudo o cualquier otro cesionario), en caso de mora, incumplimiento 
-                    o cuando así lo considere necesario para la recuperación de la deuda.
-                </p>
-                
-                <p>
-                    Asimismo, autoriza expresamente el tratamiento, consulta, reporte y circulación de 
-                    sus datos personales (incluyendo identificación, información financiera, hábitos de 
-                    pago, monto adeudado y situación de mora) por parte de Helena Caballero SAS y de los 
-                    terceros cesionarios o encargados de cobranza, exclusivamente para fines de gestión 
-                    de cobro, reporte a centrales de riesgo (si aplica Ley 1266/2008) y ejecución de la 
-                    obligación.
-                </p>
-                
-                <p>
-                    Esta autorización se otorga de manera libre, previa, expresa e informada, conforme 
-                    a la Ley 1581 de 2012 y sus decretos reglamentarios, y podrá ser revocada por el 
-                    Cliente mediante comunicación escrita a administracion@helenacaballero.com, sin 
-                    perjuicio de las obligaciones ya vencidas ni de los efectos de la cesión ya realizada.
-                </p>
-                
-                <p>
-                    <strong>El CLIENTE declara conocer que la cesión no lo libera de la obligación de 
-                    pago, la cual podrá ser exigida directamente por el cesionario.</strong>
-                </p>
-                
-                <div class="cesion-footer">
-                    <p><strong>Última actualización:</strong> Febrero 2026</p>
-                    <p><strong>IMOLARTE by Helena Caballero SAS</strong></p>
-                </div>
-            </div>
-        </div>
-    `;
-    
-    document.body.appendChild(modal);
-    document.body.style.overflow = 'hidden';
-}
-
-/**
- * Cierra el modal de cesión de cartera
- */
-function closeCesionModal() {
-    const modal = document.querySelector('.cesion-modal');
-    if (modal) {
-        document.body.removeChild(modal);
-        document.body.style.overflow = '';
-    }
-}
-
-// ===== CUMPLEAÑOS =====
-
-/**
- * Inicializa los selectores de día y mes de cumpleaños
- */
-function initBirthdaySelectors() {
-    const daySelect = document.getElementById('birthdayDay');
-    const monthSelect = document.getElementById('birthdayMonth');
-    
-    if (!daySelect || !monthSelect) return;
-    
-    // Llenar días (1-31)
-    for (let i = 1; i <= 31; i++) {
-        const option = document.createElement('option');
-        option.value = i;
-        option.textContent = i;
-        daySelect.appendChild(option);
-    }
-    
-    // Llenar meses
-    const months = [
-        'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
-        'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
-    ];
-    
-    months.forEach((month, index) => {
-        const option = document.createElement('option');
-        option.value = index + 1;
-        option.textContent = month;
-        monthSelect.appendChild(option);
-    });
-}
-
-// ===== EVENT LISTENERS =====
-
-document.addEventListener('DOMContentLoaded', function() {
-    // Botón cerrar checkout
-    const closeCheckoutBtn = document.getElementById('closeCheckout');
-    if (closeCheckoutBtn) {
-        closeCheckoutBtn.addEventListener('click', closeCheckoutModal);
-    }
-
-    // Formulario de checkout
-    const checkoutForm = document.getElementById('checkoutForm');
-    if (checkoutForm) {
-        checkoutForm.addEventListener('submit', function(e) {
-            e.preventDefault();
-            sendToWhatsApp();
-        });
-    }
-
-    // Botón de pago
-    const payButton = document.getElementById('payButton');
-    if (payButton) {
-        payButton.addEventListener('click', processPayment);
-    }
-
-    // Opciones de entrega
-    const deliveryOptions = document.querySelectorAll('.delivery-option');
-    deliveryOptions.forEach(option => {
-        option.addEventListener('click', function() {
-            const deliveryType = this.dataset.delivery;
-            const radio = this.querySelector('input[type="radio"]');
-            
-            if (radio) {
-                radio.checked = true;
-                
-                // Actualizar estilos
-                deliveryOptions.forEach(opt => opt.classList.remove('selected'));
-                this.classList.add('selected');
-                
-                // Mostrar/ocultar campos de dirección
-                const addressFields = document.getElementById('addressFields');
-                if (deliveryType === 'home') {
-                    addressFields.classList.add('active');
-                    addressFields.querySelectorAll('input, textarea').forEach(field => {
-                        if (field.id !== 'notes') {
-                            field.required = true;
-                        }
-                    });
-                    document.getElementById('summaryShipping').textContent = 'A calcular';
-                } else {
-                    addressFields.classList.remove('active');
-                    addressFields.querySelectorAll('input, textarea').forEach(field => {
-                        field.required = false;
-                    });
-                    document.getElementById('summaryShipping').textContent = '$0';
-                }
-                
-                updateCheckoutSummary();
-            }
-        });
-    });
-
-    // Link de términos y condiciones
-    const showTermsLink = document.getElementById('showTerms');
-    if (showTermsLink) {
-        showTermsLink.addEventListener('click', function(e) {
-            e.preventDefault();
-            showTermsAndConditions();
-        });
-    }
-
-    // Link de cesión de cartera
-    const showCesionLink = document.getElementById('showCesion');
-    if (showCesionLink) {
-        showCesionLink.addEventListener('click', function(e) {
-            e.preventDefault();
-            showCesionModal();
-        });
-    }
-
-    // Inicializar selectores de cumpleaños
-    initBirthdaySelectors();
-
-    // Remover clase de error al escribir
-    document.querySelectorAll('.form-input').forEach(input => {
-        input.addEventListener('input', function() {
-            this.classList.remove('error');
-        });
-    });
-
-    // Cerrar checkout con ESC
-    document.addEventListener('keydown', function(e) {
-        if (e.key === 'Escape') {
-            const checkoutModal = document.getElementById('checkoutModal');
-            if (checkoutModal && checkoutModal.classList.contains('active')) {
-                closeCheckoutModal();
-            }
-        }
-    });
-
-    console.log('✅ checkout.js inicializado');
-});
-// ===== INTEGRACIÓN GOOGLE SHEETS Y NUEVOS BOTONES =====
-// AGREGAR AL FINAL DE checkout.js (antes del último console.log)
-
-/**
- * Actualiza los montos mostrados en las opciones de pago
- */
-function actualizarMontosPago() {
-    const subtotal = getCartTotal();
-    
-    // Calcular anticipo (60%)
-    const anticipo = Math.round(subtotal * 0.6);
-    
-    // Calcular descuento (3% del total)
-    const descuento = Math.round(subtotal * 0.03);
-    
-    // Calcular total con descuento
-    const totalConDescuento = subtotal - descuento;
-    
-    // Actualizar UI - Anticipo
-    const anticipoElement = document.querySelector('#anticipoAmount .amount-value');
-    if (anticipoElement) {
-        anticipoElement.textContent = formatPrice(anticipo);
-    }
-    
-    // Actualizar UI - Ahorro
-    const savingsElement = document.querySelector('#savingsAmount .savings-value');
-    if (savingsElement) {
-        savingsElement.textContent = formatPrice(descuento);
-    }
-    
-    // Actualizar UI - Total con descuento
-    const completeElement = document.querySelector('#completeAmount .amount-value');
-    if (completeElement) {
-        completeElement.textContent = formatPrice(totalConDescuento);
-    }
+function recopilarDatosPedido(tipoPago) {
+  const tipoDoc = document.getElementById('docType').value;
+  const numDoc = document.getElementById('docNumber').value;
+  const nombre = document.getElementById('firstName').value;
+  const apellido = document.getElementById('lastName').value;
+  const email = document.getElementById('email').value;
+  const codigoPais = document.getElementById('countryCode').value;
+  const telefono = document.getElementById('phone').value;
+  const cumpleDia = document.getElementById('birthdayDay').value;
+  const cumpleMes = document.getElementById('birthdayMonth').value;
+  
+  const metodoEntrega = document.querySelector('input[name="delivery"]:checked').value;
+  const esDomicilio = metodoEntrega === 'home';
+  
+  const direccion = esDomicilio ? document.getElementById('address').value : '';
+  const barrio = esDomicilio ? document.getElementById('neighborhood').value : '';
+  const ciudad = esDomicilio ? document.getElementById('city').value : '';
+  const notasEntrega = esDomicilio ? (document.getElementById('notes').value || '') : '';
+  
+  const subtotal = getCartTotal();
+  let descuentoPorcentaje = 0;
+  let descuentoMonto = 0;
+  let totalFinal = subtotal;
+  
+  if (tipoPago === 'PAGO_100') {
+    descuentoPorcentaje = 3;
+    descuentoMonto = Math.round(subtotal * 0.03);
+    totalFinal = subtotal - descuentoMonto;
+  }
+  
+  const items = cart.map(item => ({
+    producto: item.description,
+    coleccion: item.collection,
+    codigo: item.code,
+    cantidad: item.quantity,
+    precio: item.price,
+    subtotal: item.price * item.quantity
+  }));
+  
+  return {
+    cliente: {
+      tipoDocumento: tipoDoc,
+      numeroDocumento: numDoc,
+      nombre: nombre,
+      apellido: apellido,
+      email: email,
+      codigoPais: codigoPais,
+      telefono: telefono,
+      cumpleDia: parseInt(cumpleDia),
+      cumpleMes: cumpleMes,
+      direccion: direccion,
+      barrio: barrio,
+      ciudad: ciudad,
+      notasDireccion: notasEntrega
+    },
+    items: items,
+    subtotal: subtotal,
+    descuentoPorcentaje: descuentoPorcentaje,
+    descuentoMonto: descuentoMonto,
+    totalFinal: totalFinal,
+    metodoEntrega: esDomicilio ? 'DOMICILIO' : 'RETIRO',
+    notasEntrega: notasEntrega,
+    tipoPago: tipoPago,
+    notasInternas: `Método: ${currentPaymentMethod === 'online' ? 'Pago en línea' : 'WhatsApp'}`
+  };
 }
 
 /**
- * Maneja el click en "Pagar Anticipo"
+ * Genera mensaje de WhatsApp
  */
-async function handlePagarAnticipo() {
-    const checkoutForm = document.getElementById('checkoutForm');
-    
-    // Validar formulario
-    if (!checkoutForm.checkValidity()) {
-        checkoutForm.reportValidity();
-        return;
+function enviarWhatsApp(datosPedido, pedidoId) {
+  const { cliente, items, subtotal, descuentoMonto, totalFinal, metodoEntrega, tipoPago } = datosPedido;
+  
+  let mensaje = '🛒 *NUEVO PEDIDO - IMOLARTE*\n\n';
+  mensaje += `🆔 *ID Pedido:* ${pedidoId}\n`;
+  mensaje += `📅 Fecha: ${new Date().toLocaleDateString('es-CO')}\n\n`;
+  
+  mensaje += '👤 *CLIENTE*\n';
+  mensaje += `📝 ${cliente.tipoDocumento}: ${cliente.numeroDocumento}\n`;
+  mensaje += `Nombre: ${cliente.nombre} ${cliente.apellido}\n`;
+  mensaje += `📧 ${cliente.email}\n`;
+  mensaje += `📱 ${cliente.codigoPais}${cliente.telefono}\n`;
+  mensaje += `🎂 ${cliente.cumpleDia} de ${cliente.cumpleMes}\n\n`;
+  
+  mensaje += '📦 *PRODUCTOS*\n';
+  mensaje += '━━━━━━━━━━━━━━━━━━\n';
+  
+  items.forEach((item, i) => {
+    mensaje += `${i + 1}. ${item.producto}\n`;
+    mensaje += `   ${item.coleccion} - ${item.codigo}\n`;
+    mensaje += `   ${item.cantidad} × ${formatPrice(item.precio)}\n`;
+    mensaje += `   💰 ${formatPrice(item.subtotal)}\n\n`;
+  });
+  
+  mensaje += '━━━━━━━━━━━━━━━━━━\n';
+  mensaje += `💵 Subtotal: ${formatPrice(subtotal)}\n`;
+  
+  if (descuentoMonto > 0) {
+    mensaje += `🎉 Descuento (3%): -${formatPrice(descuentoMonto)}\n`;
+  }
+  
+  mensaje += `💰 *TOTAL: ${formatPrice(totalFinal)}*\n\n`;
+  
+  if (tipoPago === 'PAGO_100') {
+    mensaje += `✨ *PAGO COMPLETO*\n`;
+    mensaje += `Con descuento del 3%\n`;
+    mensaje += `A pagar: ${formatPrice(totalFinal)}\n\n`;
+  } else if (tipoPago === 'ANTICIPO_60') {
+    const anticipo = Math.round(totalFinal * 0.60);
+    const saldo = totalFinal - anticipo;
+    mensaje += `📊 *ANTICIPO (60%)*: ${formatPrice(anticipo)}\n`;
+    mensaje += `Saldo (40%): ${formatPrice(saldo)}\n`;
+    mensaje += `💡 Saldo al recibir\n\n`;
+  } else {
+    mensaje += `💬 *SOLICITUD DE PEDIDO*\n`;
+    mensaje += `Confirmar disponibilidad y coordinar forma de pago\n\n`;
+  }
+  
+  mensaje += `🚚 *ENTREGA*\n`;
+  if (metodoEntrega === 'DOMICILIO') {
+    mensaje += `🏠 ${cliente.direccion}\n`;
+    mensaje += `   ${cliente.barrio}, ${cliente.ciudad}\n`;
+    if (cliente.notasDireccion) {
+      mensaje += `📝 ${cliente.notasDireccion}\n`;
     }
-    
-    // Verificar checkboxes
-    if (!document.getElementById('termsAccept').checked) {
-        alert('Debes aceptar los Términos y Condiciones');
-        return;
-    }
-    
-    if (!document.getElementById('cesionAccept').checked) {
-        alert('Debes autorizar la Cesión de Cartera');
-        return;
-    }
-    
-    // Usar la función de integración con Sheets
-    if (typeof window.enviarPedidoConSheets === 'function') {
-        await window.enviarPedidoConSheets('ANTICIPO_60');
-    } else {
-        console.error('Módulo de Google Sheets no cargado');
-        alert('Error: Módulo de integración no disponible');
-    }
+  } else {
+    mensaje += `🏪 Retiro en almacén\n`;
+  }
+  
+  const url = `https://wa.me/573004257367?text=${encodeURIComponent(mensaje)}`;
+  window.open(url, '_blank');
 }
 
 /**
- * Maneja el click en "Pagar 100% Ahora"
+ * Genera ID temporal
  */
-async function handlePagarCompleto() {
-    const checkoutForm = document.getElementById('checkoutForm');
-    
-    // Validar formulario
-    if (!checkoutForm.checkValidity()) {
-        checkoutForm.reportValidity();
-        return;
-    }
-    
-    // Verificar checkboxes
-    if (!document.getElementById('termsAccept').checked) {
-        alert('Debes aceptar los Términos y Condiciones');
-        return;
-    }
-    
-    if (!document.getElementById('cesionAccept').checked) {
-        alert('Debes autorizar la Cesión de Cartera');
-        return;
-    }
-    
-    // Usar la función de integración con Sheets
-    if (typeof window.enviarPedidoConSheets === 'function') {
-        await window.enviarPedidoConSheets('PAGO_100');
-    } else {
-        console.error('Módulo de Google Sheets no cargado');
-        alert('Error: Módulo de integración no disponible');
-    }
+function generarIdTemporal() {
+  const now = new Date();
+  const año = now.getFullYear();
+  const mes = String(now.getMonth() + 1).padStart(2, '0');
+  const dia = String(now.getDate()).padStart(2, '0');
+  const hora = String(now.getHours()).padStart(2, '0');
+  const min = String(now.getMinutes()).padStart(2, '0');
+  const seg = String(now.getSeconds()).padStart(2, '0');
+  
+  return `IMO-${año}${mes}${dia}-${hora}${min}${seg}`;
+}
+
+// ===== UI HELPERS =====
+
+/**
+ * Muestra loading overlay
+ */
+function mostrarLoading(mensaje = 'Procesando...') {
+  const loading = document.createElement('div');
+  loading.id = 'loading-overlay';
+  loading.innerHTML = `
+    <div style="
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0,0,0,0.7);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 99999;
+    ">
+      <div style="
+        background: white;
+        padding: 2rem;
+        border-radius: 12px;
+        text-align: center;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+      ">
+        <div style="
+          width: 50px;
+          height: 50px;
+          border: 4px solid #f3f3f3;
+          border-top: 4px solid #c9a961;
+          border-radius: 50%;
+          animation: spin 1s linear infinite;
+          margin: 0 auto 1rem;
+        "></div>
+        <p style="
+          font-family: 'Lato', sans-serif;
+          font-size: 1.1rem;
+          color: #2c3e50;
+          margin: 0;
+        ">${mensaje}</p>
+      </div>
+    </div>
+    <style>
+      @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+      }
+    </style>
+  `;
+  document.body.appendChild(loading);
 }
 
 /**
- * Modifica la función sendToWhatsApp para usar integración con Sheets
+ * Oculta loading overlay
  */
-const sendToWhatsAppOriginal = sendToWhatsApp;
-
-function sendToWhatsApp() {
-    const checkoutForm = document.getElementById('checkoutForm');
-    
-    // Validar formulario
-    if (!checkoutForm.checkValidity()) {
-        checkoutForm.reportValidity();
-        return;
-    }
-    
-    // Verificar checkboxes
-    if (!document.getElementById('termsAccept').checked) {
-        alert('Debes aceptar los Términos y Condiciones');
-        return;
-    }
-    
-    if (!document.getElementById('cesionAccept').checked) {
-        alert('Debes autorizar la Cesión de Cartera');
-        return;
-    }
-    
-    // Usar la función de integración con Sheets
-    if (typeof window.enviarPedidoConSheets === 'function') {
-        window.enviarPedidoConSheets('WHATSAPP_ONLY');
-    } else {
-        // Fallback a la función original
-        sendToWhatsAppOriginal();
-    }
+function ocultarLoading() {
+  const loading = document.getElementById('loading-overlay');
+  if (loading) loading.remove();
 }
 
-// ===== EVENT LISTENERS PARA NUEVOS BOTONES =====
+/**
+ * Muestra notificación
+ */
+function mostrarNotificacion(mensaje, tipo = 'success') {
+  const colores = {
+    success: '#27ae60',
+    warning: '#f39c12',
+    error: '#e74c3c'
+  };
+  
+  const notif = document.createElement('div');
+  notif.textContent = mensaje;
+  notif.style.cssText = `
+    position: fixed;
+    top: 80px;
+    right: 20px;
+    background: ${colores[tipo] || colores.success};
+    color: white;
+    padding: 1rem 1.5rem;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    z-index: 100000;
+    font-family: 'Lato', sans-serif;
+    font-size: 0.95rem;
+    animation: slideInRight 0.3s ease;
+  `;
+  
+  document.body.appendChild(notif);
+  
+  setTimeout(() => {
+    notif.style.animation = 'slideOutRight 0.3s ease';
+    setTimeout(() => notif.remove(), 300);
+  }, 3000);
+}
 
-document.addEventListener('DOMContentLoaded', function() {
-    // Actualizar montos cuando se abre el checkout
-    const originalOpenCheckoutModal = openCheckoutModal;
-    window.openCheckoutModal = function() {
-        originalOpenCheckoutModal();
-        setTimeout(() => {
-            actualizarMontosPago();
-        }, 100);
-    };
-    
-    // Botón Pagar Anticipo
-    const btnAnticipo = document.getElementById('btnAnticipo');
-    if (btnAnticipo) {
-        btnAnticipo.addEventListener('click', handlePagarAnticipo);
-    }
-    
-    // Botón Pagar Completo
-    const btnPagoCompleto = document.getElementById('btnPagoCompleto');
-    if (btnPagoCompleto) {
-        btnPagoCompleto.addEventListener('click', handlePagarCompleto);
-    }
-    
-    console.log('✅ Nuevos botones de pago configurados');
-});
+// ===== EXPORTAR FUNCIONES =====
+
+window.openCheckoutModal = openCheckoutModal;
+window.closeCheckoutModal = closeCheckoutModal;
+window.handlePagarAnticipo = handlePagarAnticipo;
+window.handlePagarCompleto = handlePagarCompleto;
+window.handleEnviarWhatsApp = handleEnviarWhatsApp;
+
+console.log('✅ Checkout DEFINITIVO v3.0 cargado');
