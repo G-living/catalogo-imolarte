@@ -964,7 +964,11 @@ function ocultarOpcionesWompi() {
     const divider = document.querySelector('.payment-divider');
     
     opcionesWompi.forEach(opcion => {
-        opcion.style.display = 'none';
+        opcion.style.visibility = 'hidden';
+        opcion.style.height = '0';
+        opcion.style.overflow = 'hidden';
+        opcion.style.margin = '0';
+        opcion.style.padding = '0';
     });
     
     if (divider) {
@@ -982,7 +986,11 @@ function ocultarOpcionWhatsApp() {
     const divider = document.querySelector('.payment-divider');
     
     if (opcionWhatsApp) {
-        opcionWhatsApp.style.display = 'none';
+        opcionWhatsApp.style.visibility = 'hidden';
+        opcionWhatsApp.style.height = '0';
+        opcionWhatsApp.style.overflow = 'hidden';
+        opcionWhatsApp.style.margin = '0';
+        opcionWhatsApp.style.padding = '0';
     }
     
     if (divider) {
@@ -1000,7 +1008,11 @@ function mostrarTodasLasOpciones() {
     const divider = document.querySelector('.payment-divider');
     
     todasLasOpciones.forEach(opcion => {
-        opcion.style.display = 'block';
+        opcion.style.visibility = 'visible';
+        opcion.style.height = '';
+        opcion.style.overflow = '';
+        opcion.style.margin = '';
+        opcion.style.padding = '';
     });
     
     if (divider) {
