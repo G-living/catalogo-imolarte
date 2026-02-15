@@ -469,8 +469,8 @@ function agregarTimerAlCarrito() {
 
 // ===== ESTILOS CSS =====
 
-const style = document.createElement('style');
-style.textContent = `
+const cartStyles = document.createElement('style');
+cartStyles.textContent = `
   @keyframes slideInRight {
     from {
       transform: translateX(400px);
@@ -493,7 +493,7 @@ style.textContent = `
     }
   }
 `;
-document.head.appendChild(style);
+document.head.appendChild(cartStyles);
 
 // ===== AUTO-INICIALIZACIÓN =====
 
