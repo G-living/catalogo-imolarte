@@ -809,3 +809,164 @@ document.addEventListener('DOMContentLoaded', function() {
 
     console.log('✅ checkout.js inicializado');
 });
+// ===== INTEGRACIÓN GOOGLE SHEETS Y NUEVOS BOTONES =====
+// AGREGAR AL FINAL DE checkout.js (antes del último console.log)
+
+/**
+ * Actualiza los montos mostrados en las opciones de pago
+ */
+function actualizarMontosPago() {
+    const subtotal = getCartTotal();
+    
+    // Calcular anticipo (60%)
+    const anticipo = Math.round(subtotal * 0.6);
+    
+    // Calcular descuento (3% del total)
+    const descuento = Math.round(subtotal * 0.03);
+    
+    // Calcular total con descuento
+    const totalConDescuento = subtotal - descuento;
+    
+    // Actualizar UI - Anticipo
+    const anticipoElement = document.querySelector('#anticipoAmount .amount-value');
+    if (anticipoElement) {
+        anticipoElement.textContent = formatPrice(anticipo);
+    }
+    
+    // Actualizar UI - Ahorro
+    const savingsElement = document.querySelector('#savingsAmount .savings-value');
+    if (savingsElement) {
+        savingsElement.textContent = formatPrice(descuento);
+    }
+    
+    // Actualizar UI - Total con descuento
+    const completeElement = document.querySelector('#completeAmount .amount-value');
+    if (completeElement) {
+        completeElement.textContent = formatPrice(totalConDescuento);
+    }
+}
+
+/**
+ * Maneja el click en "Pagar Anticipo"
+ */
+async function handlePagarAnticipo() {
+    const checkoutForm = document.getElementById('checkoutForm');
+    
+    // Validar formulario
+    if (!checkoutForm.checkValidity()) {
+        checkoutForm.reportValidity();
+        return;
+    }
+    
+    // Verificar checkboxes
+    if (!document.getElementById('termsAccept').checked) {
+        alert('Debes aceptar los Términos y Condiciones');
+        return;
+    }
+    
+    if (!document.getElementById('cesionAccept').checked) {
+        alert('Debes autorizar la Cesión de Cartera');
+        return;
+    }
+    
+    // Usar la función de integración con Sheets
+    if (typeof window.enviarPedidoConSheets === 'function') {
+        await window.enviarPedidoConSheets('ANTICIPO_60');
+    } else {
+        console.error('Módulo de Google Sheets no cargado');
+        alert('Error: Módulo de integración no disponible');
+    }
+}
+
+/**
+ * Maneja el click en "Pagar 100% Ahora"
+ */
+async function handlePagarCompleto() {
+    const checkoutForm = document.getElementById('checkoutForm');
+    
+    // Validar formulario
+    if (!checkoutForm.checkValidity()) {
+        checkoutForm.reportValidity();
+        return;
+    }
+    
+    // Verificar checkboxes
+    if (!document.getElementById('termsAccept').checked) {
+        alert('Debes aceptar los Términos y Condiciones');
+        return;
+    }
+    
+    if (!document.getElementById('cesionAccept').checked) {
+        alert('Debes autorizar la Cesión de Cartera');
+        return;
+    }
+    
+    // Usar la función de integración con Sheets
+    if (typeof window.enviarPedidoConSheets === 'function') {
+        await window.enviarPedidoConSheets('PAGO_100');
+    } else {
+        console.error('Módulo de Google Sheets no cargado');
+        alert('Error: Módulo de integración no disponible');
+    }
+}
+
+/**
+ * Modifica la función sendToWhatsApp para usar integración con Sheets
+ */
+const sendToWhatsAppOriginal = sendToWhatsApp;
+
+function sendToWhatsApp() {
+    const checkoutForm = document.getElementById('checkoutForm');
+    
+    // Validar formulario
+    if (!checkoutForm.checkValidity()) {
+        checkoutForm.reportValidity();
+        return;
+    }
+    
+    // Verificar checkboxes
+    if (!document.getElementById('termsAccept').checked) {
+        alert('Debes aceptar los Términos y Condiciones');
+        return;
+    }
+    
+    if (!document.getElementById('cesionAccept').checked) {
+        alert('Debes autorizar la Cesión de Cartera');
+        return;
+    }
+    
+    // Usar la función de integración con Sheets
+    if (typeof window.enviarPedidoConSheets === 'function') {
+        window.enviarPedidoConSheets('WHATSAPP_ONLY');
+    } else {
+        // Fallback a la función original
+        sendToWhatsAppOriginal();
+    }
+}
+
+// ===== EVENT LISTENERS PARA NUEVOS BOTONES =====
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Actualizar montos cuando se abre el checkout
+    const originalOpenCheckoutModal = openCheckoutModal;
+    window.openCheckoutModal = function() {
+        originalOpenCheckoutModal();
+        setTimeout(() => {
+            actualizarMontosPago();
+        }, 100);
+    };
+    
+    // Botón Pagar Anticipo
+    const btnAnticipo = document.getElementById('btnAnticipo');
+    if (btnAnticipo) {
+        btnAnticipo.addEventListener('click', handlePagarAnticipo);
+    }
+    
+    // Botón Pagar Completo
+    const btnPagoCompleto = document.getElementById('btnPagoCompleto');
+    if (btnPagoCompleto) {
+        btnPagoCompleto.addEventListener('click', handlePagarCompleto);
+    }
+    
+    console.log('✅ Nuevos botones de pago configurados');
+});

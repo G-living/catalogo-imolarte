@@ -196,13 +196,57 @@
                     </div>
 
                     <!-- Actions -->
-                    <div class="checkout-actions">
-                        <button type="submit" class="btn btn-whatsapp">
-                            <span>📱</span> Enviar por WhatsApp
-                        </button>
-                        <button type="button" class="btn btn-primary" id="payButton">
-                            <span>💳</span> Pagar Ahora
-                        </button>
+                    <div class="checkout-actions-new">
+                        <!-- Opción 1: Pagar Anticipo 60% -->
+                        <div class="payment-option">
+                            <div class="payment-header">
+                                <h4 class="payment-title">💰 Pagar Anticipo (60%)</h4>
+                                <p class="payment-desc">Paga el 60% ahora, el resto al recibir</p>
+                            </div>
+                            <div class="payment-amount" id="anticipoAmount">
+                                <span class="amount-label">Monto:</span>
+                                <span class="amount-value">$0</span>
+                            </div>
+                            <button type="button" class="btn btn-payment" id="btnAnticipo">
+                                <span>💳</span> Pagar Anticipo
+                            </button>
+                        </div>
+
+                        <!-- Opción 2: Pagar 100% Anticipado -->
+                        <div class="payment-option payment-recommended">
+                            <div class="payment-badge">🎉 Ahorra 3%</div>
+                            <div class="payment-header">
+                                <h4 class="payment-title">✨ Pagar 100% Anticipado</h4>
+                                <p class="payment-desc">Paga todo ahora y obtén 3% de descuento</p>
+                            </div>
+                            <div class="payment-savings" id="savingsAmount">
+                                <span class="savings-label">Ahorras:</span>
+                                <span class="savings-value">$0</span>
+                            </div>
+                            <div class="payment-amount" id="completeAmount">
+                                <span class="amount-label">Total a pagar:</span>
+                                <span class="amount-value">$0</span>
+                            </div>
+                            <button type="button" class="btn btn-payment btn-recommended" id="btnPagoCompleto">
+                                <span>💎</span> Pagar 100% Ahora
+                            </button>
+                        </div>
+
+                        <!-- Separador -->
+                        <div class="payment-divider">
+                            <span>o</span>
+                        </div>
+
+                        <!-- Opción 3: Solo enviar por WhatsApp -->
+                        <div class="payment-option payment-whatsapp">
+                            <div class="payment-header">
+                                <h4 class="payment-title">📱 Enviar por WhatsApp</h4>
+                                <p class="payment-desc">Envía tu pedido y coordina el pago después</p>
+                            </div>
+                            <button type="submit" class="btn btn-whatsapp">
+                                <span>📱</span> Enviar Pedido
+                            </button>
+                        </div>
                     </div>
                 </form>
             </div>
@@ -216,6 +260,7 @@
     <script src="js/products.js"></script>
     <script src="js/checkout.js"></script>
     <script src="js/google-places.js"></script>
+    <script src="js/google-sheets-integration.js"></script>
     <script src="https://checkout.wompi.co/widget.js"></script>
     <script>
         // Google Maps Loader (v=weekly for latest)
