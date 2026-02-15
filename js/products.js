@@ -297,123 +297,6 @@ function showNotification(message) {
 /**
  * Abre la página del carrito
  */
-function openCartPage() {
-    renderCartItems();
-    const cartPage = document.getElementById('cartPage');
-    cartPage.classList.add('active');
-    document.body.style.overflow = 'hidden';
-}
-
-/**
- * Cierra la página del carrito
- */
-function closeCartPage() {
-    const cartPage = document.getElementById('cartPage');
-    cartPage.classList.remove('active');
-    document.body.style.overflow = '';
-}
-
-/**
- * Renderiza los items del carrito
- */
-function renderCartItems() {
-    const container = document.getElementById('cartItems');
-    const summaryContainer = document.getElementById('cartSummary');
-
-    if (cart.length === 0) {
-        container.innerHTML = `
-            <div class="empty-cart">
-                <div class="empty-icon">🛒</div>
-                <p class="empty-text">Tu carrito está vacío</p>
-            </div>
-        `;
-        summaryContainer.innerHTML = '';
-        return;
-    }
-
-    const itemsHTML = cart.map(item => {
-        const comodinImage = getComodinImage(item.collection);
-        const subtotal = item.price * item.quantity;
-
-        return `
-            <div class="cart-item" data-code="${item.code}">
-                <img src="${comodinImage}" 
-                     alt="${item.collection}" 
-                     class="cart-item-image"
-                     onerror="this.style.display='none'">
-                <div class="cart-item-details">
-                    <h3 class="cart-item-title">${item.productName}</h3>
-                    <p class="cart-item-collection">${item.collection}</p>
-                    <p class="cart-item-code">${item.code}</p>
-                </div>
-                <div class="cart-item-price">${formatPrice(item.price)}</div>
-                <div class="cart-item-qty">
-                    <button type="button" 
-                            class="qty-btn" 
-                            onclick="updateCartItemQuantity('${item.code}', ${item.quantity - 1})"
-                            aria-label="Disminuir">−</button>
-                    <span class="qty-display">${item.quantity}</span>
-                    <button type="button" 
-                            class="qty-btn" 
-                            onclick="updateCartItemQuantity('${item.code}', ${item.quantity + 1})"
-                            aria-label="Aumentar">+</button>
-                </div>
-                <div class="cart-item-subtotal">${formatPrice(subtotal)}</div>
-                <button type="button" 
-                        class="cart-item-remove" 
-                        onclick="removeCartItem('${item.code}')"
-                        aria-label="Eliminar">
-                    <span>🗑️</span>
-                </button>
-            </div>
-        `;
-    }).join('');
-
-    container.innerHTML = itemsHTML;
-
-    const total = getCartTotal();
-    const itemCount = cart.reduce((sum, item) => sum + item.quantity, 0);
-
-    summaryContainer.innerHTML = `
-        <div class="cart-summary">
-            <div class="cart-summary-row">
-                <span>Productos:</span>
-                <span>${itemCount} ${itemCount === 1 ? 'artículo' : 'artículos'}</span>
-            </div>
-            <div class="cart-summary-row total">
-                <span>Total:</span>
-                <span>${formatPrice(total)}</span>
-            </div>
-            <div class="cart-summary-actions">
-                <button type="button" class="btn btn-whatsapp" onclick="openCheckoutModal('whatsapp')">
-                    <span>📱</span> Enviar Pedido
-                </button>
-                <button type="button" class="btn btn-primary" onclick="openCheckoutModal('wompi')">
-                    <span>💳</span> Pagar Ahora
-                </button>
-            </div>
-        </div>
-    `;
-}
-
-/**
- * Actualiza la cantidad de un item en el carrito
- */
-function updateCartItemQuantity(code, newQuantity) {
-    updateQuantity(code, newQuantity);
-    renderCartItems();
-}
-
-/**
- * Elimina un item del carrito
- */
-function removeCartItem(code) {
-    if (confirm('¿Eliminar este producto del carrito?')) {
-        removeFromCart(code);
-        renderCartItems();
-    }
-}
-
 // ===== EVENT LISTENERS =====
 
 // Inicializar cuando el DOM esté listo
@@ -424,7 +307,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Botón del carrito flotante
     const cartButton = document.getElementById('cartButton');
     if (cartButton) {
-        cartButton.addEventListener('click', openCartPage);
+        cartButton.addEventListener('click', showCartPage);
     }
 
     // Botón cerrar modal de producto
@@ -446,7 +329,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Botón cerrar carrito
     const closeCartBtn = document.getElementById('closeCart');
     if (closeCartBtn) {
-        closeCartBtn.addEventListener('click', closeCartPage);
+        closeCartBtn.addEventListener('click', hideCartPage);
     }
 
     // Cerrar carrito con ESC
@@ -454,7 +337,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (e.key === 'Escape') {
             const cartPage = document.getElementById('cartPage');
             if (cartPage && cartPage.classList.contains('active')) {
-                closeCartPage();
+                hideCartPage();
             }
             const productModal = document.getElementById('productModal');
             if (productModal && productModal.classList.contains('active')) {
