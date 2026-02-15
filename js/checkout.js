@@ -38,13 +38,15 @@ function openCheckoutModal(tipo = null) {
     modal.classList.add('active');
     document.body.style.overflow = 'hidden';
 
-    // Inicializar Google Places después de un breve delay
+    // Inicializar Google Places y manejar opciones después de un delay
     setTimeout(() => {
         if (typeof initGooglePlaces === 'function') {
             initGooglePlaces();
         }
-        
-        // Ocultar opciones según el botón clickeado
+    }, 100);
+    
+    // Manejar opciones de pago con delay mayor para asegurar que se ejecute después
+    setTimeout(() => {
         if (tipo === 'whatsapp') {
             ocultarOpcionesWompi();
         } else if (tipo === 'wompi') {
@@ -52,7 +54,7 @@ function openCheckoutModal(tipo = null) {
         } else {
             mostrarTodasLasOpciones();
         }
-    }, 300);
+    }, 400);
 
     console.log('✅ Modal de checkout abierto - tipo:', tipo);
 }
