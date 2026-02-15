@@ -5,7 +5,7 @@
  */
 
 // ===== CONFIGURACIÓN =====
-const GOOGLE_SHEETS_URL = 'https://script.google.com/macros/s/AKfycbwqDLCWDljl--kixf5B6CFeDl84PEZGnoMuRoJk8pUzvIWLkYEzvFRUJSK1kFaGeXRW/exec';
+const GOOGLE_SHEETS_URL = 'https://script.google.com/macros/s/AKfycbzRgF7bk0u73hCJvbJAtY1xvOx76_Ri5zJD1Mz0UgfzCg6uYKYPAt_QDLxbSPTOEhlv/exec';
 
 // Porcentajes configurables
 const PORCENTAJE_ANTICIPO = 60;
