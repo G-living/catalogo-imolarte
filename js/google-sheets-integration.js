@@ -4,7 +4,7 @@
  * ================================================================
  * Este archivo se carga en el catálogo web (GitHub Pages)
  * Envía pedidos a Google Sheets usando URLSearchParams
- * Versión: 5.0 - CORREGIDO: WHATSAPP_ONLY marca 0%
+ * Versión: 4.0 - Limpia y optimizada
  * ================================================================
  */
 
@@ -61,7 +61,7 @@ async function enviarPedidoASheets(datosPedido) {
     params.append('tipoPago', datosPedido.tipoPago);
     params.append('notasInternas', datosPedido.notasInternas || '');
     
-    console.log('📄 Enviando con URLSearchParams...');
+    console.log('🔄 Enviando con URLSearchParams...');
     
     // Fetch con URLSearchParams
     const response = await fetch(GOOGLE_SHEETS_URL, {
@@ -108,9 +108,8 @@ async function enviarPedidoASheets(datosPedido) {
 
 /**
  * Recopila datos del formulario y carrito
- * CORREGIDO: WHATSAPP_ONLY marca 0% descuento
  */
-function recopilarDatosPedido(tipoPago = 'WHATSAPP_ONLY') {
+function recopilarDatosPedido(tipoPago = 'ANTICIPO_60') {
   // Formulario
   const tipoDoc = document.getElementById('docType').value;
   const numDoc = document.getElementById('docNumber').value;
@@ -136,32 +135,16 @@ function recopilarDatosPedido(tipoPago = 'WHATSAPP_ONLY') {
   let descuentoPorcentaje = 0;
   let descuentoMonto = 0;
   let totalFinal = subtotal;
-  let notasInternas = '';
   
-  // ✅ CORREGIDO: Manejo correcto de cada tipo de pago
   if (tipoPago === 'PAGO_100') {
-    // Pago completo con 3% descuento
     descuentoPorcentaje = DESCUENTO_PAGO_COMPLETO;
     descuentoMonto = Math.round(subtotal * (DESCUENTO_PAGO_COMPLETO / 100));
     totalFinal = subtotal - descuentoMonto;
-    notasInternas = 'Opción: Pago completo -3%';
-  } else if (tipoPago === 'ANTICIPO_60') {
-    // Anticipo 60% - SIN descuento en subtotal
-    descuentoPorcentaje = 0;
-    descuentoMonto = 0;
-    totalFinal = subtotal;
-    notasInternas = 'Opción: Anticipo 60%';
-  } else if (tipoPago === 'WHATSAPP_ONLY') {
-    // ✅ WhatsApp - SIN descuento, PENDIENTE de pago
-    descuentoPorcentaje = 0;
-    descuentoMonto = 0;
-    totalFinal = subtotal;
-    notasInternas = 'Pedido vía WhatsApp - Pago pendiente';
   }
   
   // Items
   const items = cart.map(item => ({
-    producto: item.productName,
+    producto: item.description,
     coleccion: item.collection,
     codigo: item.code,
     cantidad: item.quantity,
@@ -193,7 +176,7 @@ function recopilarDatosPedido(tipoPago = 'WHATSAPP_ONLY') {
     metodoEntrega: esDomicilio ? 'DOMICILIO' : 'RETIRO',
     notasEntrega: notasEntrega,
     tipoPago: tipoPago,
-    notasInternas: notasInternas
+    notasInternas: `Opción: ${tipoPago === 'PAGO_100' ? 'Pago completo -3%' : 'Anticipo 60%'}`
   };
 }
 
@@ -202,7 +185,7 @@ function recopilarDatosPedido(tipoPago = 'WHATSAPP_ONLY') {
 /**
  * Proceso completo: validar, enviar a Sheets, abrir WhatsApp
  */
-async function sendToWhatsAppConSheets(tipoPago = 'WHATSAPP_ONLY') {
+async function sendToWhatsAppConSheets(tipoPago = 'ANTICIPO_60') {
   // Validar formulario
   const form = document.getElementById('checkoutForm');
   if (!form.checkValidity()) {
@@ -233,11 +216,8 @@ async function sendToWhatsAppConSheets(tipoPago = 'WHATSAPP_ONLY') {
       mostrarNotificacion('⚠️ Pedido enviado - verificar Sheets');
     }
     
-    // Limpiar carrito y detener timer
+    // Limpiar carrito
     setTimeout(() => {
-      if (typeof window.stopCartTimer === 'function') {
-        window.stopCartTimer();
-      }
       cart = [];
       updateCartUI();
       closeCheckoutModal();
@@ -257,7 +237,6 @@ async function sendToWhatsAppConSheets(tipoPago = 'WHATSAPP_ONLY') {
 
 /**
  * Genera mensaje y abre WhatsApp
- * ACTUALIZADO: Manejo correcto de WHATSAPP_ONLY
  */
 function enviarWhatsApp(datosPedido, pedidoId) {
   const { cliente, items, subtotal, descuentoMonto, totalFinal, metodoEntrega, tipoPago } = datosPedido;
@@ -267,14 +246,14 @@ function enviarWhatsApp(datosPedido, pedidoId) {
   mensaje += `📅 Fecha: ${new Date().toLocaleDateString('es-CO')}\n\n`;
   
   mensaje += '👤 *CLIENTE*\n';
-  mensaje += `🆔 ${cliente.tipoDocumento}: ${cliente.numeroDocumento}\n`;
+  mensaje += `📝 ${cliente.tipoDocumento}: ${cliente.numeroDocumento}\n`;
   mensaje += `Nombre: ${cliente.nombre} ${cliente.apellido}\n`;
   mensaje += `📧 ${cliente.email}\n`;
   mensaje += `📱 ${cliente.codigoPais}${cliente.telefono}\n`;
   mensaje += `🎂 ${cliente.cumpleDia} de ${cliente.cumpleMes}\n\n`;
   
   mensaje += '📦 *PRODUCTOS*\n';
-  mensaje += '━━━━━━━━━━━━━━━━━━━\n';
+  mensaje += '━━━━━━━━━━━━━━━━━━\n';
   
   items.forEach((item, i) => {
     mensaje += `${i + 1}. ${item.producto}\n`;
@@ -283,7 +262,7 @@ function enviarWhatsApp(datosPedido, pedidoId) {
     mensaje += `   💰 ${formatPrice(item.subtotal)}\n\n`;
   });
   
-  mensaje += '━━━━━━━━━━━━━━━━━━━\n';
+  mensaje += '━━━━━━━━━━━━━━━━━━\n';
   mensaje += `💵 Subtotal: ${formatPrice(subtotal)}\n`;
   
   if (descuentoMonto > 0) {
@@ -292,9 +271,9 @@ function enviarWhatsApp(datosPedido, pedidoId) {
   
   mensaje += `💰 *TOTAL: ${formatPrice(totalFinal)}*\n\n`;
   
-  // Información de pago según tipo
+  // Pago
   if (tipoPago === 'PAGO_100') {
-    mensaje += `✨ *PAGO COMPLETO CON DESCUENTO*\n`;
+    mensaje += `✨ *PAGO COMPLETO*\n`;
     mensaje += `Con descuento del ${DESCUENTO_PAGO_COMPLETO}%\n`;
     mensaje += `A pagar: ${formatPrice(totalFinal)}\n\n`;
   } else if (tipoPago === 'ANTICIPO_60') {
@@ -303,11 +282,6 @@ function enviarWhatsApp(datosPedido, pedidoId) {
     mensaje += `📊 *ANTICIPO (60%)*: ${formatPrice(anticipo)}\n`;
     mensaje += `Saldo (40%): ${formatPrice(saldo)}\n`;
     mensaje += `💡 Saldo al recibir\n\n`;
-  } else if (tipoPago === 'WHATSAPP_ONLY') {
-    // ✅ WhatsApp - Pago pendiente
-    mensaje += `💬 *PEDIDO VÍA WHATSAPP*\n`;
-    mensaje += `Estado: Pago pendiente\n`;
-    mensaje += `Total a pagar: ${formatPrice(totalFinal)}\n\n`;
   }
   
   // Entrega
@@ -432,4 +406,4 @@ function mostrarNotificacion(mensaje, tipo = 'success') {
 
 window.enviarPedidoConSheets = sendToWhatsAppConSheets;
 
-console.log('✅ Integración Google Sheets cargada v5.0 (WHATSAPP_ONLY corregido)');
+console.log('✅ Integración Google Sheets cargada v4.0');
