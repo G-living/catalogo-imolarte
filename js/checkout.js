@@ -169,9 +169,35 @@ function validateCheckoutForm() {
 
     // Validar método de entrega
     const deliveryMethod = document.querySelector('input[name="delivery"]:checked');
+    const deliveryOptions = document.querySelector('.delivery-options');
+    
     if (!deliveryMethod) {
-        errors.push('Selecciona un método de entrega');
+        errors.push('⚠️ Debes seleccionar un método de entrega');
         isValid = false;
+        
+        // Resaltar visualmente la sección de entrega
+        if (deliveryOptions) {
+            deliveryOptions.style.border = '2px solid #e74c3c';
+            deliveryOptions.style.borderRadius = '8px';
+            deliveryOptions.style.padding = '0.5rem';
+            
+            // Quitar el resaltado después de 3 segundos
+            setTimeout(() => {
+                deliveryOptions.style.border = '';
+                deliveryOptions.style.padding = '';
+            }, 3000);
+        }
+        
+        // Scroll a la sección de entrega
+        if (deliveryOptions) {
+            deliveryOptions.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+    } else {
+        // Limpiar resaltado si existe
+        if (deliveryOptions) {
+            deliveryOptions.style.border = '';
+            deliveryOptions.style.padding = '';
+        }
     }
 
     // Si es entrega a domicilio, validar dirección
