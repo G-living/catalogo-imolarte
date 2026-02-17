@@ -1,0 +1,19 @@
+# wrangler.toml - Configuración oficial para wompi-webhook
+# Compatible con Wrangler 4.65.0+ (2026)
+
+name = "imolarte-wompi-webhook"                    # Nombre visible en Cloudflare
+main = "wompi-webhook.js"                          # Archivo principal
+compatibility_date = "2026-02-16"                  # Fecha mínima de compatibilidad
+compatibility_flags = ["nodejs_compat"]            # Necesario para crypto.subtle y fetch
+
+# Secrets (nunca en git - solo referencia):
+# - WOMPI_EVENTS_SECRET          (para verificación de firma)
+# - GOOGLE_SHEETS_WEBHOOK_URL    (URL de tu Google Apps Script)
+
+# Despliegue:
+#   cd workers/wompi-webhook
+#   wrangler deploy
+
+# Set secrets after deploy:
+#   wrangler secret put WOMPI_EVENTS_SECRET
+#   wrangler secret put GOOGLE_SHEETS_WEBHOOK_URL
