@@ -9,6 +9,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Cormorant+Garamond:wght@300;400;600&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/styles.css">
     <link rel="stylesheet" href="css/checkout.css">
+    <link rel="stylesheet" href="css/validation-styles.css">
 </head>
 <body>
     <!-- Header -->
@@ -65,44 +66,44 @@
                         <div class="form-grid">
                             <div class="form-group">
                                 <label class="form-label required">Nombre(s)</label>
-                                <input type="text" class="form-input" id="firstName" required pattern="[A-Za-zÁÉÍÓÚáéíóúÑñ\s]+">
-                                <span class="error-message">Ingresa un nombre válido</span>
+                                <input type="text" class="form-input" id="firstName" required pattern="[A-Za-zÁÉÍÓÚáéíóúÑñ\s]+" aria-describedby="firstName-error">
+                                <span id="firstName-error" class="error-message hidden" aria-live="polite"></span>
                             </div>
                             <div class="form-group">
                                 <label class="form-label required">Apellido(s)</label>
-                                <input type="text" class="form-input" id="lastName" required pattern="[A-Za-zÁÉÍÓÚáéíóúÑñ\s]+">
-                                <span class="error-message">Ingresa un apellido válido</span>
+                                <input type="text" class="form-input" id="lastName" required pattern="[A-Za-zÁÉÍÓÚáéíóúÑñ\s]+" aria-describedby="lastName-error">
+                                <span id="lastName-error" class="error-message hidden" aria-live="polite"></span>
                             </div>
                             <div class="form-group">
                                 <label class="form-label required">Tipo de Documento</label>
-                                <select class="form-input" id="docType" required>
+                                <select class="form-input" id="docType" required aria-describedby="docType-error">
                                     <option value="">Selecciona</option>
                                     <option value="CC">CC - Cédula de Ciudadanía</option>
                                     <option value="CE">CE - Cédula de Extranjería</option>
                                 </select>
-                                <span class="error-message">Selecciona un tipo</span>
+                                <span id="docType-error" class="error-message hidden" aria-live="polite"></span>
                             </div>
                             <div class="form-group">
                                 <label class="form-label required">Número de Identificación</label>
-                                <input type="text" class="form-input" id="docNumber" required pattern="[0-9]+">
-                                <span class="error-message">Solo números</span>
+                                <input type="text" class="form-input" id="docNumber" required pattern="[0-9]+" aria-describedby="docNumber-error">
+                                <span id="docNumber-error" class="error-message hidden" aria-live="polite"></span>
                             </div>
                             <div class="form-group">
                                 <label class="form-label required">Fecha de Cumpleaños</label>
                                 <div class="birthday-group">
-                                    <select class="form-input" id="birthdayDay" required>
+                                    <select class="form-input" id="birthdayDay" required aria-describedby="birthdayDay-error">
                                         <option value="">Día</option>
                                     </select>
                                     <select class="form-input" id="birthdayMonth" required>
                                         <option value="">Mes</option>
                                     </select>
                                 </div>
-                                <span class="error-message">Selecciona día y mes</span>
+                                <span id="birthdayDay-error" class="error-message hidden" aria-live="polite"></span>
                             </div>
                             <div class="form-group">
                                 <label class="form-label required">Email</label>
-                                <input type="email" class="form-input" id="email" required>
-                                <span class="error-message">Ingresa un email válido</span>
+                                <input type="email" class="form-input" id="email" required aria-describedby="email-error">
+                                <span id="email-error" class="error-message hidden" aria-live="polite"></span>
                             </div>
                             <div class="form-group full-width">
                                 <label class="form-label required">Celular / WhatsApp</label>
@@ -112,9 +113,9 @@
                                         <option value="+1">🇺🇸 +1</option>
                                         <option value="+52">🇲🇽 +52</option>
                                     </select>
-                                    <input type="tel" class="form-input phone-number" id="phone" required pattern="[0-9]{10}" placeholder="3001234567">
+                                    <input type="tel" class="form-input phone-number" id="phone" required pattern="[0-9]{10}" placeholder="3001234567" aria-describedby="phone-error">
                                 </div>
-                                <span class="error-message">Ingresa 10 dígitos</span>
+                                <span id="phone-error" class="error-message hidden" aria-live="polite"></span>
                             </div>
                         </div>
                     </div>
@@ -138,8 +139,7 @@
                                 </div>
                             </div>
                         </div>
-                        <span class="error-message" id="deliveryError" style="display: none; color: #e74c3c; font-size: 0.9rem; margin-top: 0.5rem;">⚠️ Debes seleccionar un método de entrega</span>
-                    </div>
+                        <span id="deliveryOptions-error" class="error-message hidden" aria-live="polite"></span>
 
                         <!-- Address Fields -->
                         <div class="address-fields" id="addressFields">
@@ -188,6 +188,7 @@
                         <label class="checkbox-label" for="termsAccept">
                             He leído y acepto los <a href="#" id="showTerms">Términos y Condiciones</a> *
                         </label>
+                        <span id="termsAccept-error" class="error-message hidden" aria-live="polite"></span>
                     </div>
 
                     <!-- Tratamiento de Datos -->
@@ -196,6 +197,7 @@
                         <label class="checkbox-label" for="cesionAccept">
                             Autorizo el <a href="#" id="showCesion">tratamiento de datos personales (Ley 1581 de 2012)</a> *
                         </label>
+                        <span id="cesionAccept-error" class="error-message hidden" aria-live="polite"></span>
                     </div>
 
                     <!-- Actions -->
@@ -246,7 +248,7 @@
                                 <h4 class="payment-title">📱 Enviar por WhatsApp</h4>
                                 <p class="payment-desc">Envía tu pedido y coordina el pago después</p>
                             </div>
-                            <button type="submit" class="btn btn-whatsapp">
+                            <button type="button" class="btn btn-whatsapp" id="btnWhatsApp">
                                 <span>📱</span> Enviar Pedido
                             </button>
                         </div>
@@ -264,6 +266,13 @@
     <script src="js/checkout.js"></script>
     <script src="js/google-places.js"></script>
     <script src="js/google-sheets-integration.js"></script>
+    
+    <!-- Checkout modules (load in order) -->
+    <script src="js/checkout-validation.js"></script>
+    <script src="js/checkout-payment.js"></script>
+    <script src="js/checkout-whatsapp.js"></script>
+    
+    <!-- Wompi widget -->
     <script src="https://checkout.wompi.co/widget.js"></script>
     <script>
         // Google Maps Loader (v=weekly for latest)

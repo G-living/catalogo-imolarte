@@ -1,0 +1,117 @@
+/* validation-styles.css */
+/* IMOLARTE - Checkout Validation Styles */
+/* Error messages, input highlighting, and shake animation */
+
+/* Error message styling */
+.error-message {
+  color: #dc3545;
+  font-size: 0.875rem;
+  display: block;
+  margin-top: 0.25rem;
+  font-weight: 500;
+  line-height: 1.4;
+}
+
+/* Hidden state */
+.error-message.hidden {
+  display: none;
+}
+
+/* Input field error state */
+.input-error {
+  border-color: #dc3545 !important;
+  background-color: #fff5f5;
+}
+
+/* Focus state for error inputs */
+.input-error:focus {
+  border-color: #dc3545 !important;
+  box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25);
+}
+
+/* Shake animation for delivery section */
+.shake {
+  animation: shake 0.3s cubic-bezier(0.36, 0.07, 0.19, 0.97);
+}
+
+@keyframes shake {
+  0%, 100% {
+    transform: translateX(0);
+  }
+  25% {
+    transform: translateX(-5px);
+  }
+  50% {
+    transform: translateX(5px);
+  }
+  75% {
+    transform: translateX(-5px);
+  }
+}
+
+/* Delivery options container error state */
+#deliveryOptionsContainer.has-error {
+  border: 2px solid #dc3545;
+  border-radius: 8px;
+  padding: 0.5rem;
+}
+
+/* Checkbox error styling */
+input[type="checkbox"].input-error + label {
+  color: #dc3545;
+}
+
+/* Select error styling */
+select.input-error {
+  border-color: #dc3545 !important;
+  background-color: #fff5f5;
+}
+
+/* Birthday group error */
+.birthday-group.has-error select {
+  border-color: #dc3545 !important;
+}
+
+/* Error icon (optional - can add before error message) */
+.error-message::before {
+  content: "⚠️ ";
+  margin-right: 0.25rem;
+}
+
+/* Success state (for future use) */
+.input-success {
+  border-color: #28a745 !important;
+}
+
+/* Validation feedback container */
+.validation-feedback {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .error-message {
+    font-size: 0.8rem;
+  }
+  
+  .shake {
+    animation: shake-mobile 0.3s cubic-bezier(0.36, 0.07, 0.19, 0.97);
+  }
+  
+  @keyframes shake-mobile {
+    0%, 100% {
+      transform: translateX(0);
+    }
+    25% {
+      transform: translateX(-3px);
+    }
+    50% {
+      transform: translateX(3px);
+    }
+    75% {
+      transform: translateX(-3px);
+    }
+  }
+}
