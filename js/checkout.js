@@ -169,38 +169,9 @@ function validateCheckoutForm() {
 
     // Validar método de entrega
     const deliveryMethod = document.querySelector('input[name="delivery"]:checked');
-    const deliveryOptions = document.getElementById('deliveryOptionsContainer');
-    const deliveryError = document.getElementById('deliveryError');
-    
     if (!deliveryMethod) {
-        errors.push('⚠️ Debes seleccionar un método de entrega');
+        errors.push('Selecciona un método de entrega');
         isValid = false;
-        
-        // Mostrar label de error
-        if (deliveryError) {
-            deliveryError.style.display = 'block';
-        }
-        
-        // Resaltar visualmente la sección de entrega
-        if (deliveryOptions) {
-            deliveryOptions.style.border = '2px solid #e74c3c';
-            deliveryOptions.style.borderRadius = '8px';
-            deliveryOptions.style.padding = '0.5rem';
-        }
-        
-        // Scroll a la sección de entrega
-        if (deliveryOptions) {
-            deliveryOptions.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        }
-    } else {
-        // Limpiar error y resaltado si existe
-        if (deliveryError) {
-            deliveryError.style.display = 'none';
-        }
-        if (deliveryOptions) {
-            deliveryOptions.style.border = '';
-            deliveryOptions.style.padding = '';
-        }
     }
 
     // Si es entrega a domicilio, validar dirección
@@ -782,17 +753,6 @@ document.addEventListener('DOMContentLoaded', function() {
             
             if (radio) {
                 radio.checked = true;
-                
-                // ✅ NUEVO: Ocultar error cuando se selecciona
-                const deliveryError = document.getElementById('deliveryError');
-                const deliveryContainer = document.getElementById('deliveryOptionsContainer');
-                if (deliveryError) {
-                    deliveryError.style.display = 'none';
-                }
-                if (deliveryContainer) {
-                    deliveryContainer.style.border = '';
-                    deliveryContainer.style.padding = '';
-                }
                 
                 // Actualizar estilos
                 deliveryOptions.forEach(opt => opt.classList.remove('selected'));

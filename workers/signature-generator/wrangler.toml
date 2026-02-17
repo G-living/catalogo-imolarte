@@ -1,37 +1,17 @@
-# wrangler.toml - Configuración limpia y oficial para IMOLARTE Workers
-# Compatible con Wrangler 4.65.0+
-# Fecha actualizada para features modernas
+# wrangler.toml - Configuración oficial para signature-generator
+# Compatible con Wrangler 4.65.0+ (2026)
 
-name = "imolarte-signature-generator"          # Nombre del Worker en Cloudflare
-main = "signature-generator.js"                # Archivo principal
-compatibility_date = "2026-02-16"              # Fecha mínima de compatibilidad
-compatibility_flags = ["nodejs_compat"]        # Necesario para crypto.subtle
+name = "imolarte-signature-generator"             # Nombre visible en Cloudflare
+main = "signature-generator.js"                   # Archivo principal
+compatibility_date = "2026-02-16"                 # Fecha mínima de compatibilidad
+compatibility_flags = ["nodejs_compat"]           # Necesario para crypto.subtle y fetch
 
-# ============================================================
-# PARA DEPLOY DEL SEGUNDO WORKER:
-# Temporalmente cambia arriba:
-#   name = "imolarte-wompi-webhook"
-#   main = "wompi-webhook.js"
-# ============================================================
+# Secrets (nunca en git - solo referencia):
+# - WOMPI_INTEGRITY_KEY          (clave de integridad de Wompi)
 
-# ALTERNATIVA RECOMENDADA (estructura limpia a futuro):
-# workers/
-#   ├── signature-generator/
-#   │   ├── wrangler.toml
-#   │   └── signature-generator.js
-#   └── wompi-webhook/
-#       ├── wrangler.toml
-#       └── wompi-webhook.js
+# Despliegue:
+#   cd workers/signature-generator
+#   wrangler deploy
 
-# ============================================================
-# SECRETS (nunca en git - setear con CLI):
-# wrangler secret put WOMPI_INTEGRITY_KEY --name imolarte-signature-generator
-# wrangler secret put WOMPI_EVENTS_SECRET --name imolarte-wompi-webhook
-# wrangler secret put GOOGLE_SHEETS_WEBHOOK_URL --name imolarte-wompi-webhook
-# ============================================================
-
-# ============================================================
-# DEPLOY COMMANDS (recomendado con --name para no editar toml):
-# wrangler deploy signature-generator.js --name imolarte-signature-generator
-# wrangler deploy wompi-webhook.js --name imolarte-wompi-webhook
-# ============================================================
+# Set secrets after deploy:
+#   wrangler secret put WOMPI_INTEGRITY_KEY
