@@ -540,14 +540,22 @@ document.addEventListener('DOMContentLoaded', function() {
   const btnPagoCompleto = document.getElementById('btnPagoCompleto');
   
   if (btnAnticipo) {
-    btnAnticipo.addEventListener('click', handlePagarAnticipo);
+    btnAnticipo.addEventListener('click', function(e) {
+      e.preventDefault();
+      e.stopImmediatePropagation();
+      handlePagarAnticipo();
+    });
     console.log('✅ Botón Anticipo conectado');
   } else {
     console.warn('⚠️ btnAnticipo no encontrado');
   }
   
   if (btnPagoCompleto) {
-    btnPagoCompleto.addEventListener('click', handlePagarCompleto);
+    btnPagoCompleto.addEventListener('click', function(e) {
+      e.preventDefault();
+      e.stopImmediatePropagation();
+      handlePagarCompleto();
+    });
     console.log('✅ Botón Pago Completo conectado');
   } else {
     console.warn('⚠️ btnPagoCompleto no encontrado');

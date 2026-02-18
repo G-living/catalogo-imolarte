@@ -591,7 +591,11 @@ document.addEventListener('DOMContentLoaded', function() {
   const btnWhatsApp = document.getElementById('btnWhatsApp');
   
   if (btnWhatsApp) {
-    btnWhatsApp.addEventListener('click', handleWhatsAppWishlist);
+    btnWhatsApp.addEventListener('click', function(e) {
+      e.preventDefault();
+      e.stopImmediatePropagation();
+      handleWhatsAppWishlist();
+    });
     console.log('✅ Botón WhatsApp conectado');
   } else {
     console.warn('⚠️ btnWhatsApp no encontrado');
