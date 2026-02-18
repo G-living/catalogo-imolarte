@@ -1,6 +1,6 @@
 // checkout.js - Gestión del checkout, validaciones, Wompi y WhatsApp
 // COMPLETO - Con toast en lugar de alerts
-// Versión: 2.1 - Added initBirthdaySelectors function
+// Versión: 2.2 - CORREGIDO: initBirthdaySelectors definida ANTES de usarse
 
 // ===== CONSTANTES =====
 const WOMPI_PUBLIC_KEY = 'pub_test_rT7K8rzYnk2Ec8Lv25tRL3JIof6b6Lwp';
@@ -19,8 +19,10 @@ let checkoutData = {
     notes: ''
 };
 
-// ===== CUMPLEAÑOS - FUNCIÓN AGREGADA =====
+// ===== FUNCIÓN CRÍTICA QUE FALTABA =====
 function initBirthdaySelectors() {
+    console.log('🎂 Inicializando selectores de cumpleaños...');
+    
     const daySelect = document.getElementById('birthdayDay');
     const monthSelect = document.getElementById('birthdayMonth');
     
@@ -29,11 +31,11 @@ function initBirthdaySelectors() {
         return;
     }
     
-    // Clear existing options
+    // Limpiar opciones existentes
     daySelect.innerHTML = '<option value="">Día</option>';
     monthSelect.innerHTML = '<option value="">Mes</option>';
     
-    // Llenar días (1-31)
+    // Días del 1 al 31
     for (let i = 1; i <= 31; i++) {
         const option = document.createElement('option');
         option.value = i;
@@ -41,7 +43,7 @@ function initBirthdaySelectors() {
         daySelect.appendChild(option);
     }
     
-    // Llenar meses
+    // Meses
     const months = [
         'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
         'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
@@ -54,7 +56,7 @@ function initBirthdaySelectors() {
         monthSelect.appendChild(option);
     });
     
-    console.log('✅ Birthday selectors initialized');
+    console.log('✅ Selectores de cumpleaños inicializados');
 }
 
 // ===== FUNCIONES PRINCIPALES =====
@@ -64,7 +66,7 @@ function initBirthdaySelectors() {
  * @param {string} tipo - 'whatsapp' o 'wompi' para ocultar opciones
  */
 function openCheckoutModal(tipo = null) {
-    if (cart.length === 0) {
+    if (window.cart.length === 0) {
         showToast('Tu carrito está vacío', 'warning');
         return;
     }
@@ -79,8 +81,8 @@ function openCheckoutModal(tipo = null) {
 
     // Inicializar Google Places
     setTimeout(() => {
-        if (typeof initGooglePlaces === 'function') {
-            initGooglePlaces();
+        if (typeof window.initGooglePlaces === 'function') {
+            window.initGooglePlaces();
         }
     }, 100);
     
@@ -103,25 +105,45 @@ function openCheckoutModal(tipo = null) {
  */
 function closeCheckoutModal() {
     const modal = document.getElementById('checkoutModal');
-    modal.classList.remove('active');
-    document.body.style.overflow = '';
-    resetCheckoutForm();
+    if (modal) {
+        modal.classList.remove('active');
+        document.body.style.overflow = '';
+        resetCheckoutForm();
+    }
+}
+
+/**
+ * Cierra la página del carrito
+ */
+function closeCartPage() {
+    const cartPage = document.getElementById('cartPage');
+    if (cartPage) {
+        cartPage.classList.remove('active');
+        document.body.style.overflow = '';
+    }
 }
 
 /**
  * Actualiza el resumen del checkout
  */
 function updateCheckoutSummary() {
-    const subtotal = getCartTotal();
+    const subtotal = window.getCartTotal ? window.getCartTotal() : 0;
     
-    document.getElementById('summarySubtotal').textContent = formatPrice(subtotal);
-    document.getElementById('summaryTotal').textContent = formatPrice(subtotal);
+    const subtotalSpan = document.getElementById('summarySubtotal');
+    const totalSpan = document.getElementById('summaryTotal');
+    
+    if (subtotalSpan) subtotalSpan.textContent = window.formatPrice ? window.formatPrice(subtotal) : '$' + subtotal;
+    if (totalSpan) totalSpan.textContent = window.formatPrice ? window.formatPrice(subtotal) : '$' + subtotal;
     
     const deliveryMethod = document.querySelector('input[name="delivery"]:checked');
-    if (deliveryMethod && deliveryMethod.value === 'home') {
-        document.getElementById('summaryShipping').textContent = 'A calcular';
-    } else {
-        document.getElementById('summaryShipping').textContent = '$0';
+    const shippingSpan = document.getElementById('summaryShipping');
+    
+    if (shippingSpan) {
+        if (deliveryMethod && deliveryMethod.value === 'home') {
+            shippingSpan.textContent = 'A calcular';
+        } else {
+            shippingSpan.textContent = '$0';
+        }
     }
 }
 
@@ -183,6 +205,20 @@ function validateCheckoutForm() {
         isValid = false;
     }
 
+    const docType = document.getElementById('docType');
+    if (!docType.value || docType.value === '') {
+        docType.classList.add('error');
+        errors.push('Selecciona tipo de documento');
+        isValid = false;
+    }
+
+    const docNumber = document.getElementById('docNumber');
+    if (!docNumber.value.trim() || !/^[0-9]+$/.test(docNumber.value)) {
+        docNumber.classList.add('error');
+        errors.push('Número de documento inválido');
+        isValid = false;
+    }
+
     const email = document.getElementById('email');
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email.value)) {
@@ -192,7 +228,8 @@ function validateCheckoutForm() {
     }
 
     const phone = document.getElementById('phone');
-    if (!/^[0-9]{10}$/.test(phone.value)) {
+    const phoneVal = phone.value.replace(/\D/g, '');
+    if (phoneVal.length !== 10) {
         phone.classList.add('error');
         errors.push('Teléfono debe tener 10 dígitos');
         isValid = false;
@@ -247,27 +284,6 @@ function validateCheckoutForm() {
     return isValid;
 }
 
-/**
- * Recopila los datos del formulario
- */
-function collectFormData() {
-    const countryCode = document.getElementById('countryCode').value;
-    const phone = document.getElementById('phone').value;
-    const deliveryMethod = document.querySelector('input[name="delivery"]:checked').value;
-
-    return {
-        firstName: document.getElementById('firstName').value.trim(),
-        lastName: document.getElementById('lastName').value.trim(),
-        email: document.getElementById('email').value.trim(),
-        phone: countryCode + phone,
-        delivery: deliveryMethod,
-        address: document.getElementById('address').value.trim(),
-        neighborhood: document.getElementById('neighborhood').value.trim(),
-        city: document.getElementById('city').value.trim(),
-        notes: document.getElementById('notes').value.trim()
-    };
-}
-
 // ===== WHATSAPP =====
 
 /**
@@ -279,7 +295,7 @@ function sendToWhatsApp() {
     }
 
     const formData = collectFormData();
-    const subtotal = getCartTotal();
+    const subtotal = window.getCartTotal ? window.getCartTotal() : 0;
 
     let message = '🛒 *PEDIDO IMOLARTE*\n';
     message += '━━━━━━━━━━━━━━━━━━━\n\n';
@@ -302,15 +318,16 @@ function sendToWhatsApp() {
     message += '\n━━━━━━━━━━━━━━━━━━━\n\n';
 
     message += '📦 *PRODUCTOS*\n\n';
-    cart.forEach((item, index) => {
+    window.cart.forEach((item, index) => {
         message += `${index + 1}. *${item.productName}*\n`;
         message += `   ${item.collection} - ${item.code}\n`;
-        message += `   Cant: ${item.quantity} × ${formatPrice(item.price)}\n`;
-        message += `   💰 ${formatPrice(item.price * item.quantity)}\n\n`;
+        message += `   Cant: ${item.quantity} × ${window.formatPrice ? window.formatPrice(item.price) : '$' + item.price}\n`;
+        const subtotal = item.price * item.quantity;
+        message += `   💰 ${window.formatPrice ? window.formatPrice(subtotal) : '$' + subtotal}\n\n`;
     });
 
     message += '━━━━━━━━━━━━━━━━━━━\n';
-    message += `💵 *TOTAL: ${formatPrice(subtotal)}*\n\n`;
+    message += `💵 *TOTAL: ${window.formatPrice ? window.formatPrice(subtotal) : '$' + subtotal}*\n\n`;
     message += '✅ Términos aceptados\n';
     message += '👋 ¡Gracias por tu pedido!';
 
@@ -320,13 +337,35 @@ function sendToWhatsApp() {
     window.open(whatsappURL, '_blank');
 
     setTimeout(() => {
-        cart = [];
-        saveCart();
-        updateCartUI();
+        window.cart = [];
+        if (typeof window.updateCartUI === 'function') {
+            window.updateCartUI();
+        }
         closeCheckoutModal();
         closeCartPage();
         showToast('¡Pedido enviado! Te contactaremos por WhatsApp.', 'success');
     }, 1000);
+}
+
+/**
+ * Recopila los datos del formulario
+ */
+function collectFormData() {
+    const countryCode = document.getElementById('countryCode').value;
+    const phone = document.getElementById('phone').value;
+    const deliveryMethod = document.querySelector('input[name="delivery"]:checked').value;
+
+    return {
+        firstName: document.getElementById('firstName').value.trim(),
+        lastName: document.getElementById('lastName').value.trim(),
+        email: document.getElementById('email').value.trim(),
+        phone: countryCode + phone,
+        delivery: deliveryMethod,
+        address: document.getElementById('address').value.trim(),
+        neighborhood: document.getElementById('neighborhood').value.trim(),
+        city: document.getElementById('city').value.trim(),
+        notes: document.getElementById('notes').value.trim()
+    };
 }
 
 // ===== FUNCIONES PARA MOSTRAR/OCULTAR OPCIONES =====
@@ -382,27 +421,27 @@ function mostrarTodasLasOpciones() {
     }
 }
 
-// ===== FUNCIONES DE TERMINOS Y CESION (placeholder) =====
+// ===== FUNCIONES PLACEHOLDER =====
 function showTermsAndConditions() {
-    // Esta función debería estar definida en otro archivo
-    console.log('Mostrar términos y condiciones');
-    showInfo('Términos y condiciones - Implementar según necesidad');
+    showInfo('Términos y condiciones - Ver documento adjunto');
 }
 
 function showCesionModal() {
-    // Esta función debería estar definida en otro archivo
-    console.log('Mostrar cesión de datos');
-    showInfo('Cesión de datos - Implementar según necesidad');
+    showInfo('Cesión de datos - Ver documento adjunto');
 }
 
 // ===== EVENT LISTENERS =====
 
 document.addEventListener('DOMContentLoaded', function() {
+    console.log('🚀 Inicializando checkout.js...');
+    
+    // Botón cerrar checkout
     const closeCheckoutBtn = document.getElementById('closeCheckout');
     if (closeCheckoutBtn) {
         closeCheckoutBtn.addEventListener('click', closeCheckoutModal);
     }
 
+    // Formulario de checkout
     const checkoutForm = document.getElementById('checkoutForm');
     if (checkoutForm) {
         checkoutForm.addEventListener('submit', function(e) {
@@ -411,6 +450,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
+    // Opciones de entrega
     const deliveryOptions = document.querySelectorAll('.delivery-option');
     deliveryOptions.forEach(option => {
         option.addEventListener('click', function() {
@@ -445,6 +485,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
+    // Links de términos
     const showTermsLink = document.getElementById('showTerms');
     if (showTermsLink) {
         showTermsLink.addEventListener('click', function(e) {
@@ -461,15 +502,17 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Inicializar selectores de cumpleaños (AHORA FUNCIONA)
+    // INICIALIZAR SELECTORES DE CUMPLEAÑOS (AHORA FUNCIONA)
     initBirthdaySelectors();
 
+    // Limpiar errores al escribir
     document.querySelectorAll('.form-input').forEach(input => {
         input.addEventListener('input', function() {
             this.classList.remove('error');
         });
     });
 
+    // Cerrar con ESC
     document.addEventListener('keydown', function(e) {
         if (e.key === 'Escape') {
             const checkoutModal = document.getElementById('checkoutModal');
@@ -479,7 +522,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    console.log('✅ checkout.js inicializado');
+    console.log('✅ checkout.js inicializado correctamente');
 });
 
-console.log('📦 checkout.js loaded v2.1 (with toast and birthday selectors)');
+console.log('📦 checkout.js loaded v2.2 (CORREGIDO)');
