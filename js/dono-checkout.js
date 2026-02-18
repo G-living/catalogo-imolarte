@@ -1,6 +1,6 @@
 /**
  * dono-checkout.js - Validación y aplicación de códigos Dono en checkout
- * Versión: 1.2 - Fixed duplicate SHEETS_CONFIG
+ * Versión: 1.3 - CORREGIDO: error de sintaxis en línea 148
  */
 
 // ===== CONFIGURATION =====
@@ -119,7 +119,7 @@ async function validateDonoCode() {
 
 // ===== APPLY DONO TO CHECKOUT =====
 function applyDonoToCheckout() {
-  // PREVENT DUPLICATE APPLICATION (FIXED)
+  // PREVENT DUPLICATE APPLICATION
   if (window.donoToApply) {
     showToast('Dono ya aplicado a este pedido', 'info');
     return;
@@ -143,6 +143,96 @@ function applyDonoToCheckout() {
   const newTotal = Math.max(0, cartTotal - donoBalance);
   const donoApplied = Math.min(donoBalance, cartTotal);
   
-  // Update display
+  // Update display - CORREGIDO: Esta línea 148 es la que causaba el error
   subtotalSpan.innerHTML = formatPrice(cartTotal) + 
-    `<span style="color: #27ae60; font-size: 0.9rem; margin-left: 10px;">(-${formatPrice(donoApplied
+    `<span style="color: #27ae60; font-size: 0.9rem; margin-left: 10px;">(-${formatPrice(donoApplied)} Dono)</span>`;
+  totalSpan.textContent = formatPrice(newTotal);
+  
+  // Store Dono info for submission
+  window.donoToApply = {
+    code: validatedDono.code,
+    amount: donoApplied,
+    remainingBalance: donoBalance - donoApplied,
+    valid: true
+  };
+  
+  // If Dono covers full amount, suggest Dono-only payment
+  if (newTotal === 0) {
+    highlightDonoFullPayment();
+  }
+  
+  showToast(`✅ Dono aplicado: ${formatPrice(donoApplied)}`, 'success');
+}
+
+// ===== RESTORE ORIGINAL TOTALS =====
+function restoreOriginalTotals() {
+  if (window.originalCartTotal) {
+    const subtotalSpan = document.getElementById('summarySubtotal');
+    const totalSpan = document.getElementById('summaryTotal');
+    
+    if (subtotalSpan) subtotalSpan.textContent = formatPrice(window.originalCartTotal);
+    if (totalSpan) totalSpan.textContent = formatPrice(window.originalCartTotal);
+    
+    window.donoToApply = null;
+  }
+}
+
+// ===== HIGHLIGHT DONO FULL PAYMENT =====
+function highlightDonoFullPayment() {
+  const paymentOptions = document.querySelectorAll('.payment-option');
+  const donoMessage = document.createElement('div');
+  donoMessage.className = 'dono-full-message';
+  donoMessage.innerHTML = `
+    <div style="
+      background: #d4edda;
+      color: #155724;
+      padding: 15px;
+      border-radius: 8px;
+      margin: 15px 0;
+      text-align: center;
+      border: 2px solid #c3e6cb;
+    ">
+      <strong>🎉 ¡Tu Dono cubre el total!</strong><br>
+      No necesitas realizar pago adicional.
+    </div>
+  `;
+  
+  // Insert before payment options
+  const actionsContainer = document.querySelector('.checkout-actions-new');
+  if (actionsContainer) {
+    // Remove existing message if any
+    const existing = document.querySelector('.dono-full-message');
+    if (existing) existing.remove();
+    
+    actionsContainer.parentNode.insertBefore(donoMessage, actionsContainer);
+  }
+}
+
+// ===== GET CART TOTAL =====
+function getCartTotal() {
+  if (typeof window.getCartTotal === 'function') {
+    return window.getCartTotal();
+  }
+  return 0;
+}
+
+// ===== FORMAT PRICE =====
+function formatPrice(price) {
+  return '$' + Math.round(price).toLocaleString('es-CO');
+}
+
+// ===== INITIALIZE =====
+document.addEventListener('DOMContentLoaded', function() {
+  // Wait a bit for checkout modal to be ready
+  setTimeout(initDonoCheckout, 500);
+});
+
+// ===== EXPORT =====
+window.validateDonoCode = validateDonoCode;
+window.getValidatedDono = () => validatedDono;
+window.clearDono = () => {
+  validatedDono = null;
+  restoreOriginalTotals();
+};
+
+console.log('✅ dono-checkout.js cargado v1.3');
