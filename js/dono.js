@@ -1,11 +1,11 @@
 // js/dono.js – Complete Dono (Gift Credit) flow
 
 import { CONFIG } from './config.js';
-import { showToast, createModal, formatPrice } from './ui.js'; // ← import formatPrice
+import { showToast, createModal, formatPrice } from './ui.js'; // correct import
 import { addToCart } from './cart.js';
 
 /**
- * Open Dono modal
+ * Open the Dono modal
  */
 export function openDonoModal() {
   const modal = createModal('Regala Crédito Exclusivo', `
@@ -34,6 +34,7 @@ export function openDonoModal() {
     ">Agregar al Carrito y Generar Código</button>
   `);
 
+  // Preset buttons
   modal.querySelectorAll('.dono-preset').forEach(btn => {
     btn.onclick = () => {
       document.getElementById('dono-custom-amount').value = btn.dataset.amount;
@@ -42,6 +43,7 @@ export function openDonoModal() {
     };
   });
 
+  // Add to cart
   modal.querySelector('#add-dono-to-cart').onclick = () => addDonoToCart(modal);
 }
 
@@ -82,7 +84,7 @@ async function addDonoToCart(modal) {
     quantity: 1
   });
 
-  // Log to DONOS
+  // Log to DONOS sheet
   try {
     const response = await fetch(CONFIG.APPS_SCRIPT_URL, {
       method: 'POST',
@@ -93,7 +95,7 @@ async function addDonoToCart(modal) {
         purchaseDate: purchaseDate.toISOString(),
         expirationDate: expirationDate.toISOString(),
         issuedAmount: amount,
-        issuerClientId: 'GUEST_' + Date.now(),
+        issuerClientId: 'GUEST_' + Date.now(), // replace with real ID later
         recipientName,
         recipientEmail: document.getElementById('dono-recipient-email').value.trim(),
         recipientPhone: document.getElementById('dono-recipient-phone').value.trim(),
