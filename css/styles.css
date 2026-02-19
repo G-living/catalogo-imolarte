@@ -1,5 +1,12 @@
 /* ============================================================
-   DONO MODE STYLES - Add to end of styles.css
+   ESTILOS ORIGINALES DE IMOLARTE - NO MODIFICAR
+   ============================================================ */
+
+/* Estilos generales y de productos - mantén lo que ya tenías aquí */
+/* ... tus estilos originales ... */
+
+/* ============================================================
+   DONO MODE STYLES - Agregado para nueva funcionalidad
    ============================================================ */
 
 /* Dono Container */
@@ -317,4 +324,80 @@
         transform: translateX(100%);
         opacity: 0;
     }
+}
+
+/* ============================================================
+   CORRECCIÓN DE MODALES - NO BORRAR
+   ============================================================ */
+
+.modal {
+    display: none !important;
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    background-color: rgba(0, 0, 0, 0.7) !important;
+    z-index: 10000 !important;
+    align-items: center !important;
+    justify-content: center !important;
+}
+
+.modal.active {
+    display: flex !important;
+}
+
+.modal-content {
+    background: white !important;
+    max-width: 900px !important;
+    width: 90% !important;
+    max-height: 90vh !important;
+    overflow-y: auto !important;
+    border-radius: 12px !important;
+    position: relative !important;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.3) !important;
+}
+
+/* Para el carrito */
+.cart-page {
+    position: fixed !important;
+    top: 0 !important;
+    right: -100% !important;
+    width: 400px !important;
+    height: 100% !important;
+    background: white !important;
+    z-index: 10001 !important;
+    transition: right 0.3s ease !important;
+    box-shadow: -5px 0 20px rgba(0,0,0,0.1) !important;
+}
+
+.cart-page.active {
+    right: 0 !important;
+}
+
+/* Para el checkout */
+.checkout-modal {
+    display: none !important;
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    background: rgba(0, 0, 0, 0.7) !important;
+    z-index: 10002 !important;
+    align-items: center !important;
+    justify-content: center !important;
+}
+
+.checkout-modal.active {
+    display: flex !important;
+}
+
+.checkout-content {
+    background: white !important;
+    max-width: 600px !important;
+    width: 90% !important;
+    max-height: 90vh !important;
+    overflow-y: auto !important;
+    border-radius: 12px !important;
 }
