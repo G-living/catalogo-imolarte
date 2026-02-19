@@ -1,12 +1,10 @@
 // js/cart.js – Cart state & UI logic
 
-import { showToast } from './ui.js';
+import { showToast, formatPrice } from './ui.js';
 import { CONFIG } from './config.js';
 
-// State
 let cart = JSON.parse(localStorage.getItem('imolarte_cart')) || [];
 
-// Helpers
 function saveCart() {
   localStorage.setItem('imolarte_cart', JSON.stringify(cart));
 }
@@ -15,11 +13,6 @@ function getCartTotal() {
   return cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
 }
 
-function formatPrice(num) {
-  return '$' + Number(num).toLocaleString(CONFIG.PRICE_LOCALE);
-}
-
-// Core functions
 export function addToCart(product) {
   const { description, collection, code, price, quantity = 1 } = product;
 
@@ -36,10 +29,15 @@ export function addToCart(product) {
 }
 
 export function removeCartItem(code, collection) {
-  cart = cart.filter(item => !(item.code === code && item.collection === collection));
-  saveCart();
-  updateCartUI();
-  showToast('Producto eliminado', 'warning');
+  const item = cart.find(i => i.code === code && i.collection === collection);
+  if (!item) return;
+
+  if (confirm(`¿Eliminar "${item.description}" del carrito?`)) {
+    cart = cart.filter(i => !(i.code === code && i.collection === collection));
+    saveCart();
+    updateCartUI();
+    showToast('Producto eliminado', 'warning');
+  }
 }
 
 export function updateCartItemQuantity(code, collection, newQuantity) {
@@ -62,7 +60,6 @@ export function clearCart() {
   showToast('Carrito vaciado', 'info');
 }
 
-// UI update
 export function updateCartUI() {
   const cartCount = document.getElementById('cart-count');
   const cartTotalEl = document.getElementById('cart-total');
@@ -83,7 +80,7 @@ export function updateCartUI() {
             </div>
             <div style="text-align:right;">
               ${formatPrice(item.price)} × 
-              <input type="number" value="${item.quantity}" min="1" style="width:50px;" 
+              <input type="number" value="${item.quantity}" min="1" style="width:60px; text-align:center;" 
                 onchange="updateCartItemQuantity('${item.code}', '${item.collection}', this.value)">
               = ${formatPrice(item.price * item.quantity)}
               <button onclick="removeCartItem('${item.code}', '${item.collection}')">×</button>
@@ -95,9 +92,10 @@ export function updateCartUI() {
 
 // Init
 document.addEventListener('DOMContentLoaded', () => {
-  updateCartUI();
-  console.log('Cart initialized – items:', cart.length);
+  if (document.getElementById('cartPage')) {
+    updateCartUI();
+    console.log('Cart initialized – items:', cart.length);
+  }
 });
 
-// Exports
 export { cart, addToCart, removeCartItem, updateCartItemQuantity, getCartTotal, clearCart, updateCartUI };

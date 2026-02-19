@@ -1,19 +1,11 @@
-// js/ui.js – Shared UI helpers (toasts, loading, modals, formatPrice)
+// js/ui.js – Shared UI helpers
 
 import { CONFIG } from './config.js';
 
-/**
- * Format price in COP
- * @param {number} num
- * @returns {string} e.g. $1.234.567
- */
 export function formatPrice(num) {
   return '$' + Number(num).toLocaleString(CONFIG.PRICE_LOCALE);
 }
 
-/**
- * Show toast notification
- */
 export function showToast(message, type = 'info') {
   const bg = {
     success: '#28a745',
@@ -24,7 +16,7 @@ export function showToast(message, type = 'info') {
 
   Toastify({
     text: message,
-    duration: CONFIG.TOAST_DURATION || 5000,
+    duration: CONFIG.TOAST_DURATION,
     gravity: "top",
     position: "center",
     backgroundColor: bg,
@@ -32,9 +24,6 @@ export function showToast(message, type = 'info') {
   }).showToast();
 }
 
-/**
- * Show loading on button
- */
 export function showLoading(btn, text = 'Procesando...') {
   if (!btn) return;
   btn.dataset.originalText = btn.innerHTML;
@@ -42,9 +31,6 @@ export function showLoading(btn, text = 'Procesando...') {
   btn.disabled = true;
 }
 
-/**
- * Hide loading on button
- */
 export function hideLoading(btn) {
   if (!btn || !btn.dataset.originalText) return;
   btn.innerHTML = btn.dataset.originalText;
@@ -52,9 +38,6 @@ export function hideLoading(btn) {
   delete btn.dataset.originalText;
 }
 
-/**
- * Create centered modal
- */
 export function createModal(title, contentHTML, onClose = () => {}) {
   const modal = document.createElement('div');
   modal.style.cssText = `
@@ -64,20 +47,19 @@ export function createModal(title, contentHTML, onClose = () => {}) {
 
   modal.innerHTML = `
     <div style="
-      background: white; border-radius: 16px; padding: 32px; max-width: 500px; width: 90%;
-      box-shadow: 0 20px 40px rgba(0,0,0,0.3); position: relative;
+      background: white; border-radius: 16px; padding: 32px; max-width: 600px; width: 90%;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.3); position: relative; max-height: 90vh; overflow-y: auto;
     ">
       <button class="close-modal" style="
         position: absolute; top: 16px; right: 16px; background: none; border: none;
-        font-size: 28px; cursor: pointer; color: #666;
+        font-size: 32px; cursor: pointer; color: #666;
       ">×</button>
       <h2 style="text-align:center; color:#b8975e; margin-bottom:24px;">${title}</h2>
       ${contentHTML}
     </div>
   `;
 
-  const closeBtn = modal.querySelector('.close-modal');
-  closeBtn.onclick = () => {
+  modal.querySelector('.close-modal').onclick = () => {
     modal.remove();
     onClose();
   };

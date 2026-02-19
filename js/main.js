@@ -1,31 +1,33 @@
-// js/main.js – Entry point – imports & initializes everything
+// js/main.js – Entry point – imports & initializes only what's present
 
 import { CONFIG } from './config.js';
 import { showToast } from './ui.js';
 import { addToCart, updateCartUI } from './cart.js';
-import { renderProducts, injectDonoButton } from './catalog.js'; // create catalog.js next
-import { initDonoMode } from './dono.js'; // create dono.js next
-import { initCheckout } from './checkout.js'; // create checkout.js next
+import { renderProducts, injectDonoButton } from './catalog.js';
+import { openDonoModal } from './dono.js';
+import { initCheckout } from './checkout.js';
 
-// Global access if needed
+// Global access
 window.addToCart = addToCart;
 window.showToast = showToast;
 
-// === INITIALIZATION ===
+// Lazy init – only activate what exists on page
 document.addEventListener('DOMContentLoaded', () => {
-  console.log('IMOLARTE – Main v1.0 initialized');
+  console.log('IMOLARTE – Main initialized');
 
-  // Render catalogue
-  renderProducts();
+  if (document.getElementById('products-grid')) {
+    renderProducts();
+    injectDonoButton();
+  }
 
-  // Inject Dono button
-  injectDonoButton();
+  if (document.getElementById('cartButton') || document.getElementById('cartPage')) {
+    updateCartUI();
+    // Cart listeners (in cart.js)
+  }
 
-  // Init checkout flow
-  initCheckout();
+  if (document.getElementById('checkoutSection') || document.getElementById('checkoutForm')) {
+    initCheckout();
+  }
 
-  // Cart UI update
-  updateCartUI();
-
-  // Any other global setup...
+  // Add more lazy inits as needed
 });

@@ -1,12 +1,9 @@
-// js/dono.js – Complete Dono (Gift Credit) flow
+// js/dono.js – Complete Dono flow
 
 import { CONFIG } from './config.js';
-import { showToast, createModal, formatPrice } from './ui.js'; // correct import
+import { showToast, createModal, formatPrice } from './ui.js';
 import { addToCart } from './cart.js';
 
-/**
- * Open the Dono modal
- */
 export function openDonoModal() {
   const modal = createModal('Regala Crédito Exclusivo', `
     <label style="display:block; margin:16px 0 8px; font-weight:bold;">Monto del Dono</label>
@@ -34,7 +31,6 @@ export function openDonoModal() {
     ">Agregar al Carrito y Generar Código</button>
   `);
 
-  // Preset buttons
   modal.querySelectorAll('.dono-preset').forEach(btn => {
     btn.onclick = () => {
       document.getElementById('dono-custom-amount').value = btn.dataset.amount;
@@ -43,23 +39,19 @@ export function openDonoModal() {
     };
   });
 
-  // Add to cart
   modal.querySelector('#add-dono-to-cart').onclick = () => addDonoToCart(modal);
 }
 
-// === ADD DONO TO CART & LOG ===
 async function addDonoToCart(modal) {
-  const amountInput = document.getElementById('dono-custom-amount');
-  const amount = Number(amountInput.value);
-
+  const amount = Number(document.getElementById('dono-custom-amount').value);
   if (isNaN(amount) || amount < CONFIG.DONO.MIN_AMOUNT || amount > CONFIG.DONO.MAX_AMOUNT) {
-    showToast(`Monto inválido (entre ${formatPrice(CONFIG.DONO.MIN_AMOUNT)} y ${formatPrice(CONFIG.DONO.MAX_AMOUNT)})`, 'error');
+    showToast(`Monto inválido`, 'error');
     return;
   }
 
-  const recipientName = document.getElementById('dono-recipient-name').value.trim();
-  if (!recipientName) {
-    showToast('Por favor ingresa el nombre del destinatario', 'error');
+  const name = document.getElementById('dono-recipient-name').value.trim();
+  if (!name) {
+    showToast('Ingresa el nombre del destinatario', 'error');
     return;
   }
 
@@ -84,9 +76,9 @@ async function addDonoToCart(modal) {
     quantity: 1
   });
 
-  // Log to DONOS sheet
+  // Log to DONOS
   try {
-    const response = await fetch(CONFIG.APPS_SCRIPT_URL, {
+    await fetch(CONFIG.APPS_SCRIPT_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -95,26 +87,17 @@ async function addDonoToCart(modal) {
         purchaseDate: purchaseDate.toISOString(),
         expirationDate: expirationDate.toISOString(),
         issuedAmount: amount,
-        issuerClientId: 'GUEST_' + Date.now(), // replace with real ID later
-        recipientName,
+        issuerClientId: 'GUEST_' + Date.now(),
+        recipientName: name,
         recipientEmail: document.getElementById('dono-recipient-email').value.trim(),
         recipientPhone: document.getElementById('dono-recipient-phone').value.trim(),
         status: 'ACTIVE',
-        usedAmount: 0,
-        lastUsedDate: '',
-        redeemedInOrderId: ''
+        usedAmount: 0
       })
     });
-
-    const result = await response.json();
-    if (result.success) {
-      showToast(`¡Dono creado! Código: ${donoCode}`, 'success');
-    } else {
-      showToast('Error al guardar dono (no crítico)', 'warning');
-    }
+    showToast(`¡Dono creado! Código: ${donoCode}`, 'success');
   } catch (err) {
-    console.error('Dono log error:', err);
-    showToast('Dono agregado al carrito, pero error al guardar', 'warning');
+    showToast('Dono agregado, pero error al guardar', 'warning');
   }
 
   // WhatsApp share

@@ -1,21 +1,21 @@
-// js/catalog.js – Catalogue rendering (Garofano Blu only + popup for all collections)
+// js/catalog.js – Product rendering + Dono button injection
 
-import { addToCart, updateCartUI } from './cart.js';
-import { showToast, formatPrice, createModal } from './ui.js';
+import { addToCart } from './cart.js';
+import { showToast, formatPrice } from './ui.js';
 import { CONFIG } from './config.js';
 
-// Products from your price list (Euro ex-works)
+// Products from IMOLARTE price list (Euro ex-works)
 // Only Garofano Blu rendered on main index (real pics)
-// All collections shown in popup with comodin pics
+// All collections in popup with comodin pics
 const PRODUCTS = [
-  // Garofano Blu only on main catalogue (real pics)
+  // Garofano Blu only (real images assumed in /images/GB*.jpg)
   { sku: 'GB110', name: 'New appetizer plate', collection: 'GAROFANO BLU', euroPrice: 64.2, image: '/images/GB110.jpg' },
   { sku: 'GB105', name: 'Appetizer plate', collection: 'GAROFANO BLU', euroPrice: 64.2, image: '/images/GB105.jpg' },
   { sku: 'GB106', name: 'Soup serving bowl x 12', collection: 'GAROFANO BLU', euroPrice: 224.328, image: '/images/GB106.jpg' },
-  // ... add all Garofano Blu SKUs from your Excel ...
+  // Add all Garofano Blu SKUs from your Excel...
 ];
 
-// All collections (for popup) – comodin pics for non-Blu
+// All collections for popup (comodin for non-Blu)
 const ALL_COLLECTIONS = [
   { collection: 'GIALLO FIORE', comodinImage: '/images/comodin-giallo.jpg' },
   { collection: 'BIANCO FIORE', comodinImage: '/images/comodin-bianco.jpg' },
@@ -36,7 +36,14 @@ export function renderProducts() {
 
   grid.innerHTML = '';
 
-  PRODUCTS.forEach(product => {
+  const mainProducts = PRODUCTS.filter(p => p.collection === 'GAROFANO BLU');
+
+  if (mainProducts.length === 0) {
+    grid.innerHTML = '<p style="text-align:center; padding:40px;">Catálogo Garofano Blu en construcción</p>';
+    return;
+  }
+
+  mainProducts.forEach(product => {
     const copPrice = Math.round(product.euroPrice * CONFIG.PRICING_MULTIPLIER);
 
     const card = document.createElement('div');
@@ -47,28 +54,24 @@ export function renderProducts() {
       <h3>${product.name}</h3>
       <p>${product.collection}</p>
       <p class="price">${formatPrice(copPrice)}</p>
-      <button class="view-details">Ver Detalles</button>
+      <button class="view-details">Ver Opciones</button>
     `;
     card.querySelector('.view-details').onclick = () => openProductPopup(product);
     grid.appendChild(card);
   });
 
-  if (PRODUCTS.length === 0) {
-    grid.innerHTML = '<p style="text-align:center; padding:40px;">Catálogo en construcción – Garofano Blu próximamente</p>';
-  }
-
-  console.log(`Rendered ${PRODUCTS.length} Garofano Blu products`);
+  console.log(`Rendered ${mainProducts.length} Garofano Blu products`);
 }
 
-// Popup for full collections
+// Popup – main Garofano Blu pic + all collections with comodin pics
 function openProductPopup(mainProduct) {
   const modal = createModal(mainProduct.name, `
     <img src="${mainProduct.image}" alt="${mainProduct.name}" style="width:100%; max-height:400px; object-fit:contain; margin-bottom:20px;">
     <h3>${mainProduct.name} - Garofano Blu</h3>
     <p>Selecciona colección y cantidad:</p>
-    <div id="collection-options"></div>
+    <div id="collection-options" style="max-height:300px; overflow-y:auto;"></div>
     <button id="add-selected-to-cart" style="width:100%; padding:16px; background:#b8975e; color:white; border:none; border-radius:12px; font-size:1.3rem; margin-top:20px;">
-      Agregar a Carrito
+      Agregar Seleccionados a Carrito
     </button>
   `);
 
