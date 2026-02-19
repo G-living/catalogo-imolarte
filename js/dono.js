@@ -1,249 +1,201 @@
 /**
- * dono.js - Modo Dono: Compra de crédito para regalar
- * Genera códigos de 10 caracteres alfanuméricos con prefijo DNO-
- * Versión: 1.2 - Fixed duplicate SHEETS_CONFIG
+ * dono-checkout.js - Validación y aplicación de códigos Dono en checkout
+ * Versión: 1.4 - CORREGIDO: Error de recursión en getCartTotal
  */
 
 // ===== CONFIGURATION =====
-const DONO_CONFIG = {
-  prefix: 'DNO-',
-  codeLength: 10,
-  expirationDays: 365,
-  minAmount: 50000,
-  maxPerOrder: 5
-};
-
-const DONO_SHEETS_CONFIG = {
+const DONO_CHECKOUT_SHEETS_CONFIG = {
   webAppUrl: 'https://script.google.com/macros/s/AKfycbw_qPay6DfCh-xxeosxmD-tuEINf9UIPT_i_0sNg5b6GbD-zZc93ZsaxjrAoqkn_m1u/exec'
 };
 
 // ===== STATE =====
-let selectedDonoAmount = 0;
+let validatedDono = null; // { code, balance, valid }
 
-// ===== INITIALIZE DONO MODAL =====
-function initDonoModal() {
-  console.log('🎁 Inicializando Modo Dono...');
+// ===== INITIALIZE =====
+function initDonoCheckout() {
+  console.log('🎁 Inicializando validación Dono en checkout...');
   
-  const donoButton = document.getElementById('donoButton');
-  const closeDonoModal = document.getElementById('closeDonoModal');
-  const cancelDono = document.getElementById('cancelDono');
-  const addDonoToCart = document.getElementById('addDonoToCart');
-  const donoModal = document.getElementById('donoModal');
+  const validateBtn = document.getElementById('validateDonoBtn');
+  const donoInput = document.getElementById('donoCode');
   
-  if (!donoButton || !donoModal) {
-    console.error('Elementos Dono no encontrados');
+  if (!validateBtn || !donoInput) {
+    console.warn('Elementos Dono no encontrados en checkout');
     return;
   }
   
-  // Open modal
-  donoButton.addEventListener('click', () => {
-    openDonoModal();
-  });
+  validateBtn.addEventListener('click', validateDonoCode);
   
-  // Close modal
-  const closeFunctions = [closeDonoModal, cancelDono];
-  closeFunctions.forEach(btn => {
-    if (btn) {
-      btn.addEventListener('click', () => {
-        closeDonoModal();
-      });
+  donoInput.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      validateDonoCode();
     }
   });
   
-  // Click outside to close
-  donoModal.addEventListener('click', (e) => {
-    if (e.target === donoModal) {
-      closeDonoModal();
-    }
-  });
-  
-  // Add to cart
-  if (addDonoToCart) {
-    addDonoToCart.addEventListener('click', handleAddDonoToCart);
-  }
-  
-  // Preset amounts
-  document.querySelectorAll('.dono-preset').forEach(btn => {
-    btn.addEventListener('click', function() {
-      const amount = parseInt(this.dataset.amount);
-      selectDonoAmount(amount);
-      
-      // Remove selected class from all presets
-      document.querySelectorAll('.dono-preset').forEach(p => p.classList.remove('selected'));
-      this.classList.add('selected');
-      
-      // Clear custom amount
-      const customInput = document.getElementById('donoCustomAmount');
-      if (customInput) customInput.value = '';
-    });
-  });
-  
-  // Custom amount
-  const customInput = document.getElementById('donoCustomAmount');
-  if (customInput) {
-    customInput.addEventListener('input', function() {
-      const amount = parseInt(this.value);
-      if (amount >= DONO_CONFIG.minAmount) {
-        selectDonoAmount(amount);
-        
-        // Remove selected class from presets
-        document.querySelectorAll('.dono-preset').forEach(p => p.classList.remove('selected'));
+  donoInput.addEventListener('input', () => {
+    if (validatedDono) {
+      validatedDono = null;
+      const resultDiv = document.getElementById('donoValidationResult');
+      if (resultDiv) {
+        resultDiv.innerHTML = '';
+        resultDiv.className = 'dono-validation-result';
       }
-    });
-  }
-  
-  console.log('✅ Modo Dono inicializado');
-}
-
-// ===== OPEN MODAL =====
-function openDonoModal() {
-  const modal = document.getElementById('donoModal');
-  if (modal) {
-    modal.classList.add('active');
-    document.body.style.overflow = 'hidden';
-    resetDonoForm();
-  }
-}
-
-// ===== CLOSE MODAL =====
-function closeDonoModal() {
-  const modal = document.getElementById('donoModal');
-  if (modal) {
-    modal.classList.remove('active');
-    document.body.style.overflow = '';
-  }
-}
-
-// ===== RESET FORM =====
-function resetDonoForm() {
-  document.getElementById('donoRecipientName').value = '';
-  document.getElementById('donoRecipientEmail').value = '';
-  document.getElementById('donoRecipientPhone').value = '';
-  document.getElementById('donoCustomAmount').value = '';
-  document.getElementById('donoMessage').value = '';
-  
-  document.querySelectorAll('.dono-preset').forEach(p => p.classList.remove('selected'));
-  selectedDonoAmount = 0;
-  updateDonoTotal();
-}
-
-// ===== SELECT AMOUNT =====
-function selectDonoAmount(amount) {
-  if (amount < DONO_CONFIG.minAmount) {
-    showToast(`El monto mínimo es ${formatPrice(DONO_CONFIG.minAmount)}`, 'warning');
-    return;
-  }
-  selectedDonoAmount = amount;
-  updateDonoTotal();
-}
-
-// ===== UPDATE TOTAL =====
-function updateDonoTotal() {
-  const totalSpan = document.getElementById('donoTotalAmount');
-  if (totalSpan) {
-    totalSpan.textContent = formatPrice(selectedDonoAmount);
-  }
-}
-
-// ===== GENERATE 10-CHARACTER CODE =====
-function generateDonoCode() {
-  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-  let result = '';
-  for (let i = 0; i < DONO_CONFIG.codeLength; i++) {
-    result += chars.charAt(Math.floor(Math.random() * chars.length));
-  }
-  return DONO_CONFIG.prefix + result;
-}
-
-// ===== ADD DONO TO CART =====
-async function handleAddDonoToCart() {
-  // Validate amount
-  if (selectedDonoAmount < DONO_CONFIG.minAmount) {
-    showToast(`Selecciona un monto mínimo de ${formatPrice(DONO_CONFIG.minAmount)}`, 'error');
-    return;
-  }
-  
-  // Validate recipient name
-  const recipientName = document.getElementById('donoRecipientName').value.trim();
-  if (!recipientName) {
-    showToast('Ingresa el nombre del beneficiario', 'error');
-    document.getElementById('donoRecipientName').focus();
-    return;
-  }
-  
-  // Get optional fields
-  const recipientEmail = document.getElementById('donoRecipientEmail').value.trim();
-  const recipientPhone = document.getElementById('donoRecipientPhone').value.trim();
-  const message = document.getElementById('donoMessage').value.trim();
-  
-  // Generate Dono code
-  const donoCode = generateDonoCode();
-  
-  // Create complete Dono item first (FIXED)
-  const donoItem = {
-    productName: '🎁 Crédito Dono',
-    description: `Crédito para ${recipientName}`,
-    collection: 'DONO',
-    code: donoCode,
-    price: selectedDonoAmount,
-    quantity: 1,
-    isDono: true,
-    recipientName: recipientName,
-    recipientEmail: recipientEmail,
-    recipientPhone: recipientPhone,
-    message: message,
-    donoCode: donoCode
-  };
-  
-  // Add to cart using the existing function
-  if (typeof window.addToCart === 'function') {
-    // Call addToCart with basic params
-    window.addToCart(
-      donoItem.productName,
-      donoItem.collection,
-      donoItem.code,
-      donoItem.price,
-      donoItem.quantity
-    );
-    
-    // Find the newly added item and enhance it with Dono data
-    const addedItem = window.cart.find(item => item.code === donoCode);
-    if (addedItem) {
-      Object.assign(addedItem, donoItem);
+      restoreOriginalTotals();
     }
-    
-    showToast(`✅ Dono agregado: ${formatPrice(selectedDonoAmount)}`, 'success');
-    closeDonoModal();
-  } else {
-    console.error('cart.js no disponible');
-    showToast('Error al agregar al carrito', 'error');
-  }
+  });
+  
+  console.log('✅ Validación Dono inicializada');
 }
 
-// ===== REGISTER DONO PURCHASE IN SHEETS =====
-async function registerDonoPurchase(donoData, pedidoId) {
+// ===== VALIDATE DONO CODE =====
+async function validateDonoCode() {
+  const donoInput = document.getElementById('donoCode');
+  const resultDiv = document.getElementById('donoValidationResult');
+  const cartTotal = getCartTotalFromCart(); // Usar la función correcta
+  
+  if (!donoInput || !resultDiv) return;
+  
+  const code = donoInput.value.trim().toUpperCase();
+  
+  if (!code) {
+    resultDiv.innerHTML = 'Ingresa un código Dono';
+    resultDiv.className = 'dono-validation-result invalid';
+    return;
+  }
+  
+  resultDiv.innerHTML = 'Validando...';
+  resultDiv.className = 'dono-validation-result info';
+  
   try {
     const params = new URLSearchParams({
-      action: 'PURCHASE_DONO',
-      amount: donoData.amount,
-      issuerClientId: donoData.clienteId || '',
-      recipientName: donoData.recipientName,
-      recipientEmail: donoData.recipientEmail || '',
-      recipientPhone: donoData.recipientPhone || '',
-      pedidoId: pedidoId
+      action: 'VALIDATE_DONO',
+      donoCode: code,
+      cartAmount: cartTotal
     });
     
-    const response = await fetch(DONO_SHEETS_CONFIG.webAppUrl, {
+    const response = await fetch(DONO_CHECKOUT_SHEETS_CONFIG.webAppUrl, {
       method: 'POST',
       body: params
     });
     
     const result = await response.json();
-    return result;
+    
+    if (result.valid) {
+      validatedDono = {
+        code: code,
+        balance: result.balance,
+        valid: true
+      };
+      
+      resultDiv.innerHTML = `
+        <strong>✅ Código válido!</strong><br>
+        Saldo disponible: ${formatPrice(result.balance)}<br>
+        ${result.balance >= cartTotal 
+          ? '🎉 Cubre el total de tu compra' 
+          : `💡 Cubre ${formatPrice(result.balance)} del total`}
+      `;
+      resultDiv.className = 'dono-validation-result valid';
+      
+      applyDonoToCheckout();
+      
+    } else {
+      validatedDono = null;
+      resultDiv.innerHTML = `❌ ${result.error || 'Código inválido'}`;
+      resultDiv.className = 'dono-validation-result invalid';
+    }
     
   } catch (error) {
-    console.error('Error registering Dono:', error);
-    return { success: false };
+    console.error('Error validating Dono:', error);
+    resultDiv.innerHTML = '❌ Error de conexión';
+    resultDiv.className = 'dono-validation-result invalid';
+  }
+}
+
+// ===== GET CART TOTAL - CORREGIDO (sin recursión) =====
+function getCartTotalFromCart() {
+  if (typeof window.getCartTotal === 'function') {
+    return window.getCartTotal(); // Llama a la función de cart.js
+  }
+  return 0;
+}
+
+// ===== APPLY DONO TO CHECKOUT =====
+function applyDonoToCheckout() {
+  if (window.donoToApply) {
+    showToast('Dono ya aplicado a este pedido', 'info');
+    return;
+  }
+  
+  if (!validatedDono) return;
+  
+  const cartTotal = getCartTotalFromCart(); // Usar la función corregida
+  const subtotalSpan = document.getElementById('summarySubtotal');
+  const totalSpan = document.getElementById('summaryTotal');
+  
+  if (!subtotalSpan || !totalSpan) return;
+  
+  if (!window.originalCartTotal) {
+    window.originalCartTotal = cartTotal;
+  }
+  
+  const donoBalance = validatedDono.balance;
+  const newTotal = Math.max(0, cartTotal - donoBalance);
+  const donoApplied = Math.min(donoBalance, cartTotal);
+  
+  subtotalSpan.innerHTML = formatPrice(cartTotal) + 
+    `<span style="color: #27ae60; font-size: 0.9rem; margin-left: 10px;">(-${formatPrice(donoApplied)} Dono)</span>`;
+  totalSpan.textContent = formatPrice(newTotal);
+  
+  window.donoToApply = {
+    code: validatedDono.code,
+    amount: donoApplied,
+    remainingBalance: donoBalance - donoApplied,
+    valid: true
+  };
+  
+  if (newTotal === 0) {
+    highlightDonoFullPayment();
+  }
+  
+  showToast(`✅ Dono aplicado: ${formatPrice(donoApplied)}`, 'success');
+}
+
+function restoreOriginalTotals() {
+  if (window.originalCartTotal) {
+    const subtotalSpan = document.getElementById('summarySubtotal');
+    const totalSpan = document.getElementById('summaryTotal');
+    
+    if (subtotalSpan) subtotalSpan.textContent = formatPrice(window.originalCartTotal);
+    if (totalSpan) totalSpan.textContent = formatPrice(window.originalCartTotal);
+    
+    window.donoToApply = null;
+  }
+}
+
+function highlightDonoFullPayment() {
+  const donoMessage = document.createElement('div');
+  donoMessage.className = 'dono-full-message';
+  donoMessage.innerHTML = `
+    <div style="
+      background: #d4edda;
+      color: #155724;
+      padding: 15px;
+      border-radius: 8px;
+      margin: 15px 0;
+      text-align: center;
+      border: 2px solid #c3e6cb;
+    ">
+      <strong>🎉 ¡Tu Dono cubre el total!</strong><br>
+      No necesitas realizar pago adicional.
+    </div>
+  `;
+  
+  const actionsContainer = document.querySelector('.checkout-actions-new');
+  if (actionsContainer) {
+    const existing = document.querySelector('.dono-full-message');
+    if (existing) existing.remove();
+    
+    actionsContainer.parentNode.insertBefore(donoMessage, actionsContainer);
   }
 }
 
@@ -254,13 +206,15 @@ function formatPrice(price) {
 
 // ===== INITIALIZE =====
 document.addEventListener('DOMContentLoaded', function() {
-  initDonoModal();
+  setTimeout(initDonoCheckout, 500);
 });
 
 // ===== EXPORT =====
-window.openDonoModal = openDonoModal;
-window.closeDonoModal = closeDonoModal;
-window.generateDonoCode = generateDonoCode;
-window.registerDonoPurchase = registerDonoPurchase;
+window.validateDonoCode = validateDonoCode;
+window.getValidatedDono = () => validatedDono;
+window.clearDono = () => {
+  validatedDono = null;
+  restoreOriginalTotals();
+};
 
-console.log('✅ dono.js cargado v1.2');
+console.log('✅ dono-checkout.js cargado v1.4');

@@ -1,14 +1,12 @@
 /**
  * ================================================================
- * IMOLARTE - CART.JS SIMPLE
+ * IMOLARTE - CART.JS
  * ================================================================
- * Carrito con funciones básicas
- * Versión: 6.0 DESDE CERO
+ * Versión: 6.1 - Con botón CHECKOUT visible
  * ================================================================
  */
 
 // ===== VARIABLES GLOBALES =====
-
 window.cart = [];
 
 // ===== FUNCIONES DE CARRITO =====
@@ -17,7 +15,6 @@ window.cart = [];
  * Agrega producto al carrito
  */
 function addToCart(description, collection, code, price, quantity) {
-  // Buscar si ya existe
   const existingIndex = window.cart.findIndex(item => 
     item.code === code && item.collection === collection
   );
@@ -35,6 +32,9 @@ function addToCart(description, collection, code, price, quantity) {
   }
 
   updateCartUI();
+  if (typeof window.showToast === 'function') {
+    window.showToast(`✅ ${description} agregado al carrito`, 'success');
+  }
   console.log('✅ Producto agregado:', description);
 }
 
@@ -46,6 +46,9 @@ function removeCartItem(code) {
   if (index > -1) {
     window.cart.splice(index, 1);
     updateCartUI();
+    if (typeof window.showToast === 'function') {
+      window.showToast('🗑️ Producto eliminado', 'info');
+    }
     console.log('🗑️ Producto eliminado');
   }
 }
@@ -99,13 +102,14 @@ function updateCartUI() {
 function updateCartCount() {
   const badge = document.getElementById('cartBadge');
   if (badge) {
-    badge.textContent = window.cart.length;
-    badge.style.display = window.cart.length > 0 ? 'flex' : 'none';
+    const itemCount = window.cart.length;
+    badge.textContent = itemCount;
+    badge.style.display = itemCount > 0 ? 'flex' : 'none';
   }
 }
 
 /**
- * Actualiza la página del carrito
+ * Actualiza la página del carrito - VERSIÓN CON BOTÓN CHECKOUT
  */
 function updateCartPage() {
   const itemsContainer = document.getElementById('cartItems');
@@ -165,7 +169,7 @@ function updateCartPage() {
 
   itemsContainer.innerHTML = itemsHTML;
 
-  // Renderizar resumen
+  // Renderizar resumen CON BOTÓN CHECKOUT
   const total = getCartTotal();
   const itemCount = window.cart.reduce((sum, item) => sum + item.quantity, 0);
 
@@ -218,6 +222,7 @@ function showCartPage() {
     cartPage.classList.add('active');
     document.body.style.overflow = 'hidden';
     updateCartUI();
+    console.log('🛒 Carrito abierto');
   }
 }
 
@@ -229,29 +234,28 @@ function hideCartPage() {
   if (cartPage) {
     cartPage.classList.remove('active');
     document.body.style.overflow = 'auto';
+    console.log('🛒 Carrito cerrado');
   }
 }
 
 // ===== INICIALIZACIÓN =====
-
 document.addEventListener('DOMContentLoaded', () => {
-  // Botón del carrito
+  console.log('🚀 Inicializando cart.js...');
+  
   const cartBtn = document.getElementById('cartButton');
   if (cartBtn) {
     cartBtn.addEventListener('click', showCartPage);
   }
 
-  // Botón cerrar carrito
   const closeBtn = document.getElementById('closeCart');
   if (closeBtn) {
     closeBtn.addEventListener('click', hideCartPage);
   }
 
-  console.log('✅ Cart v6.0 inicializado');
+  console.log('✅ Cart v6.1 inicializado');
 });
 
 // ===== EXPORTAR FUNCIONES =====
-
 window.addToCart = addToCart;
 window.removeCartItem = removeCartItem;
 window.updateCartItemQuantity = updateCartItemQuantity;
