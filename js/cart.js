@@ -1,12 +1,12 @@
 // js/cart.js – Cart state & UI logic
 
 import { showToast } from './ui.js';
-import { formatPrice } from './utils.js'; // We'll create utils.js next if needed
+import { CONFIG } from './config.js';
 
-// === STATE ===
+// State
 let cart = JSON.parse(localStorage.getItem('imolarte_cart')) || [];
 
-// === HELPERS ===
+// Helpers
 function saveCart() {
   localStorage.setItem('imolarte_cart', JSON.stringify(cart));
 }
@@ -16,10 +16,10 @@ function getCartTotal() {
 }
 
 function formatPrice(num) {
-  return '$' + Number(num).toLocaleString('es-CO');
+  return '$' + Number(num).toLocaleString(CONFIG.PRICE_LOCALE);
 }
 
-// === CORE FUNCTIONS ===
+// Core functions
 export function addToCart(product) {
   const { description, collection, code, price, quantity = 1 } = product;
 
@@ -62,7 +62,7 @@ export function clearCart() {
   showToast('Carrito vaciado', 'info');
 }
 
-// === UI UPDATE ===
+// UI update
 export function updateCartUI() {
   const cartCount = document.getElementById('cart-count');
   const cartTotalEl = document.getElementById('cart-total');
@@ -93,7 +93,7 @@ export function updateCartUI() {
   }
 }
 
-// === INIT ===
+// Init
 document.addEventListener('DOMContentLoaded', () => {
   updateCartUI();
   console.log('Cart initialized – items:', cart.length);

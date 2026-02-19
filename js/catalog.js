@@ -1,48 +1,49 @@
 // js/catalog.js – Product rendering + Dono button injection
 
 import { addToCart } from './cart.js';
-import { showToast, formatPrice } from './ui.js'; // correct import
+import { showToast, formatPrice } from './ui.js';
 import { CONFIG } from './config.js';
 
-// Dummy products – replace with real data later
+// Products with base Euro prices (ex-works Italy) – your real list here
+// We'll convert to COP on render using the stable multiplier
 const PRODUCTS = [
-  { id: '001', description: 'Vaso Cerámico Clásico', collection: 'Classica', code: 'VCL-001', price: 150000, image: 'https://via.placeholder.com/300x300/cccccc/000000?text=Vaso+Classico' },
-  { id: '002', description: 'Plato Decorativo Moderno', collection: 'Moderna', code: 'PDM-002', price: 280000, image: 'https://via.placeholder.com/300x300/cccccc/000000?text=Plato+Moderno' },
-  // Add your real products here...
+  { id: '001', description: 'Vaso Cerámico Clásico', collection: 'Classica', code: 'VCL-001', euroPrice: 150, image: 'https://via.placeholder.com/300x300?text=Vaso+Classico' },
+  { id: '002', description: 'Plato Decorativo Moderno', collection: 'Moderna', code: 'PDM-002', euroPrice: 280, image: 'https://via.placeholder.com/300x300?text=Plato+Moderno' },
+  // Add your full catalogue – Euro prices only, COP calculated below
+  // Example: { id: '003', description: '...', collection: '...', code: '...', euroPrice: 450, image: '...' },
 ];
 
-// Render catalogue
+// Render catalogue – show ONLY COP prices (no Euro visible)
 export function renderProducts() {
   const grid = document.getElementById('products-grid');
-  if (!grid) {
-    console.warn('No #products-grid element found');
-    return;
-  }
+  if (!grid) return;
 
-  grid.innerHTML = ''; // Clear previous content
+  grid.innerHTML = '';
 
   PRODUCTS.forEach(product => {
+    const copPrice = Math.round(product.euroPrice * CONFIG.PRICING_MULTIPLIER); // Stable COP price
+
     const card = document.createElement('div');
     card.className = 'product-card';
     card.innerHTML = `
-      <img src="${product.image}" alt="${product.description}" loading="lazy" style="width:100%; height:auto;">
+      <img src="${product.image}" alt="${product.description}" loading="lazy">
       <h3>${product.description}</h3>
       <p>${product.collection}</p>
-      <p class="price">${formatPrice(product.price)}</p>
-      <button onclick="addToCart({description: '${product.description}', collection: '${product.collection}', code: '${product.code}', price: ${product.price}, quantity: 1})">
+      <p class="price">${formatPrice(copPrice)}</p>
+      <button onclick="addToCart({description: '${product.description}', collection: '${product.collection}', code: '${product.code}', price: ${copPrice}, quantity: 1})">
         Agregar al Carrito
       </button>
     `;
     grid.appendChild(card);
   });
 
-  console.log(`Rendered ${PRODUCTS.length} products`);
+  console.log(`Rendered ${PRODUCTS.length} products with stable COP prices (multiplier: ${CONFIG.PRICING_MULTIPLIER})`);
 }
 
 // Inject Dono button below logo / first row
 export function injectDonoButton() {
   const header = document.querySelector('header') || document.querySelector('h1')?.parentElement || document.body;
-  const firstRow = document.querySelector('.catalog-grid') || document.querySelector('#products-grid') || document.querySelector('main');
+  const firstRow = document.querySelector('.catalog-grid') || document.querySelector('#products-grid');
 
   if (document.getElementById('dono-mode-btn')) return;
 

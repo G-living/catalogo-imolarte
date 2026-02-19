@@ -1,19 +1,22 @@
 // js/config.js – All shared constants & settings
-// Used by every other module
 
 export const CONFIG = {
-  // === Backend ===
+  // Backend
   APPS_SCRIPT_URL: 'https://script.google.com/macros/s/AKfycbxaoRuG9JLeSh4EWpcfDg-k68WdjheklfoJ90P7LN3XiQ4B9V2ZTR1eBhxieo-N2Z5rLw/exec',
 
-  // === Wompi (sandbox) ===
-  WOMPI_PUBLIC_KEY: 'pub_test_rT7K8rzYnk2Ec8Lv25tRL3JIof6b6Lwp', // ← Replace with your real sandbox key
+  // Wompi (sandbox)
+  WOMPI_PUBLIC_KEY: 'pub_test_rT7K8rzYnk2Ec8Lv25tRL3JIof6b6Lwp', // ← your sandbox key
   WOMPI_SIGNATURE_URL: 'https://imolarte-signature-generator.filippo-massara2016.workers.dev',
 
-  // === Currency & Formatting ===
+  // Currency & Pricing – COP only for customers
   CURRENCY: 'COP',
   PRICE_LOCALE: 'es-CO',
 
-  // === Dono (Gift Credit) Settings ===
+  // Internal multiplier (Euro ex-works → COP landed + mark-up + buffer)
+  // NEVER shown to customers – only used internally for calculation if needed
+  PRICING_MULTIPLIER: 12600,  // Your stable multiplier for IMOLARTE – update here if macro changes
+
+  // Dono
   DONO: {
     MIN_AMOUNT: 50000,
     MAX_AMOUNT: 5000000,
@@ -24,17 +27,17 @@ export const CONFIG = {
     EXPIRATION_DAYS: 365
   },
 
-  // === WhatsApp ===
+  // WhatsApp
   WHATSAPP: {
     BUSINESS_NUMBER: '573004257367'
   },
 
-  // === Referral Pyramid (credit only) ===
+  // Referral pyramid (credit only)
   REFERRAL: {
-    LEVEL1_RATE: 0.05,  // 5% credit to direct referrer
-    LEVEL2_RATE: 0.02   // 2% credit to referrer's referrer
+    LEVEL1_RATE: 0.05,
+    LEVEL2_RATE: 0.02
   },
 
-  // === UI ===
+  // UI
   TOAST_DURATION: 5000
 };
