@@ -1,13 +1,14 @@
-// js/dono.js – Complete Dono flow
+// js/dono.js – Dono mode logic (modal, code gen, share)
 
 import { CONFIG } from './config.js';
 import { showToast, createModal, formatPrice } from './ui.js';
 import { addToCart } from './cart.js';
 
+// Open Dono modal
 export function openDonoModal() {
   const modal = createModal('Regala Crédito Exclusivo', `
     <label style="display:block; margin:16px 0 8px; font-weight:bold;">Monto del Dono</label>
-    <div style="display:flex; gap:12px; flex-wrap:wrap; margin-bottom:16px;">
+    <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:16px;">
       ${CONFIG.DONO.PRESETS.map(amt => `
         <button type="button" class="dono-preset" data-amount="${amt}" style="
           padding:12px 20px; border:2px solid #b8975e; border-radius:8px; background:none;
@@ -15,20 +16,16 @@ export function openDonoModal() {
         ">${formatPrice(amt)}</button>
       `).join('')}
     </div>
-    <input type="number" id="dono-custom-amount" placeholder="Otro monto (mín. ${formatPrice(CONFIG.DONO.MIN_AMOUNT)})" 
-           min="${CONFIG.DONO.MIN_AMOUNT}" max="${CONFIG.DONO.MAX_AMOUNT}" style="
-      width:100%; padding:12px; font-size:1.1rem; border:1px solid #ccc; border-radius:8px; margin-bottom:24px;
-    ">
+    <input type="number" id="dono-custom-amount" placeholder="Otro monto (mín. ${formatPrice(CONFIG.DONO.MIN_AMOUNT)})" min="${CONFIG.DONO.MIN_AMOUNT}" style="width:100%; padding:12px; border:1px solid #ccc; border-radius:8px; margin-bottom:24px;">
 
     <label style="display:block; margin:16px 0 8px; font-weight:bold;">Para quién es el regalo</label>
-    <input type="text" id="dono-recipient-name" placeholder="Nombre del destinatario" required style="width:100%; padding:12px; margin-bottom:12px; border:1px solid #ccc; border-radius:8px;">
-    <input type="email" id="dono-recipient-email" placeholder="Email (opcional)" style="width:100%; padding:12px; margin-bottom:12px; border:1px solid #ccc; border-radius:8px;">
-    <input type="tel" id="dono-recipient-phone" placeholder="WhatsApp (opcional)" style="width:100%; padding:12px; margin-bottom:24px; border:1px solid #ccc; border-radius:8px;">
+    <input type="text" id="dono-recipient-name" placeholder="Nombre del destinatario" required style="width:100%; padding:12px; border:1px solid #ccc; border-radius:8px; margin-bottom:12px;">
+    <input type="email" id="dono-recipient-email" placeholder="Email (opcional)" style="width:100%; padding:12px; border:1px solid #ccc; border-radius:8px; margin-bottom:12px;">
+    <input type="tel" id="dono-recipient-phone" placeholder="WhatsApp (opcional)" style="width:100%; padding:12px; border:1px solid #ccc; border-radius:8px; margin-bottom:24px;">
 
-    <button id="add-dono-to-cart" style="
-      width:100%; padding:16px; background:#b8975e; color:white; border:none;
-      border-radius:12px; font-size:1.3rem; font-weight:bold; cursor:pointer;
-    ">Agregar al Carrito y Generar Código</button>
+    <button id="add-dono-to-cart" style="width:100%; padding:16px; background:#b8975e; color:white; border:none; border-radius:12px; font-size:1.3rem; cursor:pointer;">
+      Agregar al Carrito y Generar Código
+    </button>
   `);
 
   modal.querySelectorAll('.dono-preset').forEach(btn => {
@@ -42,10 +39,11 @@ export function openDonoModal() {
   modal.querySelector('#add-dono-to-cart').onclick = () => addDonoToCart(modal);
 }
 
+// Add Dono to cart & log
 async function addDonoToCart(modal) {
   const amount = Number(document.getElementById('dono-custom-amount').value);
   if (isNaN(amount) || amount < CONFIG.DONO.MIN_AMOUNT || amount > CONFIG.DONO.MAX_AMOUNT) {
-    showToast(`Monto inválido`, 'error');
+    showToast('Monto inválido', 'error');
     return;
   }
 
@@ -76,7 +74,7 @@ async function addDonoToCart(modal) {
     quantity: 1
   });
 
-  // Log to DONOS
+  // Log to DONOS sheet
   try {
     await fetch(CONFIG.APPS_SCRIPT_URL, {
       method: 'POST',
@@ -92,7 +90,9 @@ async function addDonoToCart(modal) {
         recipientEmail: document.getElementById('dono-recipient-email').value.trim(),
         recipientPhone: document.getElementById('dono-recipient-phone').value.trim(),
         status: 'ACTIVE',
-        usedAmount: 0
+        usedAmount: 0,
+        lastUsedDate: '',
+        redeemedInOrderId: ''
       })
     });
     showToast(`¡Dono creado! Código: ${donoCode}`, 'success');

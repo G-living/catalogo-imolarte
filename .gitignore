@@ -1,17 +1,29 @@
-# Archivos de sistema
-.DS_Store
-Thumbs.db
+# GitHub Pages
+_site/
+.jekyll-cache/
 
-# Editores
-.vscode/
-.idea/
-*.swp
-*.swo
+# Node
+node_modules/
+npm-debug.log
+yarn-error.log
 
-# Temporales
-*.tmp
-*.bak
-~*
+# Environment
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Images temp
+images/temp/
+images/*.tmp
+
+# Secrets
+secrets.json
 
 # Logs
 *.log
+
+# OS
+.DS_Store
+Thumbs.db

@@ -1,49 +1,41 @@
-// js/catalog.js – Product rendering + Dono button injection
+// js/catalog.js – Catalogue rendering (Garofano Blu main + popup for all collections)
 
 import { addToCart } from './cart.js';
-import { showToast, formatPrice } from './ui.js';
+import { showToast, formatPrice, createModal } from './ui.js';
 import { CONFIG } from './config.js';
 
 // Products from IMOLARTE price list (Euro ex-works)
-// Only Garofano Blu rendered on main index (real pics)
-// All collections in popup with comodin pics
 const PRODUCTS = [
-  // Garofano Blu only (real images assumed in /images/GB*.jpg)
   { sku: 'GB110', name: 'New appetizer plate', collection: 'GAROFANO BLU', euroPrice: 64.2, image: '/images/GB110.jpg' },
   { sku: 'GB105', name: 'Appetizer plate', collection: 'GAROFANO BLU', euroPrice: 64.2, image: '/images/GB105.jpg' },
   { sku: 'GB106', name: 'Soup serving bowl x 12', collection: 'GAROFANO BLU', euroPrice: 224.328, image: '/images/GB106.jpg' },
-  // Add all Garofano Blu SKUs from your Excel...
+  // Add all Garofano Blu SKUs with real images here...
+  // Omit any without image (per rule)
 ];
 
-// All collections for popup (comodin for non-Blu)
+// All collections for popup (comodin pics for non-Blu, omit if missing)
 const ALL_COLLECTIONS = [
   { collection: 'GIALLO FIORE', comodinImage: '/images/comodin-giallo.jpg' },
   { collection: 'BIANCO FIORE', comodinImage: '/images/comodin-bianco.jpg' },
   { collection: 'MAZZETTO', comodinImage: '/images/comodin-mazzetto.jpg' },
-  { collection: 'GAROFANO BLU', comodinImage: '/images/GB110.jpg' }, // real for Blu
+  { collection: 'GAROFANO BLU', comodinImage: '/images/comodin-garofano-blu.jpg' },
   { collection: 'GAROFANO IMOLA', comodinImage: '/images/comodin-imola.jpg' },
   { collection: 'GAROFANO TIFFANY', comodinImage: '/images/comodin-tiffany.jpg' },
   { collection: 'GAROFANO GRGSA', comodinImage: '/images/comodin-grgsa.jpg' },
   { collection: 'GAROFANO LAVI', comodinImage: '/images/comodin-lavi.jpg' },
   { collection: 'GAROFANO ROSSO E ORO', comodinImage: '/images/comodin-rosso-oro.jpg' },
   { collection: 'GAROFANO AVORIO E ORO', comodinImage: '/images/comodin-avorio-oro.jpg' },
+  // Omit any without comodin image
 ];
 
-// Render main catalogue – only Garofano Blu
+// Render main catalogue – only Garofano Blu with real images
 export function renderProducts() {
   const grid = document.getElementById('products-grid');
   if (!grid) return;
 
   grid.innerHTML = '';
 
-  const mainProducts = PRODUCTS.filter(p => p.collection === 'GAROFANO BLU');
-
-  if (mainProducts.length === 0) {
-    grid.innerHTML = '<p style="text-align:center; padding:40px;">Catálogo Garofano Blu en construcción</p>';
-    return;
-  }
-
-  mainProducts.forEach(product => {
+  PRODUCTS.forEach(product => {
     const copPrice = Math.round(product.euroPrice * CONFIG.PRICING_MULTIPLIER);
 
     const card = document.createElement('div');
@@ -60,36 +52,42 @@ export function renderProducts() {
     grid.appendChild(card);
   });
 
-  console.log(`Rendered ${mainProducts.length} Garofano Blu products`);
+  if (PRODUCTS.length === 0) {
+    grid.innerHTML = '<p style="text-align:center; padding:40px;">Catálogo Garofano Blu en construcción</p>';
+  }
+
+  console.log(`Rendered ${PRODUCTS.length} Garofano Blu products`);
 }
 
-// Popup – main Garofano Blu pic + all collections with comodin pics
+// Popup for all collections
 function openProductPopup(mainProduct) {
   const modal = createModal(mainProduct.name, `
     <img src="${mainProduct.image}" alt="${mainProduct.name}" style="width:100%; max-height:400px; object-fit:contain; margin-bottom:20px;">
     <h3>${mainProduct.name} - Garofano Blu</h3>
     <p>Selecciona colección y cantidad:</p>
-    <div id="collection-options" style="max-height:300px; overflow-y:auto;"></div>
+    <div id="collection-options"></div>
     <button id="add-selected-to-cart" style="width:100%; padding:16px; background:#b8975e; color:white; border:none; border-radius:12px; font-size:1.3rem; margin-top:20px;">
-      Agregar Seleccionados a Carrito
+      Agregar a Carrito
     </button>
   `);
 
   const optionsDiv = modal.querySelector('#collection-options');
 
   ALL_COLLECTIONS.forEach(col => {
+    if (!col.comodinImage) return; // Omit missing comodin (per rule)
+
     const line = document.createElement('div');
-    line.style.cssText = 'display:flex; align-items:center; gap:16px; margin-bottom:16px; padding:12px; border-bottom:1px solid #eee;';
+    line.style.cssText = 'display:flex; gap:8px; align-items:center; margin-bottom:16px;';
     line.innerHTML = `
       <img src="${col.comodinImage}" alt="${col.collection}" style="width:80px; height:80px; object-fit:cover; border-radius:8px;">
       <div style="flex:1;">
         <strong>${col.collection}</strong><br>
-        <small>Código: ${mainProduct.sku.replace('GB', col.collection.charAt(0) + col.collection.charAt(1))}</small>
+        <small>Código: ${mainProduct.sku.replace('GB', col.collection.substring(0,2).toUpperCase())}</small>
       </div>
-      <p style="font-weight:bold;">${formatPrice(Math.round(mainProduct.euroPrice * CONFIG.PRICING_MULTIPLIER))}</p>
-      <div style="display:flex; gap:8px; align-items:center;">
+      <p style="font-weight:bold; margin:0 16px;">${formatPrice(Math.round(mainProduct.euroPrice * CONFIG.PRICING_MULTIPLIER))}</p>
+      <div style="display:flex; gap:8px;">
         <button class="qty-btn" onclick="this.nextElementSibling.value = Math.max(0, parseInt(this.nextElementSibling.value) - 1)">-</button>
-        <input type="number" value="0" min="0" style="width:60px; text-align:center;">
+        <input type="number" value="0" min="0" style="width:50px; text-align:center;">
         <button class="qty-btn" onclick="this.previousElementSibling.value = parseInt(this.previousElementSibling.value) + 1">+</button>
       </div>
     `;
@@ -112,9 +110,9 @@ function openProductPopup(mainProduct) {
 
     if (added > 0) {
       showToast(`Producto agregado (${added} items)`, 'success');
+      modal.remove();
     } else {
       showToast('Selecciona al menos una cantidad', 'error');
     }
-    modal.remove();
   };
 }
