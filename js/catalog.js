@@ -1,19 +1,35 @@
-// js/catalog.js – Product rendering + Dono button injection
+// js/catalog.js – Catalogue rendering (Garofano Blu only + popup for all collections)
 
-import { addToCart } from './cart.js';
-import { showToast, formatPrice } from './ui.js';
+import { addToCart, updateCartUI } from './cart.js';
+import { showToast, formatPrice, createModal } from './ui.js';
 import { CONFIG } from './config.js';
 
-// Products with base Euro prices (ex-works Italy) – your real list here
-// We'll convert to COP on render using the stable multiplier
+// Products from your price list (Euro ex-works)
+// Only Garofano Blu rendered on main index (real pics)
+// All collections shown in popup with comodin pics
 const PRODUCTS = [
-  { id: '001', description: 'Vaso Cerámico Clásico', collection: 'Classica', code: 'VCL-001', euroPrice: 150, image: 'https://via.placeholder.com/300x300?text=Vaso+Classico' },
-  { id: '002', description: 'Plato Decorativo Moderno', collection: 'Moderna', code: 'PDM-002', euroPrice: 280, image: 'https://via.placeholder.com/300x300?text=Plato+Moderno' },
-  // Add your full catalogue – Euro prices only, COP calculated below
-  // Example: { id: '003', description: '...', collection: '...', code: '...', euroPrice: 450, image: '...' },
+  // Garofano Blu only on main catalogue (real pics)
+  { sku: 'GB110', name: 'New appetizer plate', collection: 'GAROFANO BLU', euroPrice: 64.2, image: '/images/GB110.jpg' },
+  { sku: 'GB105', name: 'Appetizer plate', collection: 'GAROFANO BLU', euroPrice: 64.2, image: '/images/GB105.jpg' },
+  { sku: 'GB106', name: 'Soup serving bowl x 12', collection: 'GAROFANO BLU', euroPrice: 224.328, image: '/images/GB106.jpg' },
+  // ... add all Garofano Blu SKUs from your Excel ...
 ];
 
-// Render catalogue – show ONLY COP prices (no Euro visible)
+// All collections (for popup) – comodin pics for non-Blu
+const ALL_COLLECTIONS = [
+  { collection: 'GIALLO FIORE', comodinImage: '/images/comodin-giallo.jpg' },
+  { collection: 'BIANCO FIORE', comodinImage: '/images/comodin-bianco.jpg' },
+  { collection: 'MAZZETTO', comodinImage: '/images/comodin-mazzetto.jpg' },
+  { collection: 'GAROFANO BLU', comodinImage: '/images/GB110.jpg' }, // real for Blu
+  { collection: 'GAROFANO IMOLA', comodinImage: '/images/comodin-imola.jpg' },
+  { collection: 'GAROFANO TIFFANY', comodinImage: '/images/comodin-tiffany.jpg' },
+  { collection: 'GAROFANO GRGSA', comodinImage: '/images/comodin-grgsa.jpg' },
+  { collection: 'GAROFANO LAVI', comodinImage: '/images/comodin-lavi.jpg' },
+  { collection: 'GAROFANO ROSSO E ORO', comodinImage: '/images/comodin-rosso-oro.jpg' },
+  { collection: 'GAROFANO AVORIO E ORO', comodinImage: '/images/comodin-avorio-oro.jpg' },
+];
+
+// Render main catalogue – only Garofano Blu
 export function renderProducts() {
   const grid = document.getElementById('products-grid');
   if (!grid) return;
@@ -21,60 +37,81 @@ export function renderProducts() {
   grid.innerHTML = '';
 
   PRODUCTS.forEach(product => {
-    const copPrice = Math.round(product.euroPrice * CONFIG.PRICING_MULTIPLIER); // Stable COP price
+    const copPrice = Math.round(product.euroPrice * CONFIG.PRICING_MULTIPLIER);
 
     const card = document.createElement('div');
     card.className = 'product-card';
     card.innerHTML = `
-      <img src="${product.image}" alt="${product.description}" loading="lazy">
-      <h3>${product.description}</h3>
+      <img src="${product.image}" alt="${product.name}" loading="lazy">
+      <p class="sku">Código: ${product.sku}</p>
+      <h3>${product.name}</h3>
       <p>${product.collection}</p>
       <p class="price">${formatPrice(copPrice)}</p>
-      <button onclick="addToCart({description: '${product.description}', collection: '${product.collection}', code: '${product.code}', price: ${copPrice}, quantity: 1})">
-        Agregar al Carrito
-      </button>
+      <button class="view-details">Ver Detalles</button>
     `;
+    card.querySelector('.view-details').onclick = () => openProductPopup(product);
     grid.appendChild(card);
   });
 
-  console.log(`Rendered ${PRODUCTS.length} products with stable COP prices (multiplier: ${CONFIG.PRICING_MULTIPLIER})`);
-}
-
-// Inject Dono button below logo / first row
-export function injectDonoButton() {
-  const header = document.querySelector('header') || document.querySelector('h1')?.parentElement || document.body;
-  const firstRow = document.querySelector('.catalog-grid') || document.querySelector('#products-grid');
-
-  if (document.getElementById('dono-mode-btn')) return;
-
-  const btn = document.createElement('button');
-  btn.id = 'dono-mode-btn';
-  btn.innerHTML = '🎁 Modo Dono - Regala Crédito Exclusivo';
-  btn.style.cssText = `
-    margin: 40px auto 20px;
-    padding: 18px 40px;
-    font-size: 1.4rem;
-    font-weight: bold;
-    background: linear-gradient(135deg, #c9a96e, #b8975e);
-    color: #1a1a1a;
-    border: none;
-    border-radius: 12px;
-    cursor: pointer;
-    box-shadow: 0 8px 25px rgba(0,0,0,0.25);
-    transition: all 0.3s ease;
-    display: block;
-  `;
-  btn.onmouseover = () => { btn.style.transform = 'scale(1.05)'; btn.style.boxShadow = '0 12px 35px rgba(0,0,0,0.3)'; };
-  btn.onmouseout = () => { btn.style.transform = 'scale(1)'; btn.style.boxShadow = '0 8px 25px rgba(0,0,0,0.25)'; };
-  btn.onclick = () => import('./dono.js').then(m => m.openDonoModal());
-
-  if (firstRow && firstRow.parentNode) {
-    firstRow.parentNode.insertBefore(btn, firstRow);
-  } else if (header) {
-    header.parentNode.insertBefore(btn, header.nextSibling);
-  } else {
-    document.body.prepend(btn);
+  if (PRODUCTS.length === 0) {
+    grid.innerHTML = '<p style="text-align:center; padding:40px;">Catálogo en construcción – Garofano Blu próximamente</p>';
   }
 
-  console.log('🎁 Dono Mode button injected');
+  console.log(`Rendered ${PRODUCTS.length} Garofano Blu products`);
+}
+
+// Popup for full collections
+function openProductPopup(mainProduct) {
+  const modal = createModal(mainProduct.name, `
+    <img src="${mainProduct.image}" alt="${mainProduct.name}" style="width:100%; max-height:400px; object-fit:contain; margin-bottom:20px;">
+    <h3>${mainProduct.name} - Garofano Blu</h3>
+    <p>Selecciona colección y cantidad:</p>
+    <div id="collection-options"></div>
+    <button id="add-selected-to-cart" style="width:100%; padding:16px; background:#b8975e; color:white; border:none; border-radius:12px; font-size:1.3rem; margin-top:20px;">
+      Agregar a Carrito
+    </button>
+  `);
+
+  const optionsDiv = modal.querySelector('#collection-options');
+
+  ALL_COLLECTIONS.forEach(col => {
+    const line = document.createElement('div');
+    line.style.cssText = 'display:flex; align-items:center; gap:16px; margin-bottom:16px; padding:12px; border-bottom:1px solid #eee;';
+    line.innerHTML = `
+      <img src="${col.comodinImage}" alt="${col.collection}" style="width:80px; height:80px; object-fit:cover; border-radius:8px;">
+      <div style="flex:1;">
+        <strong>${col.collection}</strong><br>
+        <small>Código: ${mainProduct.sku.replace('GB', col.collection.charAt(0) + col.collection.charAt(1))}</small>
+      </div>
+      <p style="font-weight:bold;">${formatPrice(Math.round(mainProduct.euroPrice * CONFIG.PRICING_MULTIPLIER))}</p>
+      <div style="display:flex; gap:8px; align-items:center;">
+        <button class="qty-btn" onclick="this.nextElementSibling.value = Math.max(0, parseInt(this.nextElementSibling.value) - 1)">-</button>
+        <input type="number" value="0" min="0" style="width:60px; text-align:center;">
+        <button class="qty-btn" onclick="this.previousElementSibling.value = parseInt(this.previousElementSibling.value) + 1">+</button>
+      </div>
+    `;
+    optionsDiv.appendChild(line);
+  });
+
+  modal.querySelector('#add-selected-to-cart').onclick = () => {
+    let added = 0;
+    optionsDiv.querySelectorAll('input[type="number"]').forEach(input => {
+      const qty = parseInt(input.value);
+      if (qty > 0) {
+        const line = input.closest('div');
+        const collection = line.querySelector('strong').textContent;
+        const sku = line.querySelector('small').textContent.replace('Código: ', '');
+        const price = parseFloat(line.querySelector('p[style*="font-weight"]').textContent.replace(/[^0-9]/g, ''));
+        addToCart({ description: `${mainProduct.name} - ${collection}`, collection, code: sku, price, quantity: qty });
+        added += qty;
+      }
+    });
+
+    if (added > 0) {
+      showToast(`Producto agregado (${added} items)`, 'success');
+    } else {
+      showToast('Selecciona al menos una cantidad', 'error');
+    }
+    modal.remove();
+  };
 }

@@ -6,50 +6,44 @@
   <title>IMOLARTE - Cerámicas Italianas Exclusivas</title>
   <meta name="description" content="Catálogo exclusivo de cerámicas italianas de lujo en Colombia. Piezas únicas para tu hogar o como dono especial.">
 
-  <!-- Favicon (optional – add later if you have one) -->
-  <!-- <link rel="icon" href="favicon.ico" type="image/x-icon"> -->
-
-  <!-- CSS -->
-  <link rel="stylesheet" href="css/validation-styles.css">
-
   <!-- Toastify -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
   <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="css/validation-styles.css">
 
   <!-- Main entry point -->
   <script type="module" src="js/main.js" defer></script>
 </head>
 <body>
-  <!-- Your existing HTML content here -->
-  <!-- Header / Logo -->
   <header>
     <h1>IMOLARTE</h1>
-    <!-- Dono button will be injected here by catalog.js -->
   </header>
 
-  <!-- Catalogue products grid (rendered by catalog.js) -->
   <main>
-    <div class="catalog-grid" id="products-grid">
-      <!-- Products will be dynamically inserted -->
-    </div>
+    <div id="products-grid" class="catalog-grid"></div>
   </main>
 
-  <!-- Cart button (fixed or in header) -->
-  <button id="cartButton">🛒 Carrito (<span id="cart-count">0</span>)</button>
+  <!-- Cart button (fixed) -->
+  <button id="cartButton">
+    🛒 Carrito (<span id="cart-count">0</span>)
+  </button>
 
-  <!-- Cart page (hidden by default) -->
+  <!-- Cart popup -->
   <div id="cartPage" class="cart-page" style="display:none;">
     <h2>Tu Carrito</h2>
     <div id="cart-items"></div>
     <p>Total: <span id="cart-total">$0</span></p>
-    <button id="closeCart">Cerrar</button>
-    <button onclick="window.location.href='checkout.html'">Ir a Checkout</button>
+    <button id="continueShopping">Seguir Comprando</button>
+    <button id="goToCheckout">Checkout</button>
   </div>
 
-  <!-- Checkout page (if separate) or embedded -->
-  <!-- ... your checkout form HTML ... -->
+  <!-- Checkout section (hidden initially) -->
+  <div id="checkoutSection" style="display:none;">
+    <!-- Form, delivery, checkboxes, buttons – filled in checkout.js -->
+  </div>
 
-  <!-- Footer -->
   <footer>
     <p>© IMOLARTE 2026 - Cerámicas Italianas Exclusivas</p>
   </footer>
