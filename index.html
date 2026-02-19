@@ -1,118 +1,57 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>IMOLARTE by Helena Caballero</title>
-    
-    <!-- Fuentes primero (no bloquean) -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
-    
-    <!-- CSS (no bloquean) -->
-    <link rel="stylesheet" href="css/styles.css">
-    <link rel="stylesheet" href="css/checkout.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IMOLARTE - Cerámicas Italianas Exclusivas</title>
+  <meta name="description" content="Catálogo exclusivo de cerámicas italianas de lujo en Colombia. Piezas únicas para tu hogar o como dono especial.">
+  
+  <!-- Favicon (update path if needed) -->
+  <link rel="icon" href="favicon.ico" type="image/x-icon">
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="css/validation-styles.css">
+
+  <!-- Toastify for beautiful notifications -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+
+  <!-- Main entry point - loads everything else -->
+  <script type="module" src="js/main.js" defer></script>
 </head>
 <body>
-    <!-- Header -->
-    <header class="header">
-        <img src="images/branding/logo-hc.jpg" alt="Helena Caballero" class="logo-hc">
-        <img src="images/branding/logo-imolarte.png" alt="Imolarte" class="logo-imolarte">
-    </header>
+  <!-- Your existing HTML content here -->
+  <!-- Header / Logo -->
+  <header>
+    <h1>IMOLARTE</h1>
+    <!-- Dono button will be injected here by catalog.js -->
+  </header>
 
-    <!-- Dono Button -->
-    <div class="dono-container">
-        <button class="dono-button" id="donoButton">
-            <span class="dono-icon">🎁</span>
-            <span class="dono-text">Modo Dono - Regala crédito</span>
-            <span class="dono-badge">NUEVO</span>
-        </button>
+  <!-- Catalogue products grid (rendered by catalog.js) -->
+  <main>
+    <div class="catalog-grid" id="products-grid">
+      <!-- Products will be dynamically inserted -->
     </div>
+  </main>
 
-    <!-- Product Grid -->
-    <main class="container">
-        <div class="products-grid" id="productsGrid"></div>
-    </main>
+  <!-- Cart button (fixed or in header) -->
+  <button id="cartButton">🛒 Carrito (<span id="cart-count">0</span>)</button>
 
-    <!-- Modales (estructura vacía, se llenan dinámicamente) -->
-    <div class="modal" id="productModal">
-        <div class="modal-content">
-            <button class="close-btn" id="closeModal">×</button>
-            <div id="modalBody"></div>
-        </div>
-    </div>
+  <!-- Cart page (hidden by default) -->
+  <div id="cartPage" class="cart-page" style="display:none;">
+    <h2>Tu Carrito</h2>
+    <div id="cart-items"></div>
+    <p>Total: <span id="cart-total">$0</span></p>
+    <button id="closeCart">Cerrar</button>
+    <button onclick="window.location.href='checkout.html'">Ir a Checkout</button>
+  </div>
 
-    <div class="modal" id="donoModal">
-        <div class="modal-content dono-modal-content">
-            <button class="close-btn" id="closeDonoModal">×</button>
-            <div class="dono-modal-header">
-                <span class="dono-modal-icon">🎁</span>
-                <h2 class="dono-modal-title">Regala crédito IMOLARTE</h2>
-                <p class="dono-modal-subtitle">Compra crédito para regalar</p>
-            </div>
-            <div class="dono-modal-body" id="donoModalBody">
-                <!-- Se llena con JS cuando se abre -->
-            </div>
-        </div>
-    </div>
+  <!-- Checkout page (if separate) or embedded -->
+  <!-- ... your checkout form HTML ... -->
 
-    <!-- Cart Page -->
-    <div class="cart-page" id="cartPage">
-        <div class="cart-container">
-            <div class="cart-header">
-                <h1 class="cart-title">Mi Pedido</h1>
-                <button class="close-cart" id="closeCart">← Seguir Comprando</button>
-            </div>
-            <div class="cart-items" id="cartItems"></div>
-            <div id="cartSummary"></div>
-        </div>
-    </div>
-
-    <!-- Checkout Modal -->
-    <div class="checkout-modal" id="checkoutModal">
-        <div class="checkout-content">
-            <div class="checkout-header">
-                <h2 class="checkout-title">Finalizar Pedido</h2>
-                <button class="close-checkout" id="closeCheckout">×</button>
-            </div>
-            <div class="checkout-body" id="checkoutBody">
-                <!-- Se llena con JS cuando se abre -->
-            </div>
-        </div>
-    </div>
-
-    <!-- Toast Container -->
-    <div id="toastContainer" class="toast-container"></div>
-
-    <!-- SCRIPTS - CARGA DIFERIDA (IMPORTANTE) -->
-    <script src="js/catalog-data.js"></script>
-    <script src="js/image-config.js"></script>
-    
-    <!-- Core: ÚNICO archivo que inicializa todo -->
-    <script src="js/core.js"></script>
-    
-    <!-- Módulos (se cargan pero NO se ejecutan automáticamente) -->
-    <script src="js/cart.js" defer></script>
-    <script src="js/products.js" defer></script>
-    <script src="js/checkout.js" defer></script>
-    <script src="js/checkout-validation.js" defer></script>
-    <script src="js/checkout-payment.js" defer></script>
-    <script src="js/checkout-whatsapp.js" defer></script>
-    <script src="js/dono.js" defer></script>
-    <script src="js/dono-checkout.js" defer></script>
-    <script src="js/toast.js" defer></script>
-    <script src="js/google-places.js" defer></script>
-    <script src="js/google-sheets-integration.js" defer></script>
-    
-    <!-- Wompi al final -->
-    <script src="https://checkout.wompi.co/widget.js"></script>
-    
-    <!-- Google Maps (carga asíncrona) -->
-    <script>
-        (g=>{var h,a,k,p="The Google Maps JavaScript API",c="google",l="importLibrary",q="__ib__",m=document,b=window;b=b[c]||(b[c]={});var d=b.maps||(b.maps={}),r=new Set,e=new URLSearchParams,u=()=>h||(h=new Promise(async(f,n)=>{await (a=m.createElement("script"));e.set("libraries",[...r]+"");for(k in g)e.set(k.replace(/[A-Z]/g,t=>"_"+t[0].toLowerCase()),g[k]);e.set("callback",c+".maps."+q);a.src=`https://maps.googleapis.com/maps/api/js?`+e;d[q]=f;a.onerror=()=>h=n(Error(p+" could not load."));a.nonce=m.querySelector("script[nonce]")?.nonce||"";m.head.append(a)}));d[l]?console.warn(p+" only loads once. Ignoring:",g):d[l]=(f,...n)=>r.add(f)&&u().then(()=>d[l](f,...n))})({
-            key: "AIzaSyDd1f-rpDSztTvxz07eaCDNCa8rjNG_Jb4",
-            v: "weekly"
-        });
-    </script>
+  <!-- Footer -->
+  <footer>
+    <p>© IMOLARTE 2026 - Cerámicas Italianas Exclusivas</p>
+  </footer>
 </body>
 </html>

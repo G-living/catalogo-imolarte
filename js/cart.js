@@ -1,266 +1,103 @@
-/**
- * ================================================================
- * IMOLARTE - CART.JS
- * ================================================================
- * Versión: 6.1 - Con botón CHECKOUT visible
- * ================================================================
- */
+// js/cart.js – Cart state & UI logic
 
-// ===== VARIABLES GLOBALES =====
-window.cart = [];
+import { showToast } from './ui.js';
+import { formatPrice } from './utils.js'; // We'll create utils.js next if needed
 
-// ===== FUNCIONES DE CARRITO =====
+// === STATE ===
+let cart = JSON.parse(localStorage.getItem('imolarte_cart')) || [];
 
-/**
- * Agrega producto al carrito
- */
-function addToCart(description, collection, code, price, quantity) {
-  const existingIndex = window.cart.findIndex(item => 
-    item.code === code && item.collection === collection
-  );
+// === HELPERS ===
+function saveCart() {
+  localStorage.setItem('imolarte_cart', JSON.stringify(cart));
+}
 
-  if (existingIndex > -1) {
-    window.cart[existingIndex].quantity += quantity;
+function getCartTotal() {
+  return cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+}
+
+function formatPrice(num) {
+  return '$' + Number(num).toLocaleString('es-CO');
+}
+
+// === CORE FUNCTIONS ===
+export function addToCart(product) {
+  const { description, collection, code, price, quantity = 1 } = product;
+
+  const existing = cart.find(item => item.code === code && item.collection === collection);
+  if (existing) {
+    existing.quantity += quantity;
   } else {
-    window.cart.push({
-      productName: description,
-      collection: collection,
-      code: code,
-      price: Number(price),
-      quantity: Number(quantity)
-    });
+    cart.push({ description, collection, code, price: Number(price), quantity });
   }
 
+  saveCart();
   updateCartUI();
-  if (typeof window.showToast === 'function') {
-    window.showToast(`✅ ${description} agregado al carrito`, 'success');
-  }
-  console.log('✅ Producto agregado:', description);
+  showToast(`Agregado: ${description} × ${quantity}`, 'success');
 }
 
-/**
- * Elimina un item del carrito
- */
-function removeCartItem(code) {
-  const index = window.cart.findIndex(item => item.code === code);
-  if (index > -1) {
-    window.cart.splice(index, 1);
-    updateCartUI();
-    if (typeof window.showToast === 'function') {
-      window.showToast('🗑️ Producto eliminado', 'info');
-    }
-    console.log('🗑️ Producto eliminado');
-  }
+export function removeCartItem(code, collection) {
+  cart = cart.filter(item => !(item.code === code && item.collection === collection));
+  saveCart();
+  updateCartUI();
+  showToast('Producto eliminado', 'warning');
 }
 
-/**
- * Actualiza la cantidad de un item
- */
-function updateCartItemQuantity(code, newQuantity) {
-  const item = window.cart.find(item => item.code === code);
+export function updateCartItemQuantity(code, collection, newQuantity) {
+  const item = cart.find(i => i.code === code && i.collection === collection);
   if (item) {
     if (newQuantity <= 0) {
-      removeCartItem(code);
+      removeCartItem(code, collection);
     } else {
-      item.quantity = Number(newQuantity);
+      item.quantity = newQuantity;
+      saveCart();
       updateCartUI();
     }
   }
 }
 
-/**
- * Calcula el total del carrito
- */
-function getCartTotal() {
-  return window.cart.reduce((total, item) => {
-    return total + (item.price * item.quantity);
-  }, 0);
+export function clearCart() {
+  cart = [];
+  saveCart();
+  updateCartUI();
+  showToast('Carrito vaciado', 'info');
 }
 
-/**
- * Formatea precio
- */
-function formatPrice(price) {
-  const num = Number(price);
-  if (isNaN(num)) return '$0';
-  return '$' + num.toLocaleString('es-CO');
-}
+// === UI UPDATE ===
+export function updateCartUI() {
+  const cartCount = document.getElementById('cart-count');
+  const cartTotalEl = document.getElementById('cart-total');
+  const cartItemsEl = document.getElementById('cart-items');
 
-// ===== UI DEL CARRITO =====
+  if (cartCount) cartCount.textContent = cart.reduce((sum, i) => sum + i.quantity, 0);
 
-/**
- * Actualiza toda la UI del carrito
- */
-function updateCartUI() {
-  updateCartCount();
-  updateCartPage();
-}
+  if (cartTotalEl) cartTotalEl.textContent = formatPrice(getCartTotal());
 
-/**
- * Actualiza el badge del contador
- */
-function updateCartCount() {
-  const badge = document.getElementById('cartBadge');
-  if (badge) {
-    const itemCount = window.cart.length;
-    badge.textContent = itemCount;
-    badge.style.display = itemCount > 0 ? 'flex' : 'none';
+  if (cartItemsEl) {
+    cartItemsEl.innerHTML = cart.length === 0 
+      ? '<p>Tu carrito está vacío</p>'
+      : cart.map(item => `
+          <div class="cart-item">
+            <div>
+              <strong>${item.description}</strong><br>
+              <small>${item.collection} - ${item.code}</small>
+            </div>
+            <div style="text-align:right;">
+              ${formatPrice(item.price)} × 
+              <input type="number" value="${item.quantity}" min="1" style="width:50px;" 
+                onchange="updateCartItemQuantity('${item.code}', '${item.collection}', this.value)">
+              = ${formatPrice(item.price * item.quantity)}
+              <button onclick="removeCartItem('${item.code}', '${item.collection}')">×</button>
+            </div>
+          </div>
+        `).join('');
   }
 }
 
-/**
- * Actualiza la página del carrito - VERSIÓN CON BOTÓN CHECKOUT
- */
-function updateCartPage() {
-  const itemsContainer = document.getElementById('cartItems');
-  const summaryContainer = document.getElementById('cartSummary');
-
-  if (!itemsContainer || !summaryContainer) return;
-
-  if (window.cart.length === 0) {
-    itemsContainer.innerHTML = `
-      <div class="empty-cart">
-        <div class="empty-icon">🛒</div>
-        <p class="empty-text">Tu carrito está vacío</p>
-      </div>
-    `;
-    summaryContainer.innerHTML = '';
-    return;
-  }
-
-  // Renderizar items
-  const itemsHTML = window.cart.map(item => {
-    const comodinImage = getComodinImage(item.collection);
-    const subtotal = item.price * item.quantity;
-
-    return `
-      <div class="cart-item" data-code="${item.code}">
-        <img src="${comodinImage}" 
-             alt="${item.collection}" 
-             class="cart-item-image"
-             onerror="this.style.display='none'">
-        <div class="cart-item-details">
-          <h3 class="cart-item-title">${item.productName}</h3>
-          <p class="cart-item-collection">${item.collection}</p>
-          <p class="cart-item-code">${item.code}</p>
-        </div>
-        <div class="cart-item-price">${formatPrice(item.price)}</div>
-        <div class="cart-item-qty">
-          <button type="button" 
-                  class="qty-btn" 
-                  onclick="updateCartItemQuantity('${item.code}', ${item.quantity - 1})"
-                  aria-label="Disminuir">−</button>
-          <span class="qty-display">${item.quantity}</span>
-          <button type="button" 
-                  class="qty-btn" 
-                  onclick="updateCartItemQuantity('${item.code}', ${item.quantity + 1})"
-                  aria-label="Aumentar">+</button>
-        </div>
-        <div class="cart-item-subtotal">${formatPrice(subtotal)}</div>
-        <button type="button" 
-                class="cart-item-remove" 
-                onclick="removeCartItem('${item.code}')"
-                aria-label="Eliminar">
-          <span>🗑️</span>
-        </button>
-      </div>
-    `;
-  }).join('');
-
-  itemsContainer.innerHTML = itemsHTML;
-
-  // Renderizar resumen CON BOTÓN CHECKOUT
-  const total = getCartTotal();
-  const itemCount = window.cart.reduce((sum, item) => sum + item.quantity, 0);
-
-  summaryContainer.innerHTML = `
-    <div class="cart-summary">
-      <div class="cart-summary-row">
-        <span>Productos:</span>
-        <span>${itemCount} ${itemCount === 1 ? 'artículo' : 'artículos'}</span>
-      </div>
-      <div class="cart-summary-row total">
-        <span>Total:</span>
-        <span>${formatPrice(total)}</span>
-      </div>
-      <div class="cart-summary-actions">
-        <button type="button" class="btn btn-checkout" onclick="openCheckoutModal()">
-          CHECKOUT
-        </button>
-      </div>
-    </div>
-  `;
-}
-
-/**
- * Obtiene imagen comodín por colección
- */
-function getComodinImage(collection) {
-  const collectionMap = {
-    'GIALLO FIORE': 'images/comodin/GIALLO FIORE.jpg',
-    'BIANCO FIORE': 'images/comodin/BIANCO FIORE.jpg',
-    'MAZZETTO': 'images/comodin/MAZZETTO.jpg',
-    'GAROFANO BLU': 'images/comodin/GAROFANO BLU.jpg',
-    'GAROFANO IMOLA': 'images/comodin/GAROFANO IMOLA.jpg',
-    'GAROFANO TIFFANY': 'images/comodin/GAROFANO TIFFANY.jpg',
-    'GAROFANO ROSA': 'images/comodin/GAROFANO ROSA.jpg',
-    'GAROFANO LAVI': 'images/comodin/GAROFANO LAVI.jpg',
-    'ROSSO E ORO': 'images/comodin/ROSSO E ORO.jpg',
-    'AVORIO E ORO': 'images/comodin/AVORIO E ORO.jpg'
-  };
-  return collectionMap[collection] || 'images/comodin/default.jpg';
-}
-
-// ===== MOSTRAR/OCULTAR CARRITO =====
-
-/**
- * Muestra la página del carrito
- */
-function showCartPage() {
-  const cartPage = document.getElementById('cartPage');
-  if (cartPage) {
-    cartPage.classList.add('active');
-    document.body.style.overflow = 'hidden';
-    updateCartUI();
-    console.log('🛒 Carrito abierto');
-  }
-}
-
-/**
- * Oculta la página del carrito
- */
-function hideCartPage() {
-  const cartPage = document.getElementById('cartPage');
-  if (cartPage) {
-    cartPage.classList.remove('active');
-    document.body.style.overflow = 'auto';
-    console.log('🛒 Carrito cerrado');
-  }
-}
-
-// ===== INICIALIZACIÓN =====
+// === INIT ===
 document.addEventListener('DOMContentLoaded', () => {
-  console.log('🚀 Inicializando cart.js...');
-  
-  const cartBtn = document.getElementById('cartButton');
-  if (cartBtn) {
-    cartBtn.addEventListener('click', showCartPage);
-  }
-
-  const closeBtn = document.getElementById('closeCart');
-  if (closeBtn) {
-    closeBtn.addEventListener('click', hideCartPage);
-  }
-
-  console.log('✅ Cart v6.1 inicializado');
+  updateCartUI();
+  console.log('Cart initialized – items:', cart.length);
 });
 
-// ===== EXPORTAR FUNCIONES =====
-window.addToCart = addToCart;
-window.removeCartItem = removeCartItem;
-window.updateCartItemQuantity = updateCartItemQuantity;
-window.getCartTotal = getCartTotal;
-window.formatPrice = formatPrice;
-window.updateCartUI = updateCartUI;
-window.showCartPage = showCartPage;
-window.hideCartPage = hideCartPage;
+// Exports
+export { cart, addToCart, removeCartItem, updateCartItemQuantity, getCartTotal, clearCart, updateCartUI };
