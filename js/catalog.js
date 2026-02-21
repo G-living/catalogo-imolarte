@@ -1,5 +1,5 @@
 // js/catalog.js
-// IMOLARTE - Catálogo Grid Principal (CON DEBUG)
+// IMOLARTE - Catálogo Grid Principal
 
 import { CONFIG } from './config.js';
 import { addToCart } from './cart.js';
@@ -21,7 +21,7 @@ export async function loadProducts() {
   }
   
   const csvUrl = `${CONFIG.BASE_URL}/listino/catalogo-imolarte.csv`;
-  console.log('🌐 Intentando fetch:', csvUrl);
+  console.log('🌐 Fetching CSV from:', csvUrl);
   
   try {
     console.log('⏳ Fetch iniciando...');
@@ -51,7 +51,6 @@ export async function loadProducts() {
     console.error('❌ ERROR CARGANDO CSV:', error);
     console.error('❌ Error name:', error.name);
     console.error('❌ Error message:', error.message);
-    console.error('❌ Error stack:', error.stack);
     
     showToast('⚠️ Error cargando catálogo. Revisa la consola.', 'error');
     productsCache = [];
@@ -333,11 +332,12 @@ document.addEventListener('DOMContentLoaded', () => {
   const grid = document.getElementById('products-grid');
   console.log('🔍 Grid:', grid);
   
-  if (grid && grid.children.length === 0) {
+  // ✅ CORRECCIÓN: Remover check de children.length
+  if (grid) {
     console.log('🎨 Llamando renderCatalog...');
     renderCatalog(grid);
   } else {
-    console.warn('⚠️ Grid no encontrado o ya tiene contenido');
+    console.error('❌ Grid element NO encontrado');
   }
   
   const addToCartBtn = document.getElementById('add-to-cart-btn');

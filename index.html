@@ -15,7 +15,10 @@
             <img src="./images/branding/logo-imolarte.png" alt="IMOLARTE - Cooperativa Ceramica d'Imola" class="logo-imolarte">
         </div>
         <div class="header-actions">
-            <button id="cart-btn" class="btn-icon" aria-label="Abrir carrito">
+            <button id="dono-btn" class="btn-secondary btn-icon" type="button" aria-label="Regalar Crédito">
+                🎁 DONO
+            </button>
+            <button id="cart-btn" class="btn-icon" type="button" aria-label="Abrir carrito">
                 🛒 Carrito (<span id="cart-count">0</span>)
             </button>
         </div>
@@ -31,16 +34,86 @@
         <!-- Products Grid -->
         <section class="products-section">
             <h2>Colección Completa</h2>
-            <div id="products-grid" class="products-grid">
-                <div class="loading">Cargando productos...</div>
-            </div>
+            <!-- ✅ CORRECCIÓN: Grid vacío (sin loading inicial) -->
+            <div id="products-grid" class="products-grid"></div>
         </section>
     </main>
+
+    <!-- DONO Modal -->
+    <div id="dono-modal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="dono-title">
+        <div class="modal-content modal-dono">
+            <button class="close-modal close-dono" type="button" aria-label="Cerrar">&times;</button>
+            <h2 id="dono-title">🎁 Regalar Crédito IMOLARTE</h2>
+            <p class="dono-description">Selecciona el monto del crédito que deseas regalar. Generaremos un código único que podrás compartir.</p>
+            
+            <div class="dono-amounts">
+                <button class="dono-amount-btn" data-amount="50000" type="button">
+                    <span class="amount-value">$50.000</span>
+                    <span class="amount-label">Básico</span>
+                </button>
+                <button class="dono-amount-btn" data-amount="100000" type="button">
+                    <span class="amount-value">$100.000</span>
+                    <span class="amount-label">Popular</span>
+                </button>
+                <button class="dono-amount-btn" data-amount="150000" type="button">
+                    <span class="amount-value">$150.000</span>
+                    <span class="amount-label">Premium</span>
+                </button>
+                <button class="dono-amount-btn" data-amount="200000" type="button">
+                    <span class="amount-value">$200.000</span>
+                    <span class="amount-label">Deluxe</span>
+                </button>
+            </div>
+            
+            <div class="dono-custom-amount">
+                <label for="dono-custom-input">O ingresa un monto personalizado:</label>
+                <div class="custom-input-group">
+                    <span class="currency-symbol">$</span>
+                    <input type="number" id="dono-custom-input" placeholder="Ej: 75000" min="50000" max="1000000" step="10000" aria-label="Monto personalizado en pesos colombianos">
+                </div>
+                <p class="dono-min-hint">Monto mínimo: $50.000 COP</p>
+            </div>
+            
+            <button id="generate-dono-btn" class="btn-primary btn-large" type="button">
+                Generar Código DONO
+            </button>
+            
+            <div id="dono-result" class="dono-result hidden">
+                <div class="result-header">
+                    <span class="success-icon">✅</span>
+                    <h3>¡Código Generado!</h3>
+                </div>
+                <div class="dono-code-display">
+                    <code id="dono-code-value">DNO-XXXXXX</code>
+                    <button class="copy-code-btn" id="copy-dono-code" type="button" aria-label="Copiar código">
+                        📋 Copiar
+                    </button>
+                </div>
+                <div class="dono-details">
+                    <p><strong>Monto:</strong> <span id="dono-amount-value">$ 0</span></p>
+                    <p><strong>Válido hasta:</strong> <span id="dono-expiry-date">-</span></p>
+                </div>
+                <div class="dono-actions">
+                    <button class="btn-secondary" id="share-dono-whatsapp" type="button">
+                        📱 Compartir por WhatsApp
+                    </button>
+                    <button class="btn-secondary" id="generate-another-dono" type="button">
+                        🔄 Generar Otro
+                    </button>
+                </div>
+            </div>
+            
+            <div id="dono-loading" class="dono-loading hidden">
+                <div class="spinner"></div>
+                <p>Generando código único...</p>
+            </div>
+        </div>
+    </div>
 
     <!-- Product Detail Modal -->
     <div id="product-detail-modal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="detail-description">
         <div class="modal-content modal-detail">
-            <button class="close-modal" aria-label="Cerrar modal">&times;</button>
+            <button class="close-modal" type="button" aria-label="Cerrar">&times;</button>
             
             <div class="detail-header">
                 <img id="detail-image" src="" alt="Producto">
@@ -50,7 +123,6 @@
             <div class="detail-body">
                 <h3>Selecciona tus variantes:</h3>
                 <div id="detail-variants" class="variants-container" role="list">
-                    <!-- Variantes renderizadas por catalog.js -->
                 </div>
             </div>
             
@@ -65,10 +137,9 @@
     <!-- Cart Modal -->
     <div id="cart-modal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="cart-title">
         <div class="modal-content modal-cart">
-            <button class="close-modal close-cart" aria-label="Cerrar carrito">&times;</button>
+            <button class="close-modal close-cart" type="button" aria-label="Cerrar">&times;</button>
             <h2 id="cart-title">Tu Carrito</h2>
             <div id="cart-items" class="cart-items" role="list">
-                <!-- Cart items rendered by cart.js -->
             </div>
             <div class="cart-footer">
                 <div class="cart-total">
@@ -92,43 +163,17 @@
             </button>
             <h2>Checkout</h2>
             <form id="checkout-form" novalidate>
-                <!-- Personal Data -->
                 <div class="form-section">
                     <h3>Datos Personales</h3>
                     <div class="form-row">
-                        <input 
-                            type="text" 
-                            id="checkout-name" 
-                            name="name" 
-                            placeholder="Nombre Completo" 
-                            required 
-                            autocomplete="name"
-                            aria-label="Nombre completo"
-                            aria-required="true">
-                        <input 
-                            type="email" 
-                            id="checkout-email" 
-                            name="email" 
-                            placeholder="Email" 
-                            required 
-                            autocomplete="email"
-                            aria-label="Correo electrónico"
-                            aria-required="true">
+                        <input type="text" id="checkout-name" name="name" placeholder="Nombre Completo" required autocomplete="name" aria-label="Nombre completo" aria-required="true">
+                        <input type="email" id="checkout-email" name="email" placeholder="Email" required autocomplete="email" aria-label="Correo electrónico" aria-required="true">
                     </div>
                     <div class="form-row">
-                        <input 
-                            type="tel" 
-                            id="checkout-phone" 
-                            name="phone" 
-                            placeholder="WhatsApp (Celular)" 
-                            required 
-                            autocomplete="tel"
-                            aria-label="Número de teléfono"
-                            aria-required="true">
+                        <input type="tel" id="checkout-phone" name="phone" placeholder="WhatsApp (Celular)" required autocomplete="tel" aria-label="Número de teléfono" aria-required="true">
                     </div>
                 </div>
 
-                <!-- Terms -->
                 <div class="form-section">
                     <label class="checkbox-label">
                         <input type="checkbox" id="terms" name="terms" required aria-required="true">
@@ -136,7 +181,6 @@
                     </label>
                 </div>
 
-                <!-- Wompi Checkout -->
                 <div class="wompi-checkout">
                     <button type="submit" id="pay-btn" class="btn-primary btn-large">
                         Pagar con Wompi
@@ -159,5 +203,6 @@
     <script type="module" src="./js/ui.js"></script>
     <script type="module" src="./js/cart.js"></script>
     <script type="module" src="./js/catalog.js"></script>
+    <script type="module" src="./js/dono.js"></script>
 </body>
 </html>
