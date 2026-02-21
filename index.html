@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IMOLARTE - Cerámicas Italianas Exclusivas</title>
+    <link rel="stylesheet" href="./css/styles.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+</head>
+<body>
+    <!-- Header con Logos -->
+    <header class="main-header">
+        <div class="logo-empresa">
+            <img src="./images/branding/logo-helena-caballero.png" alt="Helena Caballero">
+        </div>
+        <div class="logo-brand">
+            <img src="./images/branding/logo-imolarte.png" alt="IMOLARTE - Cooperativa Ceramica d'Imola">
+        </div>
+        <div class="header-actions">
+            <button id="cart-btn" class="btn-icon">
+                🛒 Carrito (<span id="cart-count">0</span>)
+            </button>
+            <button id="dono-btn" class="btn-primary">
+                🎁 Regalar Crédito (Dono)
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="container">
+        <section class="hero">
+            <h1>Cerámicas Italianas Exclusivas</h1>
+            <p>Calidad premium para tu hogar. Envíos a toda Colombia.</p>
+        </section>
+
+        <!-- Products Grid -->
+        <section class="products-section">
+            <h2>Colección Garofano Blu</h2>
+            <div id="products-grid" class="products-grid">
+                <!-- Products rendered by catalog.js -->
+                <div class="loading">Cargando productos...</div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Cart Modal -->
+    <div id="cart-modal" class="modal hidden">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <h2>Tu Carrito</h2>
+            <div id="cart-items" class="cart-items">
+                <!-- Cart items rendered by cart.js -->
+            </div>
+            <div class="cart-footer">
+                <div class="cart-total">
+                    <strong>Total: <span id="cart-total-amount">$ 0</span></strong>
+                </div>
+                <button id="checkout-btn" class="btn-primary btn-large">
+                    Finalizar Compra
+                </button>
+                <button class="btn-secondary" onclick="document.getElementById('cart-modal').classList.add('hidden')">
+                    Seguir Comprando
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- DONO Modal -->
+    <div id="dono-modal" class="modal hidden">
+        <div class="modal-content">
+            <span class="close-modal close-modal-dono">&times;</span>
+            <h2>🎁 Regalar Crédito</h2>
+            <p>Selecciona el monto para generar un código único.</p>
+            
+            <div class="dono-amounts">
+                <button class="dono-amount" data-amount="50000">$50.000</button>
+                <button class="dono-amount" data-amount="100000">$100.000</button>
+                <button class="dono-amount" data-amount="150000">$150.000</button>
+                <input type="number" id="dono-custom" placeholder="Otro Monto (COP)" min="50000">
+            </div>
+            
+            <button id="generate-dono-btn" class="btn-primary btn-large">
+                Generar Código
+            </button>
+            
+            <div id="dono-result" class="dono-result hidden">
+                <p><strong>Código:</strong> <span id="dono-code-display"></span></p>
+                <button id="share-dono-whatsapp" class="btn-secondary">
+                    Compartir por WhatsApp
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Checkout Section -->
+    <section id="checkout-section" class="checkout-section hidden">
+        <div class="container">
+            <h2>Checkout</h2>
+            <form id="checkout-form">
+                <!-- Personal Data -->
+                <div class="form-section">
+                    <h3>Datos Personales</h3>
+                    <div class="form-row">
+                        <input type="text" name="name" placeholder="Nombre Completo" required>
+                        <input type="email" name="email" placeholder="Email" required>
+                    </div>
+                    <div class="form-row">
+                        <input type="tel" name="phone" placeholder="WhatsApp (Celular)" required>
+                        <input type="text" name="address" placeholder="Dirección de Entrega">
+                    </div>
+                </div>
+
+                <!-- Delivery Method -->
+                <div class="form-section">
+                    <h3>Selecciona Tipo de Entrega</h3>
+                    <div class="radio-group">
+                        <label>
+                            <input type="radio" name="delivery" value="domicilio" checked>
+                            Entrega a Domicilio
+                        </label>
+                        <label>
+                            <input type="radio" name="delivery" value="retiro">
+                            Retiro en Almacén
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Payment Method -->
+                <div class="form-section">
+                    <h3>Método de Pago</h3>
+                    <div class="radio-group">
+                        <label>
+                            <input type="radio" name="payment" value="100" checked>
+                            Pago Completo (100%)
+                        </label>
+                        <label>
+                            <input type="radio" name="payment" value="60">
+                            Anticipo (60%) - Resto en entrega
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Terms -->
+                <div class="form-section">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="terms" required>
+                        Acepto la <a href="#">Política de Tratamiento de Datos</a> (Ley 1581)
+                    </label>
+                </div>
+
+                <!-- Wompi Checkout -->
+                <div class="wompi-checkout">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/6/6f/Wompi_logo.svg/1200px-Wompi_logo.svg.png" alt="Wompi" class="wompi-logo">
+                    <button type="submit" id="pay-btn" class="btn-primary btn-large">
+                        Pagar con Wompi
+                    </button>
+                    <p class="secure-text">🔒 Pago Seguro SSL</p>
+                </div>
+
+                <!-- WhatsApp Fallback -->
+                <div class="whatsapp-fallback">
+                    <button type="button" id="wishlist-btn" class="btn-secondary">
+                        Enviar Pedido por WhatsApp
+                    </button>
+                </div>
+            </form>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="main-footer">
+        <p>© 2024 IMOLARTE. Todos los derechos reservados.</p>
+        <p>🇨🇴 Envíos a toda Colombia | 📞 57 300 425 7367</p>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+    <script type="module" src="./js/main.js"></script>
+</body>
+</html>
