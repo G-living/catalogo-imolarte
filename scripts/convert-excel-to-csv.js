@@ -1,6 +1,6 @@
 // scripts/convert-excel-to-csv.js
-// IMOLARTE - Convertir Excel matricial → CSV vertical con estructura completa
-// Transforma: 1 fila Excel (múltiples colecciones) → N filas CSV (1 por colección)
+// IMOLARTE - Convertir Excel matricial → CSV vertical unificado
+// Estructura Excel: Múltiples colecciones en columnas → Una fila por producto-colección
 
 const XLSX = require('xlsx');
 const fs = require('fs');
@@ -58,18 +58,19 @@ function convertExcelToCSV() {
   
   // Identificar estructura de columnas por colección
   const collectionColumns = identifyCollectionColumns(rawData);
-  console.log(` ${Object.keys(collectionColumns).length} colecciones detectadas`);
+  console.log(`📦 ${Object.keys(collectionColumns).length} colecciones detectadas`);
   
   // Procesar datos → formato vertical
   const csvRows = [];
   
   // Header CSV
-  csvRows.push('Descripcion,Colección,Prefijo_Coleccion,Codigo_Producto,SKU,Foto_Comodin_Coleccion,Foto_Real_Codigo_Producto,Precio_EUR,Precio_COP,Multiplicador');
+  csvRows.push('Descripcion;Colección;Prefijo_Coleccion;Codigo_Producto;SKU;Foto_Comodin_Coleccion;Foto_Real_Codigo_Producto;Precio_EUR;Precio_COP;Multiplicador');
   
-  // Procesar cada fila de datos (empezar después de headers)
+  // Procesar cada fila de datos (empezar después de headers - fila 5 aprox)
   let productsCount = 0;
+  let lastDescription = '';
   
-  for (let rowIdx = 12; rowIdx < rawData.length; rowIdx++) {
+  for (let rowIdx = 4; rowIdx < rawData.length; rowIdx++) {
     const row = rawData[rowIdx];
     const description = String(row[0] || '').trim();
     
@@ -95,21 +96,35 @@ function convertExcelToCSV() {
       // Calcular precio COP
       const priceCOP = Math.round(priceEUR * EUR_TO_COP);
       
+      // Descripción solo en primera fila del producto
+      const displayDescription = (description !== lastDescription) ? description : '';
+      lastDescription = description;
+      
+      // Multiplicador solo en primera fila del producto
+      const displayMultiplier = (description !== lastDescription || productsCount === 0) ? EUR_TO_COP : '';
+      
+      // Formato de precios
+      const priceEURFormatted = `EUR ${priceEUR.toFixed(2).replace('.', ',')}`;
+      const priceCOPFormatted = `COP ${priceCOP.toLocaleString('es-CO')}`;
+      
+      // Foto real: solo el número del producto (110.jpg, 001.jpg, etc.)
+      const fotoReal = `${productNumber}.jpg`;
+      
       // Construir fila CSV
       const csvRow = [
-        description,
+        displayDescription,
         collection.name,
         prefix,
         productNumber,
-        code,  // SKU completo
+        code,
         collection.comodin,
-        `${code}.jpg`,  // Foto real
-        priceEUR.toFixed(2).replace('.', ','),  // Formato europeo
-        `COP ${priceCOP.toLocaleString('es-CO')}`,
-        EUR_TO_COP
+        fotoReal,
+        priceEURFormatted,
+        priceCOPFormatted,
+        displayMultiplier
       ];
       
-      csvRows.push(csvRow.join(','));
+      csvRows.push(csvRow.join(';'));
       productsCount++;
     }
   }
@@ -121,18 +136,18 @@ function convertExcelToCSV() {
   console.log(`📦 ${productsCount} productos exportados`);
   console.log(`💡 Ejemplo de primeras líneas:`);
   csvRows.slice(0, 4).forEach(line => console.log(`   ${line}`));
-  console.log('💡 Ahora ejecuta: npm run dev para testear');
+  console.log('💡 Ahora ejecuta: npm run convert && npm run dev para testear');
 }
 
 /**
  * Identifica las columnas de código/precio para cada colección
- * Retorna: { 'GF': 1, 'BF': 3, 'MZ': 5, ... }
+ * Retorna: { 'GF': 1, 'BF': 3, 'MZ': 5, 'GB': 7, ... }
  */
 function identifyCollectionColumns(data) {
   const collectionColumns = {};
   
-  // Buscar en filas 1-3 los headers de colecciones
-  for (let rowIdx = 1; rowIdx < Math.min(5, data.length); rowIdx++) {
+  // Buscar en filas 2-3 los headers de colecciones
+  for (let rowIdx = 2; rowIdx < Math.min(5, data.length); rowIdx++) {
     const row = data[rowIdx];
     
     for (let colIdx = 1; colIdx < row.length; colIdx++) {
