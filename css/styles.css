@@ -41,8 +41,14 @@ body {
   z-index: 100;
 }
 
-.logo-empresa img,
-.logo-brand img {
+.logos-container {
+  display: flex;
+  gap: 20px;
+  align-items: center;
+}
+
+.logo-helena,
+.logo-imolarte {
   height: 60px;
   object-fit: contain;
 }
@@ -542,6 +548,16 @@ body {
   .main-header {
     flex-direction: column;
     gap: 15px;
+  }
+  
+  .logos-container {
+    flex-direction: column;
+    gap: 10px;
+  }
+  
+  .logo-helena,
+  .logo-imolarte {
+    height: 40px;
   }
   
   .hero h1 {

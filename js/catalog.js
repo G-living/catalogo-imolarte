@@ -3,7 +3,7 @@
 
 import { CONFIG } from './config.js';
 import { addToCart } from './cart.js';
-import { formatPrice, showToast, openModal } from './ui.js';
+import { formatPrice, formatPriceEUR, showToast, openModal, closeModal, getComodinURL, getProductImageURL } from './ui.js';
 
 // ============================================================================
 // ESTADO GLOBAL
@@ -74,6 +74,10 @@ function parseCSV(csvText) {
       product.Descripcion = currentDescription;
     }
     
+    // Parsear precios
+    const precioEURString = product.Precio_EUR ? product.Precio_EUR.replace('EUR ', '').replace(',', '.') : '0';
+    const precioCOPString = product.Precio_COP ? product.Precio_COP.replace('COP ', '').replace(/\./g, '') : '0';
+    
     products.push({
       descripcion: product.Descripcion,
       coleccion: product.Colección,
@@ -82,8 +86,8 @@ function parseCSV(csvText) {
       sku: product.SKU,
       comodin: product.Foto_Comodin_Coleccion,
       fotoReal: product.Foto_Real_Codigo_Producto,
-      precioEUR: parseFloat(product.Precio_EUR.replace('EUR ', '').replace(',', '.')) || 0,
-      precioCOP: parseInt(product.Precio_COP.replace('COP ', '').replace(/\./g, '')) || 0
+      precioEUR: parseFloat(precioEURString) || 0,
+      precioCOP: parseInt(precioCOPString) || 0
     });
   }
   
@@ -164,7 +168,7 @@ export async function renderCatalog(gridElement) {
   // Bind click events
   gridElement.querySelectorAll('.product-card').forEach(card => {
     card.addEventListener('click', (e) => {
-      if (!e.target.classList.contains('btn-add')) {
+      if (!e.target.classList.contains('btn-add') && !e.target.closest('.btn-add')) {
         const productCode = card.dataset.productCode;
         openProductDetail(productCode);
       }
@@ -207,18 +211,31 @@ function openProductDetail(productCode) {
   const modal = document.getElementById('product-detail-modal');
   if (!modal) return;
   
+  // Guardar código de producto en el modal
+  modal.dataset.productCode = productCode;
+  
   // Llenar modal con datos
-  document.getElementById('detail-image').src = `${CONFIG.IMAGE_PRODUCTS_URL}${product.fotoReal}`;
-  document.getElementById('detail-description').textContent = product.descripcion;
+  const detailImage = document.getElementById('detail-image');
+  const detailDescription = document.getElementById('detail-description');
+  
+  if (detailImage) {
+    detailImage.src = `${CONFIG.IMAGE_PRODUCTS_URL}${product.fotoReal}`;
+    detailImage.alt = product.descripcion;
+  }
+  if (detailDescription) {
+    detailDescription.textContent = product.descripcion;
+  }
   
   // Renderizar variantes
   const variantsContainer = document.getElementById('detail-variants');
-  variantsContainer.innerHTML = '';
-  
-  product.variantes.forEach(variante => {
-    const variantRow = createVariantRow(variante);
-    variantsContainer.appendChild(variantRow);
-  });
+  if (variantsContainer) {
+    variantsContainer.innerHTML = '';
+    
+    product.variantes.forEach(variante => {
+      const variantRow = createVariantRow(variante);
+      variantsContainer.appendChild(variantRow);
+    });
+  }
   
   // Mostrar modal
   modal.classList.remove('hidden');
@@ -258,9 +275,9 @@ function createVariantRow(variante) {
   const plusBtn = row.querySelector('.qty-plus');
   const qtyInput = row.querySelector('.qty-input');
   
-  minusBtn.addEventListener('click', () => updateQuantity(variante.sku, -1));
-  plusBtn.addEventListener('click', () => updateQuantity(variante.sku, 1));
-  qtyInput.addEventListener('change', (e) => setQuantity(variante.sku, e.target.value));
+  if (minusBtn) minusBtn.addEventListener('click', () => updateQuantity(variante.sku, -1));
+  if (plusBtn) plusBtn.addEventListener('click', () => updateQuantity(variante.sku, 1));
+  if (qtyInput) qtyInput.addEventListener('change', (e) => setQuantity(variante.sku, e.target.value));
   
   return row;
 }
@@ -321,7 +338,7 @@ export function addProductToCart() {
         coleccion: variante.coleccion,
         precio: variante.precioCOP,
         cantidad: quantity,
-        imagen: variante.comodin
+        imagen: variante.comodin || 'Garofano_Blu.png'
       });
       itemsAdded += quantity;
     }
@@ -332,14 +349,6 @@ export function addProductToCart() {
     closeModal('product-detail-modal');
   } else {
     showToast('⚠️ Selecciona al menos 1 unidad', 'info');
-  }
-}
-
-function closeModal(modalId) {
-  const modal = document.getElementById(modalId);
-  if (modal) {
-    modal.classList.add('hidden');
-    document.body.style.overflow = '';
   }
 }
 
@@ -362,6 +371,21 @@ document.addEventListener('DOMContentLoaded', () => {
   // Bind cerrar modal
   const closeBtns = document.querySelectorAll('.close-modal');
   closeBtns.forEach(btn => {
-    btn.addEventListener('click', () => closeModal('product-detail-modal'));
+    btn.addEventListener('click', () => {
+      closeModal('product-detail-modal');
+      closeModal('cart-modal');
+    });
   });
+  
+  // Bind botón carrito en header
+  const cartBtn = document.getElementById('cart-btn');
+  if (cartBtn) {
+    cartBtn.addEventListener('click', () => {
+      const cartModal = document.getElementById('cart-modal');
+      if (cartModal) {
+        cartModal.classList.remove('hidden');
+        document.body.style.overflow = 'hidden';
+      }
+    });
+  }
 });

@@ -74,22 +74,8 @@ export function getComodinURL(comodinName) {
 }
 
 /**
- * Verifica si una imagen existe (mediante fetch HEAD)
- * @param {string} url - URL de la imagen
- * @returns {Promise<boolean>} True si existe
- */
-export async function imageExists(url) {
-  try {
-    const response = await fetch(url, { method: 'HEAD' });
-    return response.ok;
-  } catch {
-    return false;
-  }
-}
-
-/**
  * Abre modal de detalle de producto
- * @param {string} productId - ID del producto
+ * @param {string} modalId - ID del modal
  */
 export function openModal(modalId) {
   const modal = document.getElementById(modalId);

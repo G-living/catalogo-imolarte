@@ -1,6 +1,6 @@
 // scripts/convert-excel-to-csv.js
 // IMOLARTE - Convertir Excel matricial → CSV vertical unificado
-// Estructura Excel: Múltiples colecciones en columnas → Una fila por producto-colección
+// Estructura Excel: Headers en filas 3-4, datos desde fila 5
 
 const XLSX = require('xlsx');
 const fs = require('fs');
@@ -22,6 +22,7 @@ const COLLECTION_MAP = {
   'GI': { name: 'GAROFANO IMOLA', comodin: 'Garofano_Imola.png' },
   'GT': { name: 'GAROFANO TIFFANY', comodin: 'Garofano_Tiffany.png' },
   'GP': { name: 'GAROFANO ROSA', comodin: 'Garofano_Rosa.png' },
+  'GR': { name: 'GAROFANO ROSA', comodin: 'Garofano_Rosa.png' },
   'GL': { name: 'GAROFANO LAVI', comodin: 'Garofano_Lavi.png' },
   'GRG': { name: 'ROSSO E ORO', comodin: 'Rosso_E_Oro.png' },
   'GIG': { name: 'AVORIO E ORO', comodin: 'Avorio_E_Oro.png' }
@@ -60,13 +61,19 @@ function convertExcelToCSV() {
   const collectionColumns = identifyCollectionColumns(rawData);
   console.log(`📦 ${Object.keys(collectionColumns).length} colecciones detectadas`);
   
+  if (Object.keys(collectionColumns).length === 0) {
+    console.error('❌ No se detectaron colecciones. Verificar estructura del Excel.');
+    console.log('💡 Los headers deben estar en filas 3-4 con prefijos: GF, BF, MZ, GB, etc.');
+    process.exit(1);
+  }
+  
   // Procesar datos → formato vertical
   const csvRows = [];
   
   // Header CSV
   csvRows.push('Descripcion;Colección;Prefijo_Coleccion;Codigo_Producto;SKU;Foto_Comodin_Coleccion;Foto_Real_Codigo_Producto;Precio_EUR;Precio_COP;Multiplicador');
   
-  // Procesar cada fila de datos (empezar después de headers - fila 5 aprox)
+  // Procesar cada fila de datos (empezar desde fila 5 - índice 4)
   let productsCount = 0;
   let lastDescription = '';
   
@@ -74,7 +81,8 @@ function convertExcelToCSV() {
     const row = rawData[rowIdx];
     const description = String(row[0] || '').trim();
     
-    if (!description) continue;
+    // Saltar filas vacías o headers
+    if (!description || description.includes('DESCRIPTION') || description.includes('code')) continue;
     
     // Para cada colección, extraer código y precio
     for (const [prefix, colIndex] of Object.entries(collectionColumns)) {
@@ -83,7 +91,7 @@ function convertExcelToCSV() {
       
       if (!code || priceEUR === 0) continue;
       
-      // Extraer prefijo y número de producto
+      // Extraer número de producto (quitar prefijo)
       const productNumber = code.replace(prefix, '');
       
       // Obtener información de colección
@@ -141,6 +149,7 @@ function convertExcelToCSV() {
 
 /**
  * Identifica las columnas de código/precio para cada colección
+ * Busca en filas 2-3 los prefijos de colección
  * Retorna: { 'GF': 1, 'BF': 3, 'MZ': 5, 'GB': 7, ... }
  */
 function identifyCollectionColumns(data) {

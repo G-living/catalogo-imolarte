@@ -20,11 +20,19 @@ const CART_STORAGE_KEY = 'imolarte_cart';
  * @param {Object} item - Item a agregar
  */
 export function addToCart(item) {
+  // Validar que cantidad tenga valor
+  const quantity = item.cantidad || 0;
+  
+  if (quantity <= 0) {
+    showToast('⚠️ Cantidad inválida', 'error');
+    return;
+  }
+  
   const existingIndex = cart.findIndex(i => i.sku === item.sku);
   
   if (existingIndex !== -1) {
     // Actualizar cantidad existente
-    const newQuantity = cart[existingIndex].cantidad + item.cantidad;
+    const newQuantity = cart[existingIndex].cantidad + quantity;
     
     if (newQuantity > CONFIG.MAX_QUANTITY_PER_SKU) {
       showToast(`⚠️ Máximo ${CONFIG.MAX_QUANTITY_PER_SKU} unidades por SKU`, 'error');
@@ -34,9 +42,11 @@ export function addToCart(item) {
     }
   } else {
     // Nuevo item
-    if (item.cantidad > CONFIG.MAX_QUANTITY_PER_SKU) {
+    if (quantity > CONFIG.MAX_QUANTITY_PER_SKU) {
       item.cantidad = CONFIG.MAX_QUANTITY_PER_SKU;
       showToast(`⚠️ Cantidad ajustada a máximo ${CONFIG.MAX_QUANTITY_PER_SKU}`, 'info');
+    } else {
+      item.cantidad = quantity;
     }
     cart.push(item);
   }
@@ -55,7 +65,7 @@ export function updateCartItemQuantity(sku, quantity) {
   const item = cart.find(i => i.sku === sku);
   if (!item) return;
   
-  quantity = Math.max(0, Math.min(quantity, CONFIG.MAX_QUANTITY_PER_SKU));
+  quantity = Math.max(0, Math.min(quantity || 0, CONFIG.MAX_QUANTITY_PER_SKU));
   item.cantidad = quantity;
   
   if (quantity === 0) {
@@ -95,7 +105,7 @@ export function clearCart() {
  * @returns {number} Total en COP
  */
 export function getCartTotal() {
-  return cart.reduce((total, item) => total + (item.precio * item.cantidad), 0);
+  return cart.reduce((total, item) => total + ((item.precio || 0) * (item.cantidad || 0)), 0);
 }
 
 /**
@@ -103,7 +113,7 @@ export function getCartTotal() {
  * @returns {number} Cantidad de items
  */
 export function getCartItemCount() {
-  return cart.reduce((count, item) => count + item.cantidad, 0);
+  return cart.reduce((count, item) => count + (item.cantidad || 0), 0);
 }
 
 /**
@@ -161,9 +171,9 @@ export function renderCart() {
   let itemCount = 0;
   
   cart.forEach(item => {
-    const subtotal = item.precio * item.cantidad;
+    const subtotal = (item.precio || 0) * (item.cantidad || 0);
     total += subtotal;
-    itemCount += item.cantidad;
+    itemCount += (item.cantidad || 0);
     
     const cartItem = createCartItem(item);
     cartItemsContainer.appendChild(cartItem);
@@ -178,22 +188,24 @@ function createCartItem(item) {
   cartItem.className = 'cart-item';
   cartItem.dataset.sku = item.sku;
   
-  const imageUrl = `${CONFIG.COMODINES_URL}${item.imagen}`;
-  const subtotal = item.precio * item.cantidad;
+  // Validar que imagen tenga valor
+  const imagenName = item.imagen || 'Garofano_Blu.png';
+  const imageUrl = `${CONFIG.COMODINES_URL}${imagenName}`;
+  const subtotal = (item.precio || 0) * (item.cantidad || 0);
   
   cartItem.innerHTML = `
     <div class="cart-item-image">
-      <img src="${imageUrl}" alt="${item.coleccion}">
+      <img src="${imageUrl}" alt="${item.coleccion || 'Producto'}">
     </div>
     <div class="cart-item-info">
-      <h4 class="cart-item-name">${item.descripcion}</h4>
-      <p class="cart-item-collection">${item.coleccion}</p>
-      <p class="cart-item-sku">${item.sku}</p>
-      <p class="cart-item-price">${formatPrice(item.precio)} c/u</p>
+      <h4 class="cart-item-name">${item.descripcion || 'Producto'}</h4>
+      <p class="cart-item-collection">${item.coleccion || ''}</p>
+      <p class="cart-item-sku">${item.sku || ''}</p>
+      <p class="cart-item-price">${formatPrice(item.precio || 0)} c/u</p>
     </div>
     <div class="cart-item-quantity">
       <button class="qty-btn qty-minus" data-sku="${item.sku}">-</button>
-      <input type="number" class="qty-input" value="${item.cantidad}" min="0" max="${CONFIG.MAX_QUANTITY_PER_SKU}" data-sku="${item.sku}">
+      <input type="number" class="qty-input" value="${item.cantidad || 0}" min="0" max="${CONFIG.MAX_QUANTITY_PER_SKU}" data-sku="${item.sku}">
       <button class="qty-btn qty-plus" data-sku="${item.sku}">+</button>
     </div>
     <div class="cart-item-subtotal">
@@ -209,10 +221,10 @@ function createCartItem(item) {
   const qtyInput = cartItem.querySelector('.qty-input');
   const removeBtn = cartItem.querySelector('.cart-item-remove');
   
-  minusBtn.addEventListener('click', () => updateCartItemQuantity(item.sku, item.cantidad - 1));
-  plusBtn.addEventListener('click', () => updateCartItemQuantity(item.sku, item.cantidad + 1));
-  qtyInput.addEventListener('change', (e) => updateCartItemQuantity(item.sku, parseInt(e.target.value) || 0));
-  removeBtn.addEventListener('click', () => removeFromCart(item.sku));
+  if (minusBtn) minusBtn.addEventListener('click', () => updateCartItemQuantity(item.sku, (item.cantidad || 0) - 1));
+  if (plusBtn) plusBtn.addEventListener('click', () => updateCartItemQuantity(item.sku, (item.cantidad || 0) + 1));
+  if (qtyInput) qtyInput.addEventListener('change', (e) => updateCartItemQuantity(item.sku, parseInt(e.target.value) || 0));
+  if (removeBtn) removeBtn.addEventListener('click', () => removeFromCart(item.sku));
   
   return cartItem;
 }
