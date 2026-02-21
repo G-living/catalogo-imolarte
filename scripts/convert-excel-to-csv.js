@@ -1,6 +1,6 @@
 // scripts/convert-excel-to-csv.js
-// IMOLARTE - Convertir Excel matricial → CSV vertical unificado
-// Estructura: Múltiples colecciones en columnas → Una fila por producto
+// IMOLARTE - Convertir Excel matricial → CSV vertical con estructura completa
+// Transforma: 1 fila Excel (múltiples colecciones) → N filas CSV (1 por colección)
 
 const XLSX = require('xlsx');
 const fs = require('fs');
@@ -13,18 +13,18 @@ const path = require('path');
 const INPUT_FILE = path.join(__dirname, '../listino/IMOLARTE NET PRICE WHOLESALE EXTRA CEE.xlsx');
 const OUTPUT_FILE = path.join(__dirname, '../listino/catalogo-imolarte.csv');
 
-// Mapeo de colecciones a comodines
-const COLECCION_COMODIN = {
-  'GIALLO FIORE': 'GIALLO_FIORE.png',
-  'BIANCO FIORE': 'BIANCO_FIORE.png',
-  'MAZZETTO': 'MAZZETTO.png',
-  'GAROFANO BLU': 'BLU_CLASSICO.png',
-  'GAROFANO IMOLA': 'GAROFANO_IMOLA.png',
-  'GAROFANO TIFFANY': 'TIFFANY.png',
-  'GAROFANO GRGSA': 'GRGSA.png',
-  'GAROFANO LAVI': 'LAVI.png',
-  'ROSSO E ORO': 'ROSSO_ORO.png',
-  'AVORIO E ORO': 'AVORIO_E_ORO.png'
+// Mapeo de prefijos a nombres completos de colección y comodines
+const COLLECTION_MAP = {
+  'GF': { name: 'GIALLO FIORE', comodin: 'Giallo_Fiore.png' },
+  'BF': { name: 'BIANCO FIORE', comodin: 'Bianco_Fiore.png' },
+  'MZ': { name: 'MAZZETTO', comodin: 'Mazzetto.png' },
+  'GB': { name: 'GAROFANO BLU', comodin: 'Garofano_Blu.png' },
+  'GI': { name: 'GAROFANO IMOLA', comodin: 'Garofano_Imola.png' },
+  'GT': { name: 'GAROFANO TIFFANY', comodin: 'Garofano_Tiffany.png' },
+  'GP': { name: 'GAROFANO ROSA', comodin: 'Garofano_Rosa.png' },
+  'GL': { name: 'GAROFANO LAVI', comodin: 'Garofano_Lavi.png' },
+  'GRG': { name: 'ROSSO E ORO', comodin: 'Rosso_E_Oro.png' },
+  'GIG': { name: 'AVORIO E ORO', comodin: 'Avorio_E_Oro.png' }
 };
 
 // Multiplicador EUR → COP
@@ -35,7 +35,7 @@ const EUR_TO_COP = 12600;
 // ============================================================================
 
 function convertExcelToCSV() {
-  console.log('🔄 Convirtiendo Excel matricial a CSV...');
+  console.log('🔄 Convirtiendo Excel matricial a CSV vertical...');
   
   // Verificar archivo
   if (!fs.existsSync(INPUT_FILE)) {
@@ -48,7 +48,7 @@ function convertExcelToCSV() {
   const sheetName = workbook.SheetNames[0];
   const worksheet = workbook.Sheets[sheetName];
   
-  // Convertir a array de arrays (preservando estructura)
+  // Convertir a array de arrays
   const rawData = XLSX.utils.sheet_to_json(worksheet, { 
     header: 1,
     defval: ''
@@ -56,113 +56,98 @@ function convertExcelToCSV() {
   
   console.log(`📊 ${rawData.length} filas leídas del Excel`);
   
-  // Identificar headers de colecciones (fila 2-3 aprox)
-  const collectionHeaders = identifyCollections(rawData);
-  console.log(` ${collectionHeaders.length} colecciones detectadas: ${collectionHeaders.map(c => c.name).join(', ')}`);
+  // Identificar estructura de columnas por colección
+  const collectionColumns = identifyCollectionColumns(rawData);
+  console.log(` ${Object.keys(collectionColumns).length} colecciones detectadas`);
   
-  // Procesar datos matriciales → formato vertical
-  const products = processMatrixData(rawData, collectionHeaders);
+  // Procesar datos → formato vertical
+  const csvRows = [];
   
-  console.log(`📦 ${products.length} productos extraídos`);
+  // Header CSV
+  csvRows.push('Descripcion,Colección,Prefijo_Coleccion,Codigo_Producto,SKU,Foto_Comodin_Coleccion,Foto_Real_Codigo_Producto,Precio_EUR,Precio_COP,Multiplicador');
   
-  // Generar CSV
-  const csvRows = ['SKU,Nombre,Coleccion,Precio_EUR,Precio_COP,Imagen_Real,Comodin,Stock,Activo'];
+  // Procesar cada fila de datos (empezar después de headers)
+  let productsCount = 0;
   
-  products.forEach(product => {
-    const row = [
-      product.sku,
-      `"${product.name.replace(/"/g, '""')}"`,
-      product.coleccion,
-      product.precioEUR.toFixed(2),
-      product.precioCOP,
-      product.imagenReal,
-      product.comodin,
-      product.stock,
-      product.activo ? 'TRUE' : 'FALSE'
-    ];
-    csvRows.push(row.join(','));
-  });
+  for (let rowIdx = 12; rowIdx < rawData.length; rowIdx++) {
+    const row = rawData[rowIdx];
+    const description = String(row[0] || '').trim();
+    
+    if (!description) continue;
+    
+    // Para cada colección, extraer código y precio
+    for (const [prefix, colIndex] of Object.entries(collectionColumns)) {
+      const code = String(row[colIndex] || '').trim();
+      const priceEUR = parseFloat(row[colIndex + 1]) || 0;
+      
+      if (!code || priceEUR === 0) continue;
+      
+      // Extraer prefijo y número de producto
+      const productNumber = code.replace(prefix, '');
+      
+      // Obtener información de colección
+      const collection = COLLECTION_MAP[prefix];
+      if (!collection) {
+        console.warn(`⚠️ Colección no mapeada para prefijo: ${prefix}`);
+        continue;
+      }
+      
+      // Calcular precio COP
+      const priceCOP = Math.round(priceEUR * EUR_TO_COP);
+      
+      // Construir fila CSV
+      const csvRow = [
+        description,
+        collection.name,
+        prefix,
+        productNumber,
+        code,  // SKU completo
+        collection.comodin,
+        `${code}.jpg`,  // Foto real
+        priceEUR.toFixed(2).replace('.', ','),  // Formato europeo
+        `COP ${priceCOP.toLocaleString('es-CO')}`,
+        EUR_TO_COP
+      ];
+      
+      csvRows.push(csvRow.join(','));
+      productsCount++;
+    }
+  }
   
   // Escribir CSV
   fs.writeFileSync(OUTPUT_FILE, csvRows.join('\n'), 'utf-8');
   
   console.log(`✅ CSV generado: ${OUTPUT_FILE}`);
-  console.log(`💡 Ahora ejecuta: npm run dev para testear`);
+  console.log(`📦 ${productsCount} productos exportados`);
+  console.log(`💡 Ejemplo de primeras líneas:`);
+  csvRows.slice(0, 4).forEach(line => console.log(`   ${line}`));
+  console.log('💡 Ahora ejecuta: npm run dev para testear');
 }
 
 /**
- * Identifica las colecciones y sus columnas en el Excel
+ * Identifica las columnas de código/precio para cada colección
+ * Retorna: { 'GF': 1, 'BF': 3, 'MZ': 5, ... }
  */
-function identifyCollections(data) {
-  const collections = [];
+function identifyCollectionColumns(data) {
+  const collectionColumns = {};
   
-  // Buscar fila de headers (generalmente fila 2-3)
-  for (let rowIdx = 0; rowIdx < Math.min(15, data.length); rowIdx++) {
+  // Buscar en filas 1-3 los headers de colecciones
+  for (let rowIdx = 1; rowIdx < Math.min(5, data.length); rowIdx++) {
     const row = data[rowIdx];
     
-    // Detectar nombres de colecciones (celdas con texto como "GIALLO FIORE", "GAROFANO BLU", etc.)
     for (let colIdx = 1; colIdx < row.length; colIdx++) {
-      const cell = String(row[colIdx] || '').trim().toUpperCase();
+      const cell = String(row[colIdx] || '').trim();
       
-      // Verificar si es un nombre de colección conocido
-      if (COLECCION_COMODIN[cell] || cell.includes('GAROFANO') || cell.includes('FIORE')) {
-        // Verificar que tenga columnas de code/price después
-        if (rowIdx + 1 < data.length) {
-          const nextRow = data[rowIdx + 1];
-          if (nextRow[colIdx] && nextRow[colIdx + 1]) {
-            collections.push({
-              name: cell,
-              codeCol: colIdx,
-              priceCol: colIdx + 1
-            });
-          }
-        }
+      // Verificar si es un prefijo de colección conocido
+      if (COLLECTION_MAP[cell]) {
+        // La columna del código está en colIdx
+        // La columna del precio está en colIdx + 1
+        collectionColumns[cell] = colIdx;
       }
     }
   }
   
-  return collections;
-}
-
-/**
- * Procesa datos matriciales y los convierte a formato vertical
- */
-function processMatrixData(data, collections) {
-  const products = [];
-  
-  // Empezar desde la fila de datos (después de headers)
-  const dataStartRow = 12; // Ajustar según estructura real
-  
-  for (let rowIdx = dataStartRow; rowIdx < data.length; rowIdx++) {
-    const row = data[rowIdx];
-    
-    // Primera columna: descripción del producto
-    const description = String(row[0] || '').trim();
-    if (!description) continue;
-    
-    // Para cada colección, extraer code y price
-    collections.forEach(collection => {
-      const code = String(row[collection.codeCol] || '').trim();
-      const priceEUR = parseFloat(row[collection.priceCol]) || 0;
-      
-      // Solo agregar si hay código válido
-      if (code && priceEUR > 0) {
-        products.push({
-          sku: code,
-          name: description,
-          coleccion: collection.name,
-          precioEUR: priceEUR,
-          precioCOP: Math.round(priceEUR * EUR_TO_COP),
-          imagenReal: `${code}.jpg`,
-          comodin: COLECCION_COMODIN[collection.name] || 'DEFAULT.png',
-          stock: 50, // Default, se puede ajustar
-          activo: true
-        });
-      }
-    });
-  }
-  
-  return products;
+  return collectionColumns;
 }
 
 // ============================================================================
