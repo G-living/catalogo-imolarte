@@ -18,18 +18,19 @@ const INPUT_FILE = path.join(__dirname, '../listino/IMOLARTE NET PRICE WHOLESALE
 const OUTPUT_FILE = path.join(__dirname, '../listino/catalogo-imolarte.csv');
 
 // Mapeo de prefijos a nombres completos de colección y comodines
+// ACTUALIZADO: Nueva nomenclatura con prefijo C_
 const COLLECTION_MAP = {
-  'GF': { name: 'GIALLO FIORE', comodin: 'Giallo_Fiore.png' },
-  'BF': { name: 'BIANCO FIORE', comodin: 'Bianco_Fiore.png' },
-  'MZ': { name: 'MAZZETTO', comodin: 'Mazzetto.png' },
-  'GB': { name: 'GAROFANO BLU', comodin: 'Garofano_Blu.png' },
-  'GI': { name: 'GAROFANO IMOLA', comodin: 'Garofano_Imola.png' },
-  'GT': { name: 'GAROFANO TIFFANY', comodin: 'Garofano_Tiffany.png' },
-  'GP': { name: 'GAROFANO ROSA', comodin: 'Garofano_Rosa.png' },
-  'GR': { name: 'GAROFANO ROSA', comodin: 'Garofano_Rosa.png' },
-  'GL': { name: 'GAROFANO LAVI', comodin: 'Garofano_Lavi.png' },
-  'GRG': { name: 'ROSSO E ORO', comodin: 'Rosso_E_Oro.png' },
-  'GIG': { name: 'AVORIO E ORO', comodin: 'Avorio_E_Oro.png' }
+  'GF': { name: 'GIALLO FIORE', comodin: 'C_Giallo_Fiore.png' },
+  'BF': { name: 'BIANCO FIORE', comodin: 'C_Bianco_Fiore.png' },
+  'MZ': { name: 'MAZZETTO', comodin: 'C_Mazzetto.png' },
+  'GB': { name: 'GAROFANO BLU', comodin: 'C_Garofano_Blu.png' },
+  'GI': { name: 'GAROFANO IMOLA', comodin: 'C_Garofano_Imola.png' },
+  'GT': { name: 'GAROFANO TIFFANY', comodin: 'C_Garofano_Tiffany.png' },
+  'GP': { name: 'GAROFANO ROSA', comodin: 'C_Garofano_Rosa.png' },
+  'GR': { name: 'GAROFANO ROSA', comodin: 'C_Garofano_Rosa.png' },
+  'GL': { name: 'GAROFANO LAVI', comodin: 'C_Garofano_Lavi.png' },
+  'GRG': { name: 'ROSSO E ORO', comodin: 'C_Rosso_E_Oro.png' },
+  'GIG': { name: 'AVORIO E ORO', comodin: 'C_Avorio_E_Oro.png' }
 };
 
 // Multiplicador EUR → COP
@@ -167,8 +168,7 @@ function convertExcelToCSV() {
   console.log(`📦 ${productsCount} productos exportados`);
   console.log(`\n💡 Ejemplo de primeras líneas:`);
   csvRows.slice(0, 4).forEach(line => console.log(`   ${line}`));
-  console.log('\n💡 Ahora ejecuta: node test-catalog.js para verificar');
-  console.log('💡 Luego: npm run dev para testear el frontend');
+  console.log('\n💡 Ahora ejecuta: npm run convert && npm run dev para testear');
 }
 
 /**
