@@ -34,7 +34,6 @@
         <!-- Products Grid -->
         <section class="products-section">
             <h2>Colección Completa</h2>
-            <!-- ✅ CORRECCIÓN: Grid vacío (sin loading inicial) -->
             <div id="products-grid" class="products-grid"></div>
         </section>
     </main>
@@ -46,6 +45,7 @@
             <h2 id="dono-title">🎁 Regalar Crédito IMOLARTE</h2>
             <p class="dono-description">Selecciona el monto del crédito que deseas regalar. Generaremos un código único que podrás compartir.</p>
             
+            <!-- Montos Predefinidos -->
             <div class="dono-amounts">
                 <button class="dono-amount-btn" data-amount="50000" type="button">
                     <span class="amount-value">$50.000</span>
@@ -65,6 +65,7 @@
                 </button>
             </div>
             
+            <!-- Monto Personalizado -->
             <div class="dono-custom-amount">
                 <label for="dono-custom-input">O ingresa un monto personalizado:</label>
                 <div class="custom-input-group">
@@ -74,10 +75,12 @@
                 <p class="dono-min-hint">Monto mínimo: $50.000 COP</p>
             </div>
             
+            <!-- Botón Generar -->
             <button id="generate-dono-btn" class="btn-primary btn-large" type="button">
                 Generar Código DONO
             </button>
             
+            <!-- Resultado -->
             <div id="dono-result" class="dono-result hidden">
                 <div class="result-header">
                     <span class="success-icon">✅</span>
@@ -103,6 +106,7 @@
                 </div>
             </div>
             
+            <!-- Loading -->
             <div id="dono-loading" class="dono-loading hidden">
                 <div class="spinner"></div>
                 <p>Generando código único...</p>
@@ -123,6 +127,7 @@
             <div class="detail-body">
                 <h3>Selecciona tus variantes:</h3>
                 <div id="detail-variants" class="variants-container" role="list">
+                    <!-- Variantes renderizadas por catalog.js -->
                 </div>
             </div>
             
@@ -140,6 +145,7 @@
             <button class="close-modal close-cart" type="button" aria-label="Cerrar">&times;</button>
             <h2 id="cart-title">Tu Carrito</h2>
             <div id="cart-items" class="cart-items" role="list">
+                <!-- Cart items rendered by cart.js -->
             </div>
             <div class="cart-footer">
                 <div class="cart-total">
@@ -163,6 +169,7 @@
             </button>
             <h2>Checkout</h2>
             <form id="checkout-form" novalidate>
+                <!-- Personal Data -->
                 <div class="form-section">
                     <h3>Datos Personales</h3>
                     <div class="form-row">
@@ -174,6 +181,20 @@
                     </div>
                 </div>
 
+                <!-- DONO Code Section -->
+                <div class="form-section dono-section">
+                    <h3>¿Tienes un código DONO?</h3>
+                    <div class="dono-input-group">
+                        <input type="text" id="dono-code-input" placeholder="Ej: DNO-ABC123" pattern="DNO-[A-Z0-9]+" maxlength="20" aria-label="Código DONO">
+                        <button type="button" id="apply-dono-btn" class="btn-secondary">Aplicar</button>
+                    </div>
+                    <p id="dono-status" class="dono-status" aria-live="polite"></p>
+                    <p class="dono-help">
+                        <small>💡 ¿No tienes código? <a href="#" id="open-dono-modal">Regala uno aquí</a></small>
+                    </p>
+                </div>
+
+                <!-- Terms -->
                 <div class="form-section">
                     <label class="checkbox-label">
                         <input type="checkbox" id="terms" name="terms" required aria-required="true">
@@ -181,6 +202,7 @@
                     </label>
                 </div>
 
+                <!-- Wompi Checkout -->
                 <div class="wompi-checkout">
                     <button type="submit" id="pay-btn" class="btn-primary btn-large">
                         Pagar con Wompi
@@ -204,5 +226,11 @@
     <script type="module" src="./js/cart.js"></script>
     <script type="module" src="./js/catalog.js"></script>
     <script type="module" src="./js/dono.js"></script>
+    <script type="module" src="./js/wompi.js"></script>
+    <script type="module" src="./js/orders.js"></script>
+    <script type="module" src="./js/dono-validator.js"></script>
+    <script type="module" src="./js/checkout/checkout-base.js"></script>
+    <script type="module" src="./js/checkout/checkout-cart.js"></script>
+    <script type="module" src="./js/checkout/checkout-dono.js"></script>
 </body>
 </html>
