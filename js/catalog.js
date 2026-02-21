@@ -2,20 +2,12 @@
 // IMOLARTE - Catálogo Grid Principal
 
 import { CONFIG } from './config.js';
-import { addToCart } from './cart.js';  // ← Verificar que cart.js exporta addToCart
-import { formatPrice, formatPriceEUR, showToast, openModal, closeModal, getComodinURL, getProductImageURL } from './ui.js';
-
-// ============================================================================
-// ESTADO GLOBAL
-// ============================================================================
+import { addToCart } from './cart.js';
+import { formatPrice, formatPriceEUR, showToast, closeModal } from './ui.js';
 
 let productsCache = [];
 let productsLoaded = false;
 let groupedProducts = {};
-
-// ============================================================================
-// CARGAR PRODUCTOS DESDE CSV
-// ============================================================================
 
 export async function loadProducts() {
   if (productsLoaded) return productsCache;
@@ -107,12 +99,11 @@ function groupByProductCode(products) {
   return grouped;
 }
 
-// ============================================================================
-// RENDERIZADO DEL GRID
-// ============================================================================
-
 export async function renderCatalog(gridElement) {
-  if (!gridElement) { console.error('Grid element not found'); return; }
+  if (!gridElement) {
+    console.error('Grid element not found');
+    return;
+  }
   
   gridElement.innerHTML = '<div class="loading">Cargando productos...</div>';
   const products = await loadProducts();
@@ -154,10 +145,6 @@ function createProductCard(product) {
   `;
   return card;
 }
-
-// ============================================================================
-// DETALLE DE PRODUCTO
-// ============================================================================
 
 function openProductDetail(productCode) {
   const product = groupedProducts[productCode];
@@ -243,10 +230,6 @@ function updateSubtotal(sku, quantity) {
   if (variant && subtotalEl) subtotalEl.textContent = formatPrice(variant.precioCOP * quantity);
 }
 
-// ============================================================================
-// AGREGAR AL CARRITO
-// ============================================================================
-
 export function addProductToCart() {
   const modal = document.getElementById('product-detail-modal');
   if (!modal) return;
@@ -280,10 +263,6 @@ export function addProductToCart() {
   }
 }
 
-// ============================================================================
-// INICIALIZACIÓN
-// ============================================================================
-
 document.addEventListener('DOMContentLoaded', () => {
   const grid = document.getElementById('products-grid');
   if (grid && grid.children.length === 0) renderCatalog(grid);
@@ -294,7 +273,6 @@ document.addEventListener('DOMContentLoaded', () => {
   const closeBtns = document.querySelectorAll('.close-modal');
   closeBtns.forEach(btn => btn.addEventListener('click', () => { closeModal('product-detail-modal'); closeModal('cart-modal'); }));
   
-  // Bind botón carrito en header
   const cartBtn = document.getElementById('cart-btn');
   const cartModal = document.getElementById('cart-modal');
   if (cartBtn && cartModal) {
