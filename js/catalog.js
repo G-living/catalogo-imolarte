@@ -1,38 +1,68 @@
-// js/catalog.js
-// IMOLARTE - Catálogo Grid Principal
-
+// js/catalog.js - DEBUG VERSION
 import { CONFIG } from './config.js';
 import { addToCart } from './cart.js';
 import { formatPrice, formatPriceEUR, showToast, closeModal } from './ui.js';
+
+console.log('🔍 catalog.js loaded');
+console.log('📍 CONFIG.BASE_URL:', CONFIG.BASE_URL);
 
 let productsCache = [];
 let productsLoaded = false;
 let groupedProducts = {};
 
 export async function loadProducts() {
-  if (productsLoaded) return productsCache;
+  console.log('📥 loadProducts() called');
+  
+  if (productsLoaded) {
+    console.log('✅ Already loaded, returning cache:', productsCache.length);
+    return productsCache;
+  }
   
   try {
-    const response = await fetch(`${CONFIG.BASE_URL}/listino/catalogo-imolarte.csv`);
-    if (!response.ok) throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+    const csvUrl = `${CONFIG.BASE_URL}/listino/catalogo-imolarte.csv`;
+    console.log('🌐 Fetching CSV from:', csvUrl);
+    
+    const response = await fetch(csvUrl);
+    console.log('📊 Response status:', response.status, response.statusText);
+    
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+    }
     
     const csvText = await response.text();
+    console.log('📄 CSV length:', csvText.length, 'chars');
+    console.log('📋 First 300 chars:', csvText.substring(0, 300));
+    
     productsCache = parseCSV(csvText);
     groupedProducts = groupByProductCode(productsCache);
     productsLoaded = true;
     
-    console.log(`✅ ${productsCache.length} productos cargados desde CSV`);
+    console.log(`✅ ${productsCache.length} products parsed`);
+    console.log('📦 Unique products:', Object.keys(groupedProducts).length);
+    
     return productsCache;
+    
   } catch (error) {
-    console.error('❌ Error cargando productos desde CSV:', error);
+    console.error('❌ Error loading products:', error);
+    showToast('⚠️ Error cargando catálogo', 'error');
     productsCache = [];
     return [];
   }
 }
 
 function parseCSV(csvText) {
+  console.log('🔍 parseCSV() started');
   const lines = csvText.trim().split('\n');
+  console.log('📊 Total lines:', lines.length);
+  
+  if (lines.length < 2) {
+    console.error('❌ CSV has no data lines');
+    return [];
+  }
+  
   const headers = lines[0].split(';').map(h => h.trim());
+  console.log('📋 Headers:', headers);
+  
   const products = [];
   let currentDescription = '';
   
@@ -66,6 +96,8 @@ function parseCSV(csvText) {
       precioCOP: parseInt(precioCOPString) || 0
     });
   }
+  
+  console.log('✅ parseCSV complete:', products.length, 'products');
   return products;
 }
 
@@ -96,28 +128,39 @@ function groupByProductCode(products) {
     }
     grouped[product.codigoProducto].variantes.push(product);
   });
+  console.log('📦 Grouped into', Object.keys(grouped).length, 'unique products');
   return grouped;
 }
 
 export async function renderCatalog(gridElement) {
+  console.log('🎨 renderCatalog() called');
+  console.log('📦 Grid element:', gridElement);
+  
   if (!gridElement) {
-    console.error('Grid element not found');
+    console.error('❌ Grid element NOT FOUND');
     return;
   }
   
   gridElement.innerHTML = '<div class="loading">Cargando productos...</div>';
+  
   const products = await loadProducts();
+  console.log('📊 Products loaded:', products.length);
   
   if (products.length === 0) {
+    console.warn('⚠️ No products to display');
     gridElement.innerHTML = '<div class="no-products">No hay productos disponibles</div>';
     return;
   }
   
   gridElement.innerHTML = '';
+  console.log('🎨 Rendering products...');
+  
   Object.values(groupedProducts).forEach(product => {
     const card = createProductCard(product);
     gridElement.appendChild(card);
   });
+  
+  console.log('✅ Products rendered:', Object.keys(groupedProducts).length);
   
   gridElement.querySelectorAll('.product-card').forEach(card => {
     card.addEventListener('click', (e) => {
@@ -130,28 +173,39 @@ export async function renderCatalog(gridElement) {
 }
 
 function createProductCard(product) {
+  console.log('🖼️ Creating card for:', product.descripcion, '- Photo:', product.fotoReal);
+  
   const card = document.createElement('article');
   card.className = 'product-card';
   card.setAttribute('data-product-code', product.codigo);
   const imageUrl = `${CONFIG.IMAGE_PRODUCTS_URL}${product.fotoReal}`;
+  console.log('   📷 Image URL:', imageUrl);
   
   card.innerHTML = `
     <div class="product-image">
-      <img src="${imageUrl}" alt="${product.descripcion}" loading="lazy" onerror="this.style.display='none'">
+      <img src="${imageUrl}" alt="${product.descripcion}" loading="lazy" onerror="console.error('❌ Image error:', this.src); this.style.display='none'">
     </div>
     <div class="product-info">
       <h3 class="product-name">${product.descripcion}</h3>
     </div>
   `;
+  
   return card;
 }
 
 function openProductDetail(productCode) {
+  console.log('🔍 openProductDetail:', productCode);
   const product = groupedProducts[productCode];
-  if (!product) return;
+  if (!product) {
+    console.error('❌ Product not found:', productCode);
+    return;
+  }
   
   const modal = document.getElementById('product-detail-modal');
-  if (!modal) return;
+  if (!modal) {
+    console.error('❌ Modal not found');
+    return;
+  }
   
   modal.dataset.productCode = productCode;
   
@@ -231,6 +285,7 @@ function updateSubtotal(sku, quantity) {
 }
 
 export function addProductToCart() {
+  console.log('🛒 addProductToCart() called');
   const modal = document.getElementById('product-detail-modal');
   if (!modal) return;
   
@@ -264,8 +319,17 @@ export function addProductToCart() {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
+  console.log('📄 DOMContentLoaded in catalog.js');
+  
   const grid = document.getElementById('products-grid');
-  if (grid && grid.children.length === 0) renderCatalog(grid);
+  console.log('🔍 Grid element:', grid);
+  
+  if (grid && grid.children.length === 0) {
+    console.log('🎨 Calling renderCatalog...');
+    renderCatalog(grid);
+  } else {
+    console.warn('⚠️ Grid not found or already has content');
+  }
   
   const addToCartBtn = document.getElementById('add-to-cart-btn');
   if (addToCartBtn) addToCartBtn.addEventListener('click', addProductToCart);
