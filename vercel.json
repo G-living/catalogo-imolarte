@@ -3,7 +3,6 @@
   "outputDirectory": "/",
   "devCommand": "npm run dev",
   "installCommand": "npm install",
-  "framework": "static",
   "headers": [
     {
       "source": "/listino/(.*)",

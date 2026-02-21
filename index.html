@@ -1,32 +1,163 @@
-<!-- Datos Personales -->
-<div class="form-section">
-    <h3>Datos Personales</h3>
-    <div class="form-row">
-        <input 
-          type="text" 
-          id="checkout-name" 
-          name="name" 
-          placeholder="Nombre Completo" 
-          required 
-          autocomplete="name"
-          aria-label="Nombre completo">
-        <input 
-          type="email" 
-          id="checkout-email" 
-          name="email" 
-          placeholder="Email" 
-          required 
-          autocomplete="email"
-          aria-label="Correo electrónico">
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IMOLARTE - Cerámicas Italianas Exclusivas</title>
+    <link rel="stylesheet" href="./css/styles.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+</head>
+<body>
+    <!-- Header con Logos -->
+    <header class="main-header">
+        <div class="logos-container">
+            <img src="./images/branding/logo-helena-caballero.png" alt="Helena Caballero" class="logo-helena">
+            <img src="./images/branding/logo-imolarte.png" alt="IMOLARTE - Cooperativa Ceramica d'Imola" class="logo-imolarte">
+        </div>
+        <div class="header-actions">
+            <button id="cart-btn" class="btn-icon" aria-label="Abrir carrito">
+                🛒 Carrito (<span id="cart-count">0</span>)
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="container">
+        <section class="hero">
+            <h1>Cerámicas Italianas Exclusivas</h1>
+            <p>Calidad premium para tu hogar. Pre-sale para amigos.</p>
+        </section>
+
+        <!-- Products Grid -->
+        <section class="products-section">
+            <h2>Colección Completa</h2>
+            <div id="products-grid" class="products-grid">
+                <div class="loading">Cargando productos...</div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Product Detail Modal -->
+    <div id="product-detail-modal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="detail-description">
+        <div class="modal-content modal-detail">
+            <button class="close-modal" aria-label="Cerrar modal">&times;</button>
+            
+            <div class="detail-header">
+                <img id="detail-image" src="" alt="Producto">
+                <h2 id="detail-description"></h2>
+            </div>
+            
+            <div class="detail-body">
+                <h3>Selecciona tus variantes:</h3>
+                <div id="detail-variants" class="variants-container" role="list">
+                    <!-- Variantes renderizadas por catalog.js -->
+                </div>
+            </div>
+            
+            <div class="detail-footer">
+                <button id="add-to-cart-btn" class="btn-primary btn-large" type="button">
+                    Agregar al Carrito
+                </button>
+            </div>
+        </div>
     </div>
-    <div class="form-row">
-        <input 
-          type="tel" 
-          id="checkout-phone" 
-          name="phone" 
-          placeholder="WhatsApp (Celular)" 
-          required 
-          autocomplete="tel"
-          aria-label="Número de teléfono">
+
+    <!-- Cart Modal -->
+    <div id="cart-modal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="cart-title">
+        <div class="modal-content modal-cart">
+            <button class="close-modal close-cart" aria-label="Cerrar carrito">&times;</button>
+            <h2 id="cart-title">Tu Carrito</h2>
+            <div id="cart-items" class="cart-items" role="list">
+                <!-- Cart items rendered by cart.js -->
+            </div>
+            <div class="cart-footer">
+                <div class="cart-total">
+                    <strong>Total: <span id="cart-total-amount">$ 0</span></strong>
+                </div>
+                <button id="checkout-btn" class="btn-primary btn-large" type="button">
+                    Checkout
+                </button>
+                <button class="btn-secondary close-cart" type="button">
+                    Seguir Comprando
+                </button>
+            </div>
+        </div>
     </div>
-</div>
+
+    <!-- Checkout Section -->
+    <section id="checkout-section" class="checkout-section hidden">
+        <div class="container">
+            <button class="btn-secondary" type="button" onclick="document.getElementById('checkout-section').classList.add('hidden')">
+                ← Seguir Comprando
+            </button>
+            <h2>Checkout</h2>
+            <form id="checkout-form" novalidate>
+                <!-- Personal Data -->
+                <div class="form-section">
+                    <h3>Datos Personales</h3>
+                    <div class="form-row">
+                        <input 
+                            type="text" 
+                            id="checkout-name" 
+                            name="name" 
+                            placeholder="Nombre Completo" 
+                            required 
+                            autocomplete="name"
+                            aria-label="Nombre completo"
+                            aria-required="true">
+                        <input 
+                            type="email" 
+                            id="checkout-email" 
+                            name="email" 
+                            placeholder="Email" 
+                            required 
+                            autocomplete="email"
+                            aria-label="Correo electrónico"
+                            aria-required="true">
+                    </div>
+                    <div class="form-row">
+                        <input 
+                            type="tel" 
+                            id="checkout-phone" 
+                            name="phone" 
+                            placeholder="WhatsApp (Celular)" 
+                            required 
+                            autocomplete="tel"
+                            aria-label="Número de teléfono"
+                            aria-required="true">
+                    </div>
+                </div>
+
+                <!-- Terms -->
+                <div class="form-section">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="terms" name="terms" required aria-required="true">
+                        <span>Acepto la <a href="#" target="_blank" rel="noopener">Política de Tratamiento de Datos</a> (Ley 1581)</span>
+                    </label>
+                </div>
+
+                <!-- Wompi Checkout -->
+                <div class="wompi-checkout">
+                    <button type="submit" id="pay-btn" class="btn-primary btn-large">
+                        Pagar con Wompi
+                    </button>
+                    <p class="secure-text">🔒 Pago Seguro SSL</p>
+                </div>
+            </form>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="main-footer">
+        <p>© 2024 IMOLARTE. Todos los derechos reservados.</p>
+        <p>🇨🇴 Pre-sale para amigos | 📞 57 300 425 7367</p>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+    <script type="module" src="./js/config.js"></script>
+    <script type="module" src="./js/ui.js"></script>
+    <script type="module" src="./js/cart.js"></script>
+    <script type="module" src="./js/catalog.js"></script>
+</body>
+</html>
