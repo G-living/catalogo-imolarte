@@ -383,6 +383,11 @@ body {
   color: #666;
 }
 
+.empty-cart p {
+  margin-bottom: 20px;
+  font-size: 1.1rem;
+}
+
 .cart-footer {
   border-top: 2px solid #eee;
   padding-top: 20px;

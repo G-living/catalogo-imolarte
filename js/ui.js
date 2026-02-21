@@ -74,7 +74,7 @@ export function getComodinURL(comodinName) {
 }
 
 /**
- * Abre modal de detalle de producto
+ * Abre modal
  * @param {string} modalId - ID del modal
  */
 export function openModal(modalId) {
@@ -102,9 +102,17 @@ export function closeModal(modalId) {
  * @param {number} count - Número de items en carrito
  */
 export function updateCartCount(count) {
+  const cartBtn = document.getElementById('cart-btn');
   const cartCount = document.getElementById('cart-count');
-  if (cartCount) {
-    cartCount.textContent = count;
+  
+  if (!cartBtn || !cartCount) return;
+  
+  if (count <= 0) {
+    cartBtn.innerHTML = '🛒 Carrito';
+    cartCount.classList.add('hidden');
+  } else {
+    cartBtn.innerHTML = `🛒 Carrito (<span id="cart-count">${count}</span>)`;
+    cartCount.classList.remove('hidden');
   }
 }
 
@@ -117,4 +125,49 @@ export function toggleCheckout(show) {
   if (checkoutSection) {
     checkoutSection.classList.toggle('hidden', !show);
   }
+}
+
+/**
+ * Obtiene información de colección por prefijo
+ * @param {string} prefix - Prefijo de colección (GF, GB, etc.)
+ * @returns {Object} Información de colección
+ */
+export function getCollectionInfo(prefix) {
+  const collections = {
+    'GF': { name: 'GIALLO FIORE', comodin: 'Giallo_Fiore.png' },
+    'BF': { name: 'BIANCO FIORE', comodin: 'Bianco_Fiore.png' },
+    'MZ': { name: 'MAZZETTO', comodin: 'Mazzetto.png' },
+    'GB': { name: 'GAROFANO BLU', comodin: 'Garofano_Blu.png' },
+    'GI': { name: 'GAROFANO IMOLA', comodin: 'Garofano_Imola.png' },
+    'GT': { name: 'GAROFANO TIFFANY', comodin: 'Garofano_Tiffany.png' },
+    'GR': { name: 'GAROFANO ROSA', comodin: 'Garofano_Rosa.png' },
+    'GL': { name: 'GAROFANO LAVI', comodin: 'Garofano_Lavi.png' },
+    'GRG': { name: 'ROSSO E ORO', comodin: 'Rosso_E_Oro.png' },
+    'GIG': { name: 'AVORIO E ORO', comodin: 'Avorio_E_Oro.png' }
+  };
+  return collections[prefix] || { name: prefix, comodin: 'Garofano_Blu.png' };
+}
+
+/**
+ * Formatea número de teléfono para WhatsApp
+ * @param {string} phone - Número de teléfono
+ * @returns {string} Número formateado
+ */
+export function formatWhatsAppNumber(phone) {
+  return phone.replace(/[^0-9]/g, '');
+}
+
+/**
+ * Genera mensaje de WhatsApp para pedido
+ * @param {Array} cart - Items del carrito
+ * @param {number} total - Total del pedido
+ * @returns {string} Mensaje formateado
+ */
+export function generateWhatsAppMessage(cart, total) {
+  let message = '¡Hola! Quiero realizar el siguiente pedido:\n\n';
+  cart.forEach(item => {
+    message += `• ${item.descripcion} (${item.coleccion}) - ${item.cantidad} x ${formatPrice(item.precio)}\n`;
+  });
+  message += `\n*Total: ${formatPrice(total)}*`;
+  return encodeURIComponent(message);
 }
