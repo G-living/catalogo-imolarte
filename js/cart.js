@@ -1,371 +1,345 @@
-// js/cart.js
-// IMOLARTE - Carrito de Compras (Límite 20 por SKU, subtotales)
-
+// js/catalog.js - VERSIÓN CON DEBUG
 import { CONFIG } from './config.js';
-import { formatPrice, showToast, updateCartCount } from './ui.js';
+import { addToCart } from './cart.js';
+import { formatPrice, formatPriceEUR, showToast, openModal, closeModal } from './ui.js';
 
-// ============================================================================
-// ESTADO GLOBAL
-// ============================================================================
+console.log('🔧 catalog.js cargado');
+console.log('📍 BASE_URL:', CONFIG.BASE_URL);
 
-let cart = [];
-const CART_STORAGE_KEY = 'imolarte_cart';
+let productsCache = [];
+let productsLoaded = false;
+let groupedProducts = {};
 
-// ============================================================================
-// FUNCIONES PÚBLICAS (EXPORTADAS)
-// ============================================================================
-
-/**
- * Agrega item al carrito
- * @param {Object} item - Item a agregar
- */
-export function addToCart(item) {
-  // Validar que el item tenga los datos requeridos
-  if (!item || !item.sku) {
-    console.error('❌ Item inválido:', item);
-    showToast('⚠️ Error al agregar al carrito', 'error');
-    return;
+export async function loadProducts() {
+  console.log('📥 loadProducts() llamado');
+  
+  if (productsLoaded) {
+    console.log('✅ Productos ya cargados en cache:', productsCache.length);
+    return productsCache;
   }
   
-  // Validar que cantidad tenga valor
-  const quantity = parseInt(item.cantidad) || 0;
-  
-  if (quantity <= 0) {
-    showToast('⚠️ Cantidad inválida', 'error');
-    return;
-  }
-  
-  // Validar que precio tenga valor
-  const price = parseFloat(item.precio) || 0;
-  
-  if (price <= 0) {
-    showToast('⚠️ Precio inválido', 'error');
-    return;
-  }
-  
-  const existingIndex = cart.findIndex(i => i.sku === item.sku);
-  
-  if (existingIndex !== -1) {
-    // Actualizar cantidad existente
-    const newQuantity = cart[existingIndex].cantidad + quantity;
+  try {
+    const csvUrl = `${CONFIG.BASE_URL}/listino/catalogo-imolarte.csv`;
+    console.log('🌐 Fetching CSV from:', csvUrl);
     
-    if (newQuantity > CONFIG.MAX_QUANTITY_PER_SKU) {
-      showToast(`⚠️ Máximo ${CONFIG.MAX_QUANTITY_PER_SKU} unidades por SKU`, 'error');
-      cart[existingIndex].cantidad = CONFIG.MAX_QUANTITY_PER_SKU;
-    } else {
-      cart[existingIndex].cantidad = newQuantity;
-    }
-  } else {
-    // Nuevo item - validar cantidad máxima
-    if (quantity > CONFIG.MAX_QUANTITY_PER_SKU) {
-      item.cantidad = CONFIG.MAX_QUANTITY_PER_SKU;
-      showToast(`⚠️ Cantidad ajustada a máximo ${CONFIG.MAX_QUANTITY_PER_SKU}`, 'info');
-    } else {
-      item.cantidad = quantity;
+    const response = await fetch(csvUrl);
+    console.log('📊 Response status:', response.status);
+    
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
     }
     
-    // Asegurar que el item tenga todos los campos necesarios
-    cart.push({
-      sku: item.sku,
-      descripcion: item.descripcion || 'Producto',
-      coleccion: item.coleccion || '',
-      precio: price,
-      cantidad: item.cantidad,
-      imagen: item.imagen || 'Garofano_Blu.png'
+    const csvText = await response.text();
+    console.log('📄 CSV text length:', csvText.length);
+    console.log('📋 First 200 chars:', csvText.substring(0, 200));
+    
+    productsCache = parseCSV(csvText);
+    groupedProducts = groupByProductCode(productsCache);
+    productsLoaded = true;
+    
+    console.log(`✅ ${productsCache.length} productos parseados`);
+    console.log('📦 Grupos únicos:', Object.keys(groupedProducts).length);
+    
+    return productsCache;
+    
+  } catch (error) {
+    console.error('❌ Error cargando productos:', error);
+    showToast('⚠️ Error cargando catálogo', 'error');
+    productsCache = [];
+    return [];
+  }
+}
+
+function parseCSV(csvText) {
+  console.log('🔍 parseCSV() iniciado');
+  const lines = csvText.trim().split('\n');
+  console.log('📊 Total líneas:', lines.length);
+  
+  const headers = lines[0].split(';').map(h => h.trim());
+  console.log('📋 Headers:', headers);
+  
+  const products = [];
+  let currentDescription = '';
+  
+  for (let i = 1; i < lines.length; i++) {
+    const line = lines[i].trim();
+    if (!line) continue;
+    
+    const values = parseCSVLine(line);
+    if (values.length < headers.length) continue;
+    
+    const product = {};
+    headers.forEach((header, index) => {
+      product[header] = values[index] ? values[index].replace(/^"|"$/g, '').replace(/""/g, '"') : '';
+    });
+    
+    if (product.Descripcion) currentDescription = product.Descripcion;
+    else product.Descripcion = currentDescription;
+    
+    const precioEURString = product.Precio_EUR ? product.Precio_EUR.replace('EUR ', '').replace(',', '.') : '0';
+    const precioCOPString = product.Precio_COP ? product.Precio_COP.replace('COP ', '').replace(/\./g, '') : '0';
+    
+    products.push({
+      descripcion: product.Descripcion,
+      coleccion: product.Colección,
+      prefijo: product.Prefijo_Coleccion,
+      codigoProducto: product.Codigo_Producto,
+      sku: product.SKU,
+      comodin: product.Foto_Comodin_Coleccion,
+      fotoReal: product.Foto_Real_Codigo_Producto,
+      precioEUR: parseFloat(precioEURString) || 0,
+      precioCOP: parseInt(precioCOPString) || 0
     });
   }
   
-  saveCart();
-  renderCart();
-  updateCartCount(getCartItemCount());
+  console.log('✅ parseCSV completado:', products.length, 'productos');
+  return products;
 }
 
-/**
- * Actualiza cantidad de item en carrito
- * @param {string} sku - SKU del item
- * @param {number} quantity - Nueva cantidad
- */
-export function updateCartItemQuantity(sku, quantity) {
-  const item = cart.find(i => i.sku === sku);
-  if (!item) return;
-  
-  quantity = Math.max(0, Math.min(parseInt(quantity) || 0, CONFIG.MAX_QUANTITY_PER_SKU));
-  item.cantidad = quantity;
-  
-  if (quantity === 0) {
-    removeFromCart(sku);
-  } else {
-    saveCart();
-    renderCart();
-    updateCartCount(getCartItemCount());
+function parseCSVLine(line) {
+  const values = [];
+  let current = '';
+  let inQuotes = false;
+  for (let i = 0; i < line.length; i++) {
+    const char = line[i];
+    if (char === '"') inQuotes = !inQuotes;
+    else if (char === ';' && !inQuotes) { values.push(current.trim()); current = ''; }
+    else current += char;
   }
+  values.push(current.trim());
+  return values;
 }
 
-/**
- * Remueve item del carrito
- * @param {string} sku - SKU del item
- */
-export function removeFromCart(sku) {
-  cart = cart.filter(i => i.sku !== sku);
-  saveCart();
-  renderCart();
-  updateCartCount(getCartItemCount());
-  showToast('🗑️ Item eliminado del carrito', 'info');
-}
-
-/**
- * Limpia carrito completo
- */
-export function clearCart() {
-  cart = [];
-  saveCart();
-  renderCart();
-  updateCartCount(0);
-  showToast('🧹 Carrito vaciado', 'info');
-}
-
-/**
- * Obtiene total del carrito
- * @returns {number} Total en COP
- */
-export function getCartTotal() {
-  return cart.reduce((total, item) => total + ((item.precio || 0) * (item.cantidad || 0)), 0);
-}
-
-/**
- * Obtiene número total de items en carrito
- * @returns {number} Cantidad de items
- */
-export function getCartItemCount() {
-  return cart.reduce((count, item) => count + (item.cantidad || 0), 0);
-}
-
-/**
- * Obtiene carrito actual
- * @returns {Array} Items del carrito
- */
-export function getCart() {
-  return [...cart];
-}
-
-// ============================================================================
-// PERSISTENCIA
-// ============================================================================
-
-function saveCart() {
-  try {
-    localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(cart));
-  } catch (error) {
-    console.error('Error saving cart:', error);
-  }
-}
-
-function loadCart() {
-  try {
-    const saved = localStorage.getItem(CART_STORAGE_KEY);
-    if (saved) {
-      cart = JSON.parse(saved);
-      // Filtrar items inválidos al cargar
-      cart = cart.filter(item => 
-        item && 
-        item.sku && 
-        item.cantidad > 0 && 
-        item.precio > 0
-      );
+function groupByProductCode(products) {
+  const grouped = {};
+  products.forEach(product => {
+    if (!grouped[product.codigoProducto]) {
+      grouped[product.codigoProducto] = {
+        codigo: product.codigoProducto,
+        descripcion: product.descripcion,
+        fotoReal: product.fotoReal,
+        variantes: []
+      };
     }
-  } catch (error) {
-    console.error('Error loading cart:', error);
-    cart = [];
-  }
+    grouped[product.codigoProducto].variantes.push(product);
+  });
+  console.log('📦 Agrupados:', Object.keys(grouped).length, 'productos únicos');
+  return grouped;
 }
 
-// ============================================================================
-// RENDERIZADO
-// ============================================================================
-
-export function renderCart() {
-  const cartItemsContainer = document.getElementById('cart-items');
-  const cartTotalAmount = document.getElementById('cart-total-amount');
-  const cartCount = document.getElementById('cart-count');
-  const cartFooter = document.querySelector('.cart-footer');
+export async function renderCatalog(gridElement) {
+  console.log('🎨 renderCatalog() llamado');
+  console.log('📦 Grid element:', gridElement);
   
-  if (!cartItemsContainer) return;
-  
-  // Filtrar solo items válidos
-  const validCart = cart.filter(item => 
-    item && 
-    item.sku &&
-    item.cantidad > 0 && 
-    item.precio > 0
-  );
-  
-  // === ESTADO: CARRITO VACÍO ===
-  if (validCart.length === 0) {
-    cartItemsContainer.innerHTML = `
-      <div class="empty-cart">
-        <p>No hay productos agregados todavía</p>
-        <button class="btn-secondary close-cart" type="button">
-          Sigue comprando
-        </button>
-      </div>
-    `;
-    
-    // Ocultar footer
-    if (cartFooter) cartFooter.classList.add('hidden');
-    
-    // Actualizar contadores
-    if (cartTotalAmount) cartTotalAmount.textContent = '$ 0';
-    if (cartCount) {
-      cartCount.textContent = '0';
-      cartCount.classList.add('hidden');
-    }
-    
-    // Actualizar label del botón header
-    const cartBtn = document.getElementById('cart-btn');
-    if (cartBtn) cartBtn.innerHTML = '🛒 Carrito';
-    
-    // Bind del botón "Sigue comprando"
-    const keepShoppingBtn = cartItemsContainer.querySelector('.close-cart');
-    if (keepShoppingBtn) {
-      keepShoppingBtn.addEventListener('click', () => {
-        const modal = document.getElementById('cart-modal');
-        if (modal) {
-          modal.classList.add('hidden');
-          document.body.style.overflow = '';
-        }
-      });
-    }
-    
+  if (!gridElement) {
+    console.error('❌ Grid element NOT FOUND');
     return;
   }
   
-  // === ESTADO: CARRITO CON ITEMS ===
+  gridElement.innerHTML = '<div class="loading">Cargando productos...</div>';
   
-  // Mostrar footer
-  if (cartFooter) cartFooter.classList.remove('hidden');
+  const products = await loadProducts();
+  console.log('📊 Productos cargados:', products.length);
   
-  cartItemsContainer.innerHTML = '';
-  let total = 0;
-  let itemCount = 0;
+  if (products.length === 0) {
+    console.warn('⚠️ No hay productos para mostrar');
+    gridElement.innerHTML = '<div class="no-products">No hay productos disponibles</div>';
+    return;
+  }
   
-  validCart.forEach(item => {
-    const subtotal = (item.precio || 0) * (item.cantidad || 0);
-    total += subtotal;
-    itemCount += (item.cantidad || 0);
-    
-    const cartItem = createCartItem(item);
-    cartItemsContainer.appendChild(cartItem);
+  gridElement.innerHTML = '';
+  console.log('🎨 Renderizando productos...');
+  
+  Object.values(groupedProducts).forEach(product => {
+    const card = createProductCard(product);
+    gridElement.appendChild(card);
   });
   
-  if (cartTotalAmount) cartTotalAmount.textContent = formatPrice(total);
-  if (cartCount) {
-    cartCount.textContent = itemCount;
-    cartCount.classList.remove('hidden');
-  }
+  console.log('✅ Productos renderizados:', Object.keys(groupedProducts).length);
   
-  // Actualizar label del botón header
-  const cartBtn = document.getElementById('cart-btn');
-  if (cartBtn) cartBtn.innerHTML = `🛒 Carrito (<span id="cart-count">${itemCount}</span>)`;
+  gridElement.querySelectorAll('.product-card').forEach(card => {
+    card.addEventListener('click', (e) => {
+      if (!e.target.classList.contains('btn-add') && !e.target.closest('.btn-add')) {
+        const productCode = card.dataset.productCode;
+        openProductDetail(productCode);
+      }
+    });
+  });
 }
 
-function createCartItem(item) {
-  const cartItem = document.createElement('div');
-  cartItem.className = 'cart-item';
-  cartItem.dataset.sku = item.sku;
+function createProductCard(product) {
+  console.log('🖼️ Creando card para:', product.descripcion, '- Foto:', product.fotoReal);
   
-  const imagenName = item.imagen || 'Garofano_Blu.png';
-  const imageUrl = `${CONFIG.COMODINES_URL}${imagenName}`;
-  const subtotal = (item.precio || 0) * (item.cantidad || 0);
+  const card = document.createElement('article');
+  card.className = 'product-card';
+  card.setAttribute('data-product-code', product.codigo);
+  const imageUrl = `${CONFIG.IMAGE_PRODUCTS_URL}${product.fotoReal}`;
+  console.log('   📷 URL imagen:', imageUrl);
   
-  cartItem.innerHTML = `
-    <div class="cart-item-image">
-      <img src="${imageUrl}" alt="${item.coleccion || 'Producto'}" loading="lazy">
+  card.innerHTML = `
+    <div class="product-image">
+      <img src="${imageUrl}" alt="${product.descripcion}" loading="lazy" onerror="console.error('❌ Error cargando imagen:', this.src); this.style.display='none'">
     </div>
-    <div class="cart-item-info">
-      <h4 class="cart-item-name">${item.descripcion || 'Producto'}</h4>
-      <p class="cart-item-collection">${item.coleccion || ''}</p>
-      <p class="cart-item-sku">${item.sku || ''}</p>
-      <p class="cart-item-price">${formatPrice(item.precio || 0)} c/u</p>
+    <div class="product-info">
+      <h3 class="product-name">${product.descripcion}</h3>
     </div>
-    <div class="cart-item-quantity">
-      <button class="qty-btn qty-minus" data-sku="${item.sku}" aria-label="Disminuir cantidad">-</button>
-      <input 
-        type="number" 
-        class="qty-input" 
-        id="cart-qty-${item.sku}"
-        name="qty-${item.sku}"
-        value="${item.cantidad || 0}" 
-        min="0" 
-        max="${CONFIG.MAX_QUANTITY_PER_SKU}" 
-        data-sku="${item.sku}"
-        aria-label="Cantidad"
-      >
-      <button class="qty-btn qty-plus" data-sku="${item.sku}" aria-label="Aumentar cantidad">+</button>
-    </div>
-    <div class="cart-item-subtotal">
-      <span class="subtotal-label">Total:</span>
-      <span class="subtotal-value">${formatPrice(subtotal)}</span>
-    </div>
-    <button class="cart-item-remove" data-sku="${item.sku}" aria-label="Eliminar item">🗑️</button>
   `;
   
-  const minusBtn = cartItem.querySelector('.qty-minus');
-  const plusBtn = cartItem.querySelector('.qty-plus');
-  const qtyInput = cartItem.querySelector('.qty-input');
-  const removeBtn = cartItem.querySelector('.cart-item-remove');
-  
-  if (minusBtn) minusBtn.addEventListener('click', () => updateCartItemQuantity(item.sku, (item.cantidad || 0) - 1));
-  if (plusBtn) plusBtn.addEventListener('click', () => updateCartItemQuantity(item.sku, (item.cantidad || 0) + 1));
-  if (qtyInput) qtyInput.addEventListener('change', (e) => updateCartItemQuantity(item.sku, parseInt(e.target.value) || 0));
-  if (removeBtn) removeBtn.addEventListener('click', () => removeFromCart(item.sku));
-  
-  return cartItem;
+  return card;
 }
 
-// ============================================================================
-// CHECKOUT
-// ============================================================================
-
-export function proceedToCheckout() {
-  if (cart.length === 0) {
-    showToast('⚠️ Tu carrito está vacío', 'error');
+function openProductDetail(productCode) {
+  console.log('🔍 openProductDetail:', productCode);
+  const product = groupedProducts[productCode];
+  if (!product) {
+    console.error('❌ Producto no encontrado:', productCode);
     return;
   }
   
-  const validCart = cart.filter(item => 
-    item && 
-    item.sku &&
-    item.cantidad > 0 && 
-    item.precio > 0
-  );
-  
-  if (validCart.length === 0) {
-    showToast('⚠️ Tu carrito está vacío', 'error');
+  const modal = document.getElementById('product-detail-modal');
+  if (!modal) {
+    console.error('❌ Modal no encontrado');
     return;
   }
   
-  const checkoutSection = document.getElementById('checkout-section');
-  const cartModal = document.getElementById('cart-modal');
+  modal.dataset.productCode = productCode;
   
-  if (checkoutSection) {
-    checkoutSection.classList.remove('hidden');
-    if (cartModal) cartModal.classList.add('hidden');
-    document.body.style.overflow = '';
-    showToast('📋 Completa tus datos para continuar', 'info');
+  const detailImage = document.getElementById('detail-image');
+  const detailDescription = document.getElementById('detail-description');
+  if (detailImage) { detailImage.src = `${CONFIG.IMAGE_PRODUCTS_URL}${product.fotoReal}`; detailImage.alt = product.descripcion; }
+  if (detailDescription) detailDescription.textContent = product.descripcion;
+  
+  const variantsContainer = document.getElementById('detail-variants');
+  if (variantsContainer) {
+    variantsContainer.innerHTML = '';
+    product.variantes.forEach(variante => {
+      const variantRow = createVariantRow(variante);
+      variantsContainer.appendChild(variantRow);
+    });
   }
+  
+  modal.classList.remove('hidden');
+  document.body.style.overflow = 'hidden';
 }
 
-// ============================================================================
-// INICIALIZACIÓN
-// ============================================================================
+function createVariantRow(variante) {
+  const row = document.createElement('div');
+  row.className = 'variant-row';
+  row.dataset.sku = variante.sku;
+  const comodinUrl = `${CONFIG.COMODINES_URL}${variante.comodin}`;
+  
+  row.innerHTML = `
+    <div class="variant-image"><img src="${comodinUrl}" alt="${variante.coleccion}"></div>
+    <div class="variant-info">
+      <h4 class="variant-collection">${variante.coleccion}</h4>
+      <p class="variant-sku">${variante.sku}</p>
+      <p class="variant-price-eur">${formatPriceEUR(variante.precioEUR)}</p>
+      <p class="variant-price-cop">${formatPrice(variante.precioCOP)}</p>
+    </div>
+    <div class="variant-quantity">
+      <button class="qty-btn qty-minus" data-sku="${variante.sku}">-</button>
+      <input type="number" class="qty-input" value="0" min="0" max="${CONFIG.MAX_QUANTITY_PER_SKU}" data-sku="${variante.sku}">
+      <button class="qty-btn qty-plus" data-sku="${variante.sku}">+</button>
+    </div>
+    <div class="variant-subtotal">
+      <span class="subtotal-label">Subtotal:</span>
+      <span class="subtotal-value" data-sku="${variante.sku}">$ 0</span>
+    </div>
+  `;
+  
+  const minusBtn = row.querySelector('.qty-minus');
+  const plusBtn = row.querySelector('.qty-plus');
+  const qtyInput = row.querySelector('.qty-input');
+  if (minusBtn) minusBtn.addEventListener('click', () => updateQuantity(variante.sku, -1));
+  if (plusBtn) plusBtn.addEventListener('click', () => updateQuantity(variante.sku, 1));
+  if (qtyInput) qtyInput.addEventListener('change', (e) => setQuantity(variante.sku, e.target.value));
+  return row;
+}
+
+function updateQuantity(sku, delta) {
+  const input = document.querySelector(`.qty-input[data-sku="${sku}"]`);
+  if (!input) return;
+  let value = parseInt(input.value) || 0;
+  value = Math.max(0, Math.min(value + delta, CONFIG.MAX_QUANTITY_PER_SKU));
+  input.value = value;
+  updateSubtotal(sku, value);
+}
+
+function setQuantity(sku, value) {
+  const input = document.querySelector(`.qty-input[data-sku="${sku}"]`);
+  if (!input) return;
+  value = Math.max(0, Math.min(parseInt(value) || 0, CONFIG.MAX_QUANTITY_PER_SKU));
+  input.value = value;
+  updateSubtotal(sku, value);
+}
+
+function updateSubtotal(sku, quantity) {
+  const variant = productsCache.find(p => p.sku === sku);
+  const subtotalEl = document.querySelector(`.subtotal-value[data-sku="${sku}"]`);
+  if (variant && subtotalEl) subtotalEl.textContent = formatPrice(variant.precioCOP * quantity);
+}
+
+export function addProductToCart() {
+  console.log('🛒 addProductToCart() llamado');
+  const modal = document.getElementById('product-detail-modal');
+  if (!modal) return;
+  
+  const productCode = modal.dataset.productCode;
+  const product = groupedProducts[productCode];
+  if (!product) return;
+  
+  let itemsAdded = 0;
+  product.variantes.forEach(variante => {
+    const input = document.querySelector(`.qty-input[data-sku="${variante.sku}"]`);
+    const quantity = parseInt(input?.value) || 0;
+    if (quantity > 0) {
+      addToCart({
+        sku: variante.sku,
+        descripcion: product.descripcion,
+        coleccion: variante.coleccion,
+        precio: variante.precioCOP,
+        cantidad: quantity,
+        imagen: variante.comodin || 'Garofano_Blu.png'
+      });
+      itemsAdded += quantity;
+    }
+  });
+  
+  if (itemsAdded > 0) {
+    showToast(`✅ ${itemsAdded} artículo(s) agregado(s) al carrito`, 'success');
+    closeModal('product-detail-modal');
+  } else {
+    showToast('⚠️ Selecciona al menos 1 unidad', 'info');
+  }
+}
 
 document.addEventListener('DOMContentLoaded', () => {
-  loadCart();
-  renderCart();
-  updateCartCount(getCartItemCount());
+  console.log('📄 DOMContentLoaded en catalog.js');
   
-  const checkoutBtn = document.getElementById('checkout-btn');
-  if (checkoutBtn) {
-    checkoutBtn.addEventListener('click', proceedToCheckout);
+  const grid = document.getElementById('products-grid');
+  console.log('🔍 Grid element:', grid);
+  
+  if (grid && grid.children.length === 0) {
+    console.log('🎨 Iniciando renderCatalog...');
+    renderCatalog(grid);
+  } else {
+    console.warn('⚠️ Grid no encontrado o ya tiene contenido');
+  }
+  
+  const addToCartBtn = document.getElementById('add-to-cart-btn');
+  if (addToCartBtn) addToCartBtn.addEventListener('click', addProductToCart);
+  
+  const closeBtns = document.querySelectorAll('.close-modal');
+  closeBtns.forEach(btn => btn.addEventListener('click', () => { closeModal('product-detail-modal'); closeModal('cart-modal'); }));
+  
+  const cartBtn = document.getElementById('cart-btn');
+  const cartModal = document.getElementById('cart-modal');
+  if (cartBtn && cartModal) {
+    cartBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      cartModal.classList.remove('hidden');
+      document.body.style.overflow = 'hidden';
+      if (typeof renderCart === 'function') renderCart();
+    });
   }
 });
