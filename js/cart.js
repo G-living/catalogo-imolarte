@@ -12,7 +12,7 @@ let cart = [];
 const CART_STORAGE_KEY = 'imolarte_cart';
 
 // ============================================================================
-// FUNCIONES PÚBLICAS
+// FUNCIONES PÚBLICAS (EXPORTADAS)
 // ============================================================================
 
 /**
@@ -187,10 +187,11 @@ export function renderCart() {
   const cartItemsContainer = document.getElementById('cart-items');
   const cartTotalAmount = document.getElementById('cart-total-amount');
   const cartCount = document.getElementById('cart-count');
+  const cartFooter = document.querySelector('.cart-footer');
   
   if (!cartItemsContainer) return;
   
-  // Filtrar solo items válidos (cantidad > 0 y precio > 0)
+  // Filtrar solo items válidos
   const validCart = cart.filter(item => 
     item && 
     item.sku &&
@@ -198,12 +199,50 @@ export function renderCart() {
     item.precio > 0
   );
   
+  // === ESTADO: CARRITO VACÍO ===
   if (validCart.length === 0) {
-    cartItemsContainer.innerHTML = '<div class="empty-cart">Tu carrito está vacío</div>';
+    cartItemsContainer.innerHTML = `
+      <div class="empty-cart">
+        <p>No hay productos agregados todavía</p>
+        <button class="btn-secondary close-cart" type="button">
+          Sigue comprando
+        </button>
+      </div>
+    `;
+    
+    // Ocultar footer
+    if (cartFooter) cartFooter.classList.add('hidden');
+    
+    // Actualizar contadores
     if (cartTotalAmount) cartTotalAmount.textContent = '$ 0';
-    if (cartCount) cartCount.textContent = '0';
+    if (cartCount) {
+      cartCount.textContent = '0';
+      cartCount.classList.add('hidden');
+    }
+    
+    // Actualizar label del botón header
+    const cartBtn = document.getElementById('cart-btn');
+    if (cartBtn) cartBtn.innerHTML = '🛒 Carrito';
+    
+    // Bind del botón "Sigue comprando"
+    const keepShoppingBtn = cartItemsContainer.querySelector('.close-cart');
+    if (keepShoppingBtn) {
+      keepShoppingBtn.addEventListener('click', () => {
+        const modal = document.getElementById('cart-modal');
+        if (modal) {
+          modal.classList.add('hidden');
+          document.body.style.overflow = '';
+        }
+      });
+    }
+    
     return;
   }
+  
+  // === ESTADO: CARRITO CON ITEMS ===
+  
+  // Mostrar footer
+  if (cartFooter) cartFooter.classList.remove('hidden');
   
   cartItemsContainer.innerHTML = '';
   let total = 0;
@@ -219,7 +258,14 @@ export function renderCart() {
   });
   
   if (cartTotalAmount) cartTotalAmount.textContent = formatPrice(total);
-  if (cartCount) cartCount.textContent = itemCount;
+  if (cartCount) {
+    cartCount.textContent = itemCount;
+    cartCount.classList.remove('hidden');
+  }
+  
+  // Actualizar label del botón header
+  const cartBtn = document.getElementById('cart-btn');
+  if (cartBtn) cartBtn.innerHTML = `🛒 Carrito (<span id="cart-count">${itemCount}</span>)`;
 }
 
 function createCartItem(item) {
@@ -227,7 +273,6 @@ function createCartItem(item) {
   cartItem.className = 'cart-item';
   cartItem.dataset.sku = item.sku;
   
-  // Validar que imagen tenga valor
   const imagenName = item.imagen || 'Garofano_Blu.png';
   const imageUrl = `${CONFIG.COMODINES_URL}${imagenName}`;
   const subtotal = (item.precio || 0) * (item.cantidad || 0);
@@ -264,24 +309,15 @@ function createCartItem(item) {
     <button class="cart-item-remove" data-sku="${item.sku}" aria-label="Eliminar item">🗑️</button>
   `;
   
-  // Bind events
   const minusBtn = cartItem.querySelector('.qty-minus');
   const plusBtn = cartItem.querySelector('.qty-plus');
   const qtyInput = cartItem.querySelector('.qty-input');
   const removeBtn = cartItem.querySelector('.cart-item-remove');
   
-  if (minusBtn) {
-    minusBtn.addEventListener('click', () => updateCartItemQuantity(item.sku, (item.cantidad || 0) - 1));
-  }
-  if (plusBtn) {
-    plusBtn.addEventListener('click', () => updateCartItemQuantity(item.sku, (item.cantidad || 0) + 1));
-  }
-  if (qtyInput) {
-    qtyInput.addEventListener('change', (e) => updateCartItemQuantity(item.sku, parseInt(e.target.value) || 0));
-  }
-  if (removeBtn) {
-    removeBtn.addEventListener('click', () => removeFromCart(item.sku));
-  }
+  if (minusBtn) minusBtn.addEventListener('click', () => updateCartItemQuantity(item.sku, (item.cantidad || 0) - 1));
+  if (plusBtn) plusBtn.addEventListener('click', () => updateCartItemQuantity(item.sku, (item.cantidad || 0) + 1));
+  if (qtyInput) qtyInput.addEventListener('change', (e) => updateCartItemQuantity(item.sku, parseInt(e.target.value) || 0));
+  if (removeBtn) removeBtn.addEventListener('click', () => removeFromCart(item.sku));
   
   return cartItem;
 }
@@ -296,7 +332,6 @@ export function proceedToCheckout() {
     return;
   }
   
-  // Filtrar items válidos
   const validCart = cart.filter(item => 
     item && 
     item.sku &&
@@ -309,7 +344,6 @@ export function proceedToCheckout() {
     return;
   }
   
-  // Redirigir a sección de checkout
   const checkoutSection = document.getElementById('checkout-section');
   const cartModal = document.getElementById('cart-modal');
   
@@ -330,7 +364,6 @@ document.addEventListener('DOMContentLoaded', () => {
   renderCart();
   updateCartCount(getCartItemCount());
   
-  // Bind botón checkout
   const checkoutBtn = document.getElementById('checkout-btn');
   if (checkoutBtn) {
     checkoutBtn.addEventListener('click', proceedToCheckout);
