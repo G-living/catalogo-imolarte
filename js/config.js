@@ -2,7 +2,7 @@
 // IMOLARTE - Configuración Global
 
 export const CONFIG = {
-  // URLs Base (GitHub Pages)
+  // URLs Base (GitHub Pages) - SIN ESPACIOS AL FINAL
   BASE_URL: 'https://g-living.github.io/catalogo-imolarte',
   IMAGE_PRODUCTS_URL: 'https://g-living.github.io/catalogo-imolarte/images/products/',
   COMODINES_URL: 'https://g-living.github.io/catalogo-imolarte/comodines/',
@@ -24,7 +24,9 @@ export const CONFIG = {
   
   // DONO
   MIN_DONO_AMOUNT: 50000,
+  MAX_DONO_AMOUNT: 1000000,
   DONO_PREFIX: 'DNO-',
+  DONO_VALIDITY_DAYS: 90,
   
   // Referidos
   REFERRAL_CREDIT_PERCENT: 0.01,

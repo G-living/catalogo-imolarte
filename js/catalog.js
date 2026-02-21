@@ -1,9 +1,11 @@
-// js/catalog.js - DEBUG VERSION
+// js/catalog.js
+// IMOLARTE - Catálogo Grid Principal (CON DEBUG)
+
 import { CONFIG } from './config.js';
 import { addToCart } from './cart.js';
 import { formatPrice, formatPriceEUR, showToast, closeModal } from './ui.js';
 
-console.log('🔍 catalog.js loaded');
+console.log('🔍 catalog.js cargado');
 console.log('📍 CONFIG.BASE_URL:', CONFIG.BASE_URL);
 
 let productsCache = [];
@@ -11,52 +13,59 @@ let productsLoaded = false;
 let groupedProducts = {};
 
 export async function loadProducts() {
-  console.log('📥 loadProducts() called');
+  console.log('📥 loadProducts() llamado');
   
   if (productsLoaded) {
-    console.log('✅ Already loaded, returning cache:', productsCache.length);
+    console.log('✅ Ya cargados:', productsCache.length);
     return productsCache;
   }
   
+  const csvUrl = `${CONFIG.BASE_URL}/listino/catalogo-imolarte.csv`;
+  console.log('🌐 Intentando fetch:', csvUrl);
+  
   try {
-    const csvUrl = `${CONFIG.BASE_URL}/listino/catalogo-imolarte.csv`;
-    console.log('🌐 Fetching CSV from:', csvUrl);
-    
+    console.log('⏳ Fetch iniciando...');
     const response = await fetch(csvUrl);
     console.log('📊 Response status:', response.status, response.statusText);
+    console.log('📊 Response OK:', response.ok);
     
     if (!response.ok) {
       throw new Error(`HTTP ${response.status}: ${response.statusText}`);
     }
     
+    console.log('📄 Leyendo texto...');
     const csvText = await response.text();
     console.log('📄 CSV length:', csvText.length, 'chars');
-    console.log('📋 First 300 chars:', csvText.substring(0, 300));
+    console.log('📋 First 500 chars:', csvText.substring(0, 500));
     
     productsCache = parseCSV(csvText);
     groupedProducts = groupByProductCode(productsCache);
     productsLoaded = true;
     
-    console.log(`✅ ${productsCache.length} products parsed`);
-    console.log('📦 Unique products:', Object.keys(groupedProducts).length);
+    console.log(`✅ ${productsCache.length} productos parseados`);
+    console.log('📦 Productos únicos:', Object.keys(groupedProducts).length);
     
     return productsCache;
     
   } catch (error) {
-    console.error('❌ Error loading products:', error);
-    showToast('⚠️ Error cargando catálogo', 'error');
+    console.error('❌ ERROR CARGANDO CSV:', error);
+    console.error('❌ Error name:', error.name);
+    console.error('❌ Error message:', error.message);
+    console.error('❌ Error stack:', error.stack);
+    
+    showToast('⚠️ Error cargando catálogo. Revisa la consola.', 'error');
     productsCache = [];
     return [];
   }
 }
 
 function parseCSV(csvText) {
-  console.log('🔍 parseCSV() started');
+  console.log('🔍 parseCSV() iniciado');
   const lines = csvText.trim().split('\n');
-  console.log('📊 Total lines:', lines.length);
+  console.log('📊 Total líneas:', lines.length);
   
   if (lines.length < 2) {
-    console.error('❌ CSV has no data lines');
+    console.error('❌ CSV sin datos');
     return [];
   }
   
@@ -97,7 +106,7 @@ function parseCSV(csvText) {
     });
   }
   
-  console.log('✅ parseCSV complete:', products.length, 'products');
+  console.log('✅ parseCSV completo:', products.length);
   return products;
 }
 
@@ -128,12 +137,12 @@ function groupByProductCode(products) {
     }
     grouped[product.codigoProducto].variantes.push(product);
   });
-  console.log('📦 Grouped into', Object.keys(grouped).length, 'unique products');
+  console.log('📦 Agrupados:', Object.keys(grouped).length);
   return grouped;
 }
 
 export async function renderCatalog(gridElement) {
-  console.log('🎨 renderCatalog() called');
+  console.log('🎨 renderCatalog() llamado');
   console.log('📦 Grid element:', gridElement);
   
   if (!gridElement) {
@@ -144,23 +153,23 @@ export async function renderCatalog(gridElement) {
   gridElement.innerHTML = '<div class="loading">Cargando productos...</div>';
   
   const products = await loadProducts();
-  console.log('📊 Products loaded:', products.length);
+  console.log('📊 Productos cargados:', products.length);
   
   if (products.length === 0) {
-    console.warn('⚠️ No products to display');
+    console.warn('⚠️ No hay productos');
     gridElement.innerHTML = '<div class="no-products">No hay productos disponibles</div>';
     return;
   }
   
   gridElement.innerHTML = '';
-  console.log('🎨 Rendering products...');
+  console.log('🎨 Renderizando...');
   
   Object.values(groupedProducts).forEach(product => {
     const card = createProductCard(product);
     gridElement.appendChild(card);
   });
   
-  console.log('✅ Products rendered:', Object.keys(groupedProducts).length);
+  console.log('✅ Renderizado completo');
   
   gridElement.querySelectorAll('.product-card').forEach(card => {
     card.addEventListener('click', (e) => {
@@ -173,13 +182,13 @@ export async function renderCatalog(gridElement) {
 }
 
 function createProductCard(product) {
-  console.log('🖼️ Creating card for:', product.descripcion, '- Photo:', product.fotoReal);
+  console.log('🖼️ Card:', product.descripcion, '- Foto:', product.fotoReal);
   
   const card = document.createElement('article');
   card.className = 'product-card';
   card.setAttribute('data-product-code', product.codigo);
   const imageUrl = `${CONFIG.IMAGE_PRODUCTS_URL}${product.fotoReal}`;
-  console.log('   📷 Image URL:', imageUrl);
+  console.log('   📷 URL:', imageUrl);
   
   card.innerHTML = `
     <div class="product-image">
@@ -197,13 +206,13 @@ function openProductDetail(productCode) {
   console.log('🔍 openProductDetail:', productCode);
   const product = groupedProducts[productCode];
   if (!product) {
-    console.error('❌ Product not found:', productCode);
+    console.error('❌ Producto no encontrado:', productCode);
     return;
   }
   
   const modal = document.getElementById('product-detail-modal');
   if (!modal) {
-    console.error('❌ Modal not found');
+    console.error('❌ Modal no encontrado');
     return;
   }
   
@@ -285,7 +294,7 @@ function updateSubtotal(sku, quantity) {
 }
 
 export function addProductToCart() {
-  console.log('🛒 addProductToCart() called');
+  console.log('🛒 addProductToCart() llamado');
   const modal = document.getElementById('product-detail-modal');
   if (!modal) return;
   
@@ -311,7 +320,7 @@ export function addProductToCart() {
   });
   
   if (itemsAdded > 0) {
-    showToast(`✅ ${itemsAdded} artículo(s) agregado(s) al carrito`, 'success');
+    showToast(`✅ ${itemsAdded} artículo(s) agregado(s)`, 'success');
     closeModal('product-detail-modal');
   } else {
     showToast('⚠️ Selecciona al menos 1 unidad', 'info');
@@ -319,16 +328,16 @@ export function addProductToCart() {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-  console.log('📄 DOMContentLoaded in catalog.js');
+  console.log('📄 DOMContentLoaded en catalog.js');
   
   const grid = document.getElementById('products-grid');
-  console.log('🔍 Grid element:', grid);
+  console.log('🔍 Grid:', grid);
   
   if (grid && grid.children.length === 0) {
-    console.log('🎨 Calling renderCatalog...');
+    console.log('🎨 Llamando renderCatalog...');
     renderCatalog(grid);
   } else {
-    console.warn('⚠️ Grid not found or already has content');
+    console.warn('⚠️ Grid no encontrado o ya tiene contenido');
   }
   
   const addToCartBtn = document.getElementById('add-to-cart-btn');
