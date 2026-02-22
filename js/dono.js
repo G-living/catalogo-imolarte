@@ -1,5 +1,5 @@
 // js/dono.js
-// IMOLARTE - Funcionalidad DONO (Regalar Crédito)
+// IMOLARTE - Funcionalidad DONO (Regalar Crédito) - VERSIÓN SIMPLE
 
 import { CONFIG } from './config.js';
 import { formatPrice, showToast, closeModal } from './ui.js';
@@ -21,59 +21,54 @@ const DONO_PREFIX = CONFIG.DONO_PREFIX || 'DNO-';
 const DONO_VALIDITY_DAYS = CONFIG.DONO_VALIDITY_DAYS || 90;
 
 // ============================================================================
-// FUNCIONES PRINCIPALES
+// INICIALIZACIÓN
 // ============================================================================
 
-/**
- * Genera código DONO único (exportado para checkout-dono.js)
- * @returns {string} Código único
- */
-export function generateUniqueDonoCode() {
-  const timestamp = Date.now().toString(36).toUpperCase();
-  const random = Math.random().toString(36).substring(2, 6).toUpperCase();
-  return `${DONO_PREFIX}${timestamp}${random}`;
-}
-
-/**
- * Inicializa la funcionalidad DONO
- */
 export function initDono() {
   console.log('🎁 initDono() llamado');
   
+  // Bind botones de montos predefinidos
   document.querySelectorAll('.dono-amount-btn').forEach(btn => {
     btn.addEventListener('click', (e) => selectAmount(e));
   });
   
+  // Bind input personalizado
   const customInput = document.getElementById('dono-custom-input');
   if (customInput) {
     customInput.addEventListener('input', (e) => handleCustomAmount(e));
   }
   
+  // Bind botón generar
   const generateBtn = document.getElementById('generate-dono-btn');
   if (generateBtn) {
     generateBtn.addEventListener('click', generateDonoCode);
   }
   
+  // Bind botón abrir modal DONO
   const donoBtn = document.getElementById('dono-btn');
   if (donoBtn) {
     donoBtn.addEventListener('click', () => openDonoModal());
   }
   
+  // Bind cerrar modal
   const closeBtns = document.querySelectorAll('.close-dono');
   closeBtns.forEach(btn => {
     btn.addEventListener('click', () => closeModal('dono-modal'));
   });
   
+  // Bind copiar código
   const copyBtn = document.getElementById('copy-dono-code');
   if (copyBtn) {
     copyBtn.addEventListener('click', copyDonoCode);
   }
   
+  // Bind compartir WhatsApp
   const shareBtn = document.getElementById('share-dono-whatsapp');
   if (shareBtn) {
     shareBtn.addEventListener('click', shareDonoWhatsApp);
   }
   
+  // Bind generar otro
   const anotherBtn = document.getElementById('generate-another-dono');
   if (anotherBtn) {
     anotherBtn.addEventListener('click', resetDonoForm);
@@ -102,9 +97,11 @@ function selectAmount(e) {
   
   selectedAmount = amount;
   
+  // Visual feedback
   document.querySelectorAll('.dono-amount-btn').forEach(b => b.classList.remove('selected'));
   btn.classList.add('selected');
   
+  // Limpiar input personalizado
   const customInput = document.getElementById('dono-custom-input');
   if (customInput) customInput.value = '';
   
@@ -148,6 +145,12 @@ async function generateDonoCode() {
     if (loadingEl) loadingEl.classList.add('hidden');
     if (generateBtn) generateBtn.disabled = false;
   }
+}
+
+function generateUniqueDonoCode() {
+  const timestamp = Date.now().toString(36).toUpperCase();
+  const random = Math.random().toString(36).substring(2, 6).toUpperCase();
+  return `${DONO_PREFIX}${timestamp}${random}`;
 }
 
 function showDonoResult(code, amount) {

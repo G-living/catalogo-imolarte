@@ -127,7 +127,6 @@
             <div class="detail-body">
                 <h3>Selecciona tus variantes:</h3>
                 <div id="detail-variants" class="variants-container" role="list">
-                    <!-- Variantes renderizadas por catalog.js -->
                 </div>
             </div>
             
@@ -145,7 +144,6 @@
             <button class="close-modal close-cart" type="button" aria-label="Cerrar">&times;</button>
             <h2 id="cart-title">Tu Carrito</h2>
             <div id="cart-items" class="cart-items" role="list">
-                <!-- Cart items rendered by cart.js -->
             </div>
             <div class="cart-footer">
                 <div class="cart-total">
@@ -161,58 +159,6 @@
         </div>
     </div>
 
-    <!-- Checkout Section -->
-    <section id="checkout-section" class="checkout-section hidden">
-        <div class="container">
-            <button class="btn-secondary" type="button" onclick="document.getElementById('checkout-section').classList.add('hidden')">
-                ← Seguir Comprando
-            </button>
-            <h2>Checkout</h2>
-            <form id="checkout-form" novalidate>
-                <!-- Personal Data -->
-                <div class="form-section">
-                    <h3>Datos Personales</h3>
-                    <div class="form-row">
-                        <input type="text" id="checkout-name" name="name" placeholder="Nombre Completo" required autocomplete="name" aria-label="Nombre completo" aria-required="true">
-                        <input type="email" id="checkout-email" name="email" placeholder="Email" required autocomplete="email" aria-label="Correo electrónico" aria-required="true">
-                    </div>
-                    <div class="form-row">
-                        <input type="tel" id="checkout-phone" name="phone" placeholder="WhatsApp (Celular)" required autocomplete="tel" aria-label="Número de teléfono" aria-required="true">
-                    </div>
-                </div>
-
-                <!-- DONO Code Section -->
-                <div class="form-section dono-section">
-                    <h3>¿Tienes un código DONO?</h3>
-                    <div class="dono-input-group">
-                        <input type="text" id="dono-code-input" placeholder="Ej: DNO-ABC123" pattern="DNO-[A-Z0-9]+" maxlength="20" aria-label="Código DONO">
-                        <button type="button" id="apply-dono-btn" class="btn-secondary">Aplicar</button>
-                    </div>
-                    <p id="dono-status" class="dono-status" aria-live="polite"></p>
-                    <p class="dono-help">
-                        <small>💡 ¿No tienes código? <a href="#" id="open-dono-modal">Regala uno aquí</a></small>
-                    </p>
-                </div>
-
-                <!-- Terms -->
-                <div class="form-section">
-                    <label class="checkbox-label">
-                        <input type="checkbox" id="terms" name="terms" required aria-required="true">
-                        <span>Acepto la <a href="#" target="_blank" rel="noopener">Política de Tratamiento de Datos</a> (Ley 1581)</span>
-                    </label>
-                </div>
-
-                <!-- Wompi Checkout -->
-                <div class="wompi-checkout">
-                    <button type="submit" id="pay-btn" class="btn-primary btn-large">
-                        Pagar con Wompi
-                    </button>
-                    <p class="secure-text">🔒 Pago Seguro SSL</p>
-                </div>
-            </form>
-        </div>
-    </section>
-
     <!-- Footer -->
     <footer class="main-footer">
         <p>© 2024 IMOLARTE. Todos los derechos reservados.</p>
@@ -226,11 +172,5 @@
     <script type="module" src="./js/cart.js"></script>
     <script type="module" src="./js/catalog.js"></script>
     <script type="module" src="./js/dono.js"></script>
-    <script type="module" src="./js/wompi.js"></script>
-    <script type="module" src="./js/orders.js"></script>
-    <script type="module" src="./js/dono-validator.js"></script>
-    <script type="module" src="./js/checkout/checkout-base.js"></script>
-    <script type="module" src="./js/checkout/checkout-cart.js"></script>
-    <script type="module" src="./js/checkout/checkout-dono.js"></script>
 </body>
 </html>
