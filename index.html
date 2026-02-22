@@ -181,18 +181,95 @@
                     </div>
                 </div>
 
-                <!-- DONO Code Section -->
-                <div class="form-section dono-section">
-                    <h3>¿Tienes un código DONO?</h3>
-                    <div class="dono-input-group">
-                        <input type="text" id="dono-code-input" placeholder="Ej: DNO-ABC123" pattern="DNO-[A-Z0-9]+" maxlength="20" aria-label="Código DONO">
-                        <button type="button" id="apply-dono-btn" class="btn-secondary">Aplicar</button>
-                    </div>
-                    <p id="dono-status" class="dono-status" aria-live="polite"></p>
-                    <p class="dono-help">
-                        <small>💡 ¿No tienes código? <a href="#" id="open-dono-modal">Regala uno aquí</a></small>
-                    </p>
+                <!-- DONO Modal -->
+<div id="dono-modal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="dono-title">
+    <div class="modal-content modal-dono">
+        <button class="close-modal close-dono" type="button" aria-label="Cerrar">&times;</button>
+        <h2 id="dono-title">🎁 Regalar Crédito IMOLARTE</h2>
+        <p class="dono-description">Selecciona los vouchers que deseas regalar. Cada voucher genera un código único.</p>
+        
+        <!-- Lista de Vouchers -->
+        <div class="dono-vouchers-list">
+            <!-- Voucher $50.000 -->
+            <div class="dono-voucher-item" data-amount="50000">
+                <div class="voucher-image">
+                    <img src="./images/vouchers/voucher-50000.png" alt="Voucher $50.000" onerror="this.src='./comodines/C_Garofano_Blu.png'">
                 </div>
+                <div class="voucher-info">
+                    <h4 class="voucher-name">Voucher Básico</h4>
+                    <p class="voucher-price">$50.000 COP</p>
+                </div>
+                <div class="voucher-quantity">
+                    <button class="qty-btn qty-minus" data-amount="50000" aria-label="Disminuir cantidad">-</button>
+                    <input type="number" class="qty-input" value="0" min="0" max="20" data-amount="50000" aria-label="Cantidad voucher $50.000">
+                    <button class="qty-btn qty-plus" data-amount="50000" aria-label="Aumentar cantidad">+</button>
+                </div>
+                <div class="voucher-subtotal">
+                    <span class="subtotal-label">Subtotal:</span>
+                    <span class="subtotal-value" data-amount="50000">$ 0</span>
+                </div>
+            </div>
+            
+            <!-- Voucher $100.000 -->
+            <div class="dono-voucher-item" data-amount="100000">
+                <div class="voucher-image">
+                    <img src="./images/vouchers/voucher-100000.png" alt="Voucher $100.000" onerror="this.src='./comodines/C_Garofano_Blu.png'">
+                </div>
+                <div class="voucher-info">
+                    <h4 class="voucher-name">Voucher Popular</h4>
+                    <p class="voucher-price">$100.000 COP</p>
+                </div>
+                <div class="voucher-quantity">
+                    <button class="qty-btn qty-minus" data-amount="100000" aria-label="Disminuir cantidad">-</button>
+                    <input type="number" class="qty-input" value="0" min="0" max="20" data-amount="100000" aria-label="Cantidad voucher $100.000">
+                    <button class="qty-btn qty-plus" data-amount="100000" aria-label="Aumentar cantidad">+</button>
+                </div>
+                <div class="voucher-subtotal">
+                    <span class="subtotal-label">Subtotal:</span>
+                    <span class="subtotal-value" data-amount="100000">$ 0</span>
+                </div>
+            </div>
+            
+            <!-- Voucher $150.000 -->
+            <div class="dono-voucher-item" data-amount="150000">
+                <div class="voucher-image">
+                    <img src="./images/vouchers/voucher-150000.png" alt="Voucher $150.000" onerror="this.src='./comodines/C_Garofano_Blu.png'">
+                </div>
+                <div class="voucher-info">
+                    <h4 class="voucher-name">Voucher Premium</h4>
+                    <p class="voucher-price">$150.000 COP</p>
+                </div>
+                <div class="voucher-quantity">
+                    <button class="qty-btn qty-minus" data-amount="150000" aria-label="Disminuir cantidad">-</button>
+                    <input type="number" class="qty-input" value="0" min="0" max="20" data-amount="150000" aria-label="Cantidad voucher $150.000">
+                    <button class="qty-btn qty-plus" data-amount="150000" aria-label="Aumentar cantidad">+</button>
+                </div>
+                <div class="voucher-subtotal">
+                    <span class="subtotal-label">Subtotal:</span>
+                    <span class="subtotal-value" data-amount="150000">$ 0</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Total y Checkout -->
+        <div class="dono-footer">
+            <div class="dono-total">
+                <strong>Total:</strong>
+                <span id="dono-total-amount">$ 0</span>
+            </div>
+            <button id="dono-checkout-btn" class="btn-primary btn-large" type="button" disabled>
+                Checkout DONO
+            </button>
+            <p class="dono-min-hint">Monto mínimo por voucher: $50.000 COP | Máximo 20 vouchers por tipo</p>
+        </div>
+        
+        <!-- Loading -->
+        <div id="dono-loading" class="dono-loading hidden">
+            <div class="spinner"></div>
+            <p>Procesando tu pedido DONO...</p>
+        </div>
+    </div>
+</div>
 
                 <!-- Terms -->
                 <div class="form-section">
